@@ -1,0 +1,80 @@
+# flyctl launch added from .gitignore
+**/node_modules
+
+# Output
+**/.output
+**/.vercel
+**/.netlify
+**/.wrangler
+.svelte-kit
+build
+
+# OS
+**/.DS_Store
+**/Thumbs.db
+
+# Env
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.test
+
+# Vite
+**/vite.config.js.timestamp-*
+**/vite.config.ts.timestamp-*
+
+# SQLite
+**/*.db
+
+fly.toml
+
+# Database
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.nyc_output/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Specs
+specs/
+
+# Scripts
+scripts/
+
+# Config files
+.prettierrc
+.prettierignore
+.eslintrc*
+eslint.config.js
+.editorconfig
+lefthook.yml
+
+# CI/CD
+.github/
