@@ -3,14 +3,14 @@ import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ request }) => {
-	const session = await auth.api.getSession({ headers: request.headers });
+  const session = await auth.api.getSession({ headers: request.headers });
 
-	if (!session) {
-		redirect(302, '/login');
-	}
+  if (!session) {
+    redirect(302, '/login');
+  }
 
-	return {
-		user: session.user,
-		session: session.session
-	};
+  return {
+    user: session.user,
+    session: session.session,
+  };
 };

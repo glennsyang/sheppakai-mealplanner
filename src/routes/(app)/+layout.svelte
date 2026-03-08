@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
-	import { page } from '$app/stores';
-	import { authClient } from '$lib/auth-client';
-	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+  import { enhance } from '$app/forms';
 
 	let { children, data } = $props();
 
@@ -15,14 +14,9 @@
 		{ href: '/planner', label: 'Planner', icon: '📅' }
 	];
 
-	async function handleSignOut() {
-		await authClient.signOut();
-		goto('/login');
-	}
-
 	function isActive(href: string): boolean {
-		if (href === '/') return $page.url.pathname === '/';
-		return $page.url.pathname.startsWith(href);
+		if (href === '/') return page.url.pathname === '/';
+		return page.url.pathname.startsWith(href);
 	}
 </script>
 
@@ -50,9 +44,13 @@
 
 			<div class="ml-auto flex items-center gap-3">
 				<span class="text-sm text-surface-500 hidden sm:block">{user?.name}</span>
+				<form method="POST" action="/logout" use:enhance id="logout-form"></form>
 				<button
 					type="button"
-					onclick={handleSignOut}
+					onclick={() => {
+						const form = document.getElementById('logout-form') as HTMLFormElement;
+						form?.requestSubmit();
+					}}
 					class="btn preset-ghost-surface text-sm"
 				>
 					Sign out
