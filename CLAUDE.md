@@ -147,7 +147,7 @@ The `/api/suggest` endpoint (`GET ?items=...`) calls `suggestMeals` and returns 
 
 - CSS from `@skeletonlabs/skeleton` (utilities, tokens, presets).
 - Components from `@skeletonlabs/skeleton-svelte` (Dialog, AppBar, Toast, TagsInput, etc.).
-- Theme: `cerberus` — set via `data-theme="cerberus"` on `<html>` in `app.html`.
+- Theme: `pine` — set via `data-theme="pine"` on `<html>` in `app.html`.
 - **Known issue**: `@skeletonlabs/skeleton/themes/cerberus.css` fails to resolve via `enhanced-resolve` (the `*` pattern in package exports isn't supported for CSS). Fixed via a Vite alias in `vite.config.ts` pointing to the direct file path.
 
 ### CSS class conventions

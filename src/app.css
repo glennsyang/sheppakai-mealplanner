@@ -1,6 +1,9 @@
 @import 'tailwindcss';
 @import '@skeletonlabs/skeleton';
-@import '@skeletonlabs/skeleton/themes/cerberus.css';
+@import '@skeletonlabs/skeleton/themes/pine.css';
+
+/* Use .dark class for dark mode instead of prefers-color-scheme media query */
+@variant dark (&:where(.dark, .dark *));
 
 @keyframes card-enter {
 	from {

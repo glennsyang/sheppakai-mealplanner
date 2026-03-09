@@ -106,7 +106,7 @@
 				<input type="hidden" name="instructionsJson" value={JSON.stringify(pendingSuggestion.steps)} />
 				<input type="hidden" name="prepTimeMinutes" value={pendingSuggestion.prepTimeMinutes} />
 				<input type="hidden" name="servings" value={pendingSuggestion.servings} />
-				<input type="hidden" name="recipeId" value="" />
+
 
 				<div class="grid grid-cols-2 gap-2">
 					{#each DAY_LABELS as day, i}

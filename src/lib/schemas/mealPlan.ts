@@ -2,8 +2,7 @@ import { z } from 'zod';
 
 export const addMealPlanEntrySchema = z.object({
 	weekStartDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format'),
-	dayOfWeek: z.coerce.number().int().min(0).max(6),
-	recipeId: z.string().min(1, 'Recipe is required')
+	dayOfWeek: z.coerce.number().int().min(0).max(6)
 });
 
 export const removeMealPlanEntrySchema = z.object({

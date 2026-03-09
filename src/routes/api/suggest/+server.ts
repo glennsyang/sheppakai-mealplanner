@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import { auth } from '$lib/server/auth';
-import { suggestMeals } from '$lib/server/ai/claude';
+import { suggestMeals } from '$lib/server/ai/gemini';
 import { logger } from '$lib/logger';
 import type { RequestHandler } from './$types';
 

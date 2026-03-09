@@ -7,6 +7,18 @@
 
 	const user = $derived(data.user);
 
+	let isDark = $state(false);
+
+	$effect(() => {
+		isDark = document.documentElement.classList.contains('dark');
+	});
+
+	function toggleDark() {
+		isDark = !isDark;
+		document.documentElement.classList.toggle('dark', isDark);
+		localStorage.setItem('color-scheme', isDark ? 'dark' : 'light');
+	}
+
 	const navLinks = [
 		{ href: '/', label: 'Dashboard', icon: '🏠' },
 		{ href: '/pantry', label: 'Pantry', icon: '🥫' },
@@ -43,6 +55,25 @@
 			</nav>
 
 			<div class="ml-auto flex items-center gap-3">
+				<button
+					type="button"
+					onclick={toggleDark}
+					aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+					class="btn preset-ghost-surface w-9 h-9 p-0 flex items-center justify-center"
+				>
+					{#if isDark}
+						<!-- Sun icon -->
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="4"/>
+							<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+						</svg>
+					{:else}
+						<!-- Moon icon -->
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+						</svg>
+					{/if}
+				</button>
 				<span class="text-sm text-surface-500 hidden sm:block">{user?.name}</span>
 				<form method="POST" action="/logout" use:enhance id="logout-form"></form>
 				<button
