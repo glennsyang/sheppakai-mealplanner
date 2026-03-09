@@ -1,0 +1,20 @@
+{
+  "chat.useAgentSkills": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "always"
+  },
+  "oxc.typeAware": true,
+  "chat.tools.terminal.autoApprove": {
+    // Approve common, non-destructive commands
+    "/^ls/": true,
+    "/^cd/": true,
+    "/^grep/": true,
+    "/^cat/": true,
+    "npm run format": true,
+    "npm run lint": true,
+    "npm run test": true,
+    "npm run check": true,
+    "npm run build": true
+  }
+}
