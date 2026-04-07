@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { fly, scale } from 'svelte/transition';
+	import { expoOut } from 'svelte/easing';
 	import type { MealSuggestion } from '$lib/types';
 
 	interface Props {
@@ -11,54 +12,55 @@
 
 	let { suggestion, index, onViewRecipe, onSaveToPlanner }: Props = $props();
 
-	const delay = $derived(index * 100);
+	const delay = $derived(index * 90);
 </script>
 
 <div
-	in:fly={{ y: 20, delay, duration: 350 }}
+	in:fly={{ y: 24, delay, duration: 500, easing: expoOut }}
 	out:scale={{ duration: 200 }}
-	class="card preset-outlined-surface-500 animate-card-enter flex flex-col gap-3 p-5 hover:shadow-lg transition-shadow"
+	class="card preset-outlined-surface-300-700 card-lift flex flex-col gap-4 p-6"
 	style="animation-delay: {delay}ms"
 >
-	<div class="flex items-start justify-between gap-3">
-		<div>
-			<h3 class="h4 font-bold">{suggestion.name}</h3>
-			<p class="text-surface-600-400 mt-1 text-sm leading-relaxed">{suggestion.description}</p>
-		</div>
-		<div class="flex flex-col items-end gap-1 shrink-0">
-			<span class="badge preset-tonal-secondary text-xs">⏱ {suggestion.prepTimeMinutes} min</span>
-			<span class="badge preset-tonal-surface text-xs">🍽 {suggestion.servings} servings</span>
+	<!-- Header: name + metadata -->
+	<div class="flex items-start justify-between gap-4">
+		<h3 class="font-serif text-xl font-semibold leading-snug tracking-tight flex-1">{suggestion.name}</h3>
+		<div class="flex flex-col items-end gap-1 shrink-0 pt-0.5">
+			<span class="text-xs text-surface-400 font-medium tabular-nums">{suggestion.prepTimeMinutes} min</span>
+			<span class="text-xs text-surface-400">{suggestion.servings} servings</span>
 		</div>
 	</div>
 
+	<!-- Description -->
+	<p class="text-surface-500 text-sm leading-relaxed font-light">{suggestion.description}</p>
+
+	<!-- Key ingredients -->
 	<div>
-		<p class="text-surface-500 text-xs font-semibold uppercase tracking-wide mb-1.5">
-			Key ingredients
-		</p>
+		<p class="text-xs font-medium uppercase tracking-widest text-surface-400 mb-2">Key ingredients</p>
 		<div class="flex flex-wrap gap-1.5">
 			{#each suggestion.ingredients.slice(0, 5) as ing}
-				<span class="chip preset-tonal-surface text-xs">{ing.name}</span>
+				<span class="chip preset-tonal-surface text-xs font-light">{ing.name}</span>
 			{/each}
 			{#if suggestion.ingredients.length > 5}
-				<span class="chip preset-tonal-surface text-xs">+{suggestion.ingredients.length - 5} more</span>
+				<span class="chip preset-outlined-surface-300-700 text-xs font-light">+{suggestion.ingredients.length - 5} more</span>
 			{/if}
 		</div>
 	</div>
 
+	<!-- Actions -->
 	<div class="flex gap-2 mt-auto pt-1">
 		<button
 			type="button"
 			onclick={() => onViewRecipe(suggestion)}
 			class="btn preset-outlined-surface-500 flex-1 text-sm"
 		>
-			View Recipe
+			View recipe
 		</button>
 		<button
 			type="button"
 			onclick={() => onSaveToPlanner(suggestion)}
 			class="btn preset-filled-primary-500 flex-1 text-sm"
 		>
-			Add to Planner
+			Add to planner
 		</button>
 	</div>
 </div>

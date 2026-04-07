@@ -4,6 +4,12 @@ A dinner-focused meal planner. Users enter pantry ingredients → Claude AI sugg
 
 ---
 
+## Node Version
+
+Always use **Node.js 22.21.1** for all development, testing, and tooling. Do not use any other Node version.
+
+---
+
 ## Tech Stack
 
 | Concern | Choice |

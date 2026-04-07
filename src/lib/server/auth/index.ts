@@ -8,7 +8,7 @@ import { getRequestEvent } from '$app/server';
 export const auth = betterAuth({
   appName: 'Meal Planner',
   secret: process.env.BETTER_AUTH_SECRET,
-  baseUrl: process.env.BETTER_AUTH_BASE_URL,
+  baseURL: process.env.BETTER_AUTH_BASE_URL,
   database: drizzleAdapter(db, {
     provider: 'sqlite',
     schema: {

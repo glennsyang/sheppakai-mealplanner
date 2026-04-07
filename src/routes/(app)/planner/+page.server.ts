@@ -1,7 +1,7 @@
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
-import { fail } from '@sveltejs/kit';
-import { addMealPlanEntrySchema, removeMealPlanEntrySchema, saveRecipeSchema } from '$lib/schemas/mealPlan';
+import { fail, isRedirect } from '@sveltejs/kit';
+import { addMealPlanEntrySchema, removeMealPlanEntrySchema, saveRecipeSchema, addCustomMealSchema } from '$lib/schemas/mealPlan';
 import {
 	getMealPlanWithEntries,
 	addMealPlanEntry,
@@ -17,12 +17,13 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const userId = locals.user!.id;
 	const weekStartDate = url.searchParams.get('week') ?? getMondayOfCurrentWeek();
 
-	const [entries, addEntryForm] = await Promise.all([
+	const [entries, addEntryForm, addCustomForm] = await Promise.all([
 		getMealPlanWithEntries(userId, weekStartDate),
-		superValidate(zod4(addMealPlanEntrySchema))
+		superValidate(zod4(addMealPlanEntrySchema)),
+		superValidate(zod4(addCustomMealSchema))
 	]);
 
-	return { entries, weekStartDate, addEntryForm };
+	return { entries, weekStartDate, addEntryForm, addCustomForm };
 };
 
 export const actions: Actions = {
@@ -72,6 +73,31 @@ export const actions: Actions = {
 		} catch (err) {
 			logger.error('Failed to remove meal plan entry', { userId, err });
 			return fail(500, {});
+		}
+
+		return {};
+	},
+
+	addCustom: async ({ request, locals }) => {
+		const userId = locals.user!.id;
+		const form = await superValidate(request, zod4(addCustomMealSchema));
+		if (!form.valid) return fail(400, { form });
+
+		try {
+			const recipe = await saveRecipe(userId, {
+				name: form.data.name,
+				description: form.data.notes ?? '',
+				ingredientsJson: [],
+				instructionsJson: [],
+				prepTimeMinutes: 0,
+				servings: 1,
+				source: 'custom'
+			});
+			await addMealPlanEntry(userId, form.data.weekStartDate, form.data.dayOfWeek, recipe.id);
+		} catch (err) {
+			if (isRedirect(err)) throw err;
+			logger.error('Failed to add custom meal', { userId, err });
+			return fail(500, { form });
 		}
 
 		return {};

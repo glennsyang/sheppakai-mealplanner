@@ -1,7 +1,7 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db';
 import { recipes } from '../db/schema';
-import type { Recipe, Ingredient } from '$lib/types';
+import type { Recipe, Ingredient, RecipeSource } from '$lib/types';
 import { logger } from '$lib/logger';
 import { randomUUID } from 'crypto';
 
@@ -15,6 +15,7 @@ function rowToRecipe(row: typeof recipes.$inferSelect): Recipe {
 		instructionsJson: JSON.parse(row.instructionsJson) as string[],
 		prepTimeMinutes: row.prepTimeMinutes,
 		servings: row.servings,
+		source: row.source as RecipeSource,
 		createdAt: row.createdAt,
 		updatedAt: row.updatedAt
 	};
@@ -45,6 +46,7 @@ export async function saveRecipe(
 		instructionsJson: string[];
 		prepTimeMinutes: number;
 		servings: number;
+		source?: RecipeSource;
 	}
 ): Promise<Recipe> {
 	logger.debug('saveRecipe', { userId, name: data.name });
@@ -59,6 +61,7 @@ export async function saveRecipe(
 		instructionsJson: JSON.stringify(data.instructionsJson),
 		prepTimeMinutes: data.prepTimeMinutes,
 		servings: data.servings,
+		source: data.source ?? 'ai',
 		createdAt: now,
 		updatedAt: now
 	});

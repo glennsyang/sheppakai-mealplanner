@@ -1,7 +1,7 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db';
 import { mealPlans, mealPlanEntries, recipes } from '../db/schema';
-import type { MealPlan, MealPlanEntry, Recipe, Ingredient } from '$lib/types';
+import type { MealPlan, MealPlanEntry, Recipe, Ingredient, RecipeSource } from '$lib/types';
 import { logger } from '$lib/logger';
 import { randomUUID } from 'crypto';
 
@@ -96,6 +96,7 @@ export async function getMealPlanWithEntries(
 					instructionsJson: JSON.parse(recipe.instructionsJson) as string[],
 					prepTimeMinutes: recipe.prepTimeMinutes,
 					servings: recipe.servings,
+					source: recipe.source as RecipeSource,
 					createdAt: recipe.createdAt,
 					updatedAt: recipe.updatedAt
 				}

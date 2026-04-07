@@ -7,9 +7,12 @@
 		weekStartDate: string;
 		entries: MealPlanEntryWithRecipe[];
 		onRemoveEntry: (entryId: string) => Promise<void>;
+		onAddCustom: (dayOfWeek: number) => void;
+		onRequestVariations: (dayOfWeek: number, mealName: string) => void;
+		loadingVariationsDay: number | null;
 	}
 
-	let { weekStartDate, entries, onRemoveEntry }: Props = $props();
+	let { weekStartDate, entries, onRemoveEntry, onAddCustom, onRequestVariations, loadingVariationsDay }: Props = $props();
 
 	const removingIds = $state<Set<string>>(new Set());
 
@@ -52,7 +55,11 @@
 					<p class="text-sm font-semibold leading-snug">{entry.recipe.name}</p>
 					<p class="text-xs text-surface-500 line-clamp-2">{entry.recipe.description}</p>
 					<div class="mt-auto flex items-center justify-between">
-						<span class="text-xs text-surface-400">⏱ {entry.recipe.prepTimeMinutes}m</span>
+						{#if entry.recipe.prepTimeMinutes > 0}
+							<span class="text-xs text-surface-400">⏱ {entry.recipe.prepTimeMinutes}m</span>
+						{:else}
+							<span></span>
+						{/if}
 						<button
 							type="button"
 							onclick={() => handleRemove(entry.entry.id)}
@@ -63,10 +70,28 @@
 							Remove
 						</button>
 					</div>
+					{#if entry.recipe.source === 'custom'}
+						<button
+							type="button"
+							onclick={() => onRequestVariations(i, entry.recipe.name)}
+							disabled={loadingVariationsDay === i}
+							class="text-xs text-primary-500 hover:text-primary-700 transition-colors disabled:opacity-50 text-left"
+							aria-label="Get AI variations for {entry.recipe.name}"
+						>
+							{loadingVariationsDay === i ? 'Loading…' : '✨ Variations'}
+						</button>
+					{/if}
 				</div>
 			{:else}
 				<div class="flex flex-1 items-center justify-center">
-					<span class="text-xs text-surface-300-700 italic">No meal planned</span>
+					<button
+						type="button"
+						onclick={() => onAddCustom(i)}
+						class="btn preset-ghost-surface text-sm"
+						aria-label="Add meal for {day}"
+					>
+						+
+					</button>
 				</div>
 			{/if}
 		</div>

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(python3:*)",
       "Bash(npm run:*)",
-      "Bash(npm:*)"
+      "Bash(npm:*)",
+      "Bash(npx drizzle-kit:*)"
     ]
   }
 }

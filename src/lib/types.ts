@@ -23,6 +23,8 @@ export interface MealSuggestion {
 	servings: number;
 }
 
+export type RecipeSource = 'ai' | 'custom';
+
 export interface Recipe {
 	id: string;
 	userId: string;
@@ -32,6 +34,7 @@ export interface Recipe {
 	instructionsJson: string[];
 	prepTimeMinutes: number;
 	servings: number;
+	source: RecipeSource;
 	createdAt: Date;
 	updatedAt: Date;
 }
