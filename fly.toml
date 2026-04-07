@@ -1,4 +1,4 @@
-app = "meal-planner"
+app = "sheppakai-mealplanner"
 primary_region = "yyz"
 
 [build]
