@@ -12,46 +12,52 @@ Always use **Node.js 22.21.1** for all development, testing, and tooling. Do not
 
 ## Tech Stack
 
-| Concern | Choice |
-|---|---|
-| Framework | SvelteKit + TypeScript (strict) |
-| Database | SQLite via Drizzle ORM (better-sqlite3) |
-| Auth | better-auth v1 (email + password) |
-| AI | `@anthropic-ai/sdk` — `claude-sonnet-4-6` |
-| UI | Skeleton UI v4 + Tailwind CSS v4 |
+| Concern    | Choice                                         |
+| ---------- | ---------------------------------------------- |
+| Framework  | SvelteKit + TypeScript (strict)                |
+| Database   | SQLite via Drizzle ORM (better-sqlite3)        |
+| Auth       | better-auth v1 (email + password)              |
+| AI         | `@anthropic-ai/sdk` — `claude-sonnet-4-6`      |
+| UI         | Skeleton UI v4 + Tailwind CSS v4               |
 | Animations | Svelte 5 transitions + `@formkit/auto-animate` |
-| Forms | sveltekit-superforms v2 + Zod v4 |
-| Testing | Vitest v4 |
-| Deployment | fly.io (Node 22, SQLite on persistent volume) |
+| Forms      | sveltekit-superforms v2 + Zod v4               |
+| Testing    | Vitest v4                                      |
+| Deployment | fly.io (Node 22, SQLite on persistent volume)  |
 
 ---
 
 ## Non-Negotiable Conventions
 
 ### TypeScript
+
 - **Strict mode everywhere.** Never use `any` — use proper types, generics, or `unknown`.
 - **camelCase** for all TypeScript types, interfaces, and variable names.
 
 ### Svelte
+
 - **Svelte 5 runes only**: `$state`, `$derived`, `$effect`, `$props`, `$bindable`.
 - Never use `onMount` or manual `addEventListener`. Use `$effect` and Svelte event attributes instead.
 - Use `page` from `$app/state` (not `$app/stores`) for reactive page info.
 
 ### Logging
+
 - **Never use `console.log`** anywhere. Always import and use `$lib/logger`.
 - Logger levels: `debug | info | warn | error`.
 
 ### Database
+
 - **snake_case** for all DB column names.
 - Every table has `created_at` and `updated_at` audit columns.
 - IDs are `crypto.randomUUID()` text strings.
 
 ### Forms
+
 - All form submissions use **sveltekit-superforms + Zod v4**.
 - Import adapters as `zod4` / `zod4Client` from `sveltekit-superforms/adapters`.
 - Never spread `{...$constraints}` on email inputs — Zod v4 generates a `pattern` regex the browser rejects. Instead apply individual attributes (`required`, `minlength`, etc.).
 
 ### Error handling
+
 - Always re-throw SvelteKit redirects: `if (isRedirect(error)) throw error`.
 - Use `fail(400, { form })` for form validation errors, `fail(500, ...)` for server errors.
 
@@ -107,9 +113,10 @@ src/
 - **Logout** is a form POST to `/logout` (handled by `(auth)/logout/+page.server.ts`). The layout submits a hidden form via `requestSubmit()`.
 - `auth.advanced.useSecureCookies` is `true` — cookies require HTTPS. In dev, ensure `http://localhost:5173` is in `trustedOrigins`.
 - Rate limiting: 5 requests/minute/IP, `database` storage in production, `memory` in dev.
-- Cookie prefix: `synapse_auth_`.
+- Cookie prefix: `mealplanner_auth_`.
 
 ### Environment variables required
+
 ```
 BETTER_AUTH_SECRET=<random 32+ char string>
 BETTER_AUTH_BASE_URL=https://your-app.fly.dev   # or http://localhost:5173 in dev
@@ -128,6 +135,7 @@ DATABASE_URL=/data/db.sqlite                     # or ./data/db.sqlite in dev
 - Migrations output: `src/lib/server/db/migrations/`.
 
 ### Working with the DB
+
 ```bash
 npm run db:push      # Push schema to dev SQLite (creates ./data/db.sqlite)
 npm run db:migrate   # Run migrations (production)
@@ -157,6 +165,7 @@ The `/api/suggest` endpoint (`GET ?items=...`) calls `suggestMeals` and returns 
 - **Known issue**: `@skeletonlabs/skeleton/themes/cerberus.css` fails to resolve via `enhanced-resolve` (the `*` pattern in package exports isn't supported for CSS). Fixed via a Vite alias in `vite.config.ts` pointing to the direct file path.
 
 ### CSS class conventions
+
 - Presets: `preset-filled-primary-500`, `preset-outlined-surface-500`, `preset-tonal-surface`, `preset-ghost-surface`
 - Surface colors: `bg-surface-50-950`, `text-surface-950-50`, `border-surface-200-800`
 - Use `btn`, `input`, `label`, `card`, `chip`, `badge`, `alert` utility classes from Skeleton
@@ -176,6 +185,7 @@ The `/api/suggest` endpoint (`GET ?items=...`) calls `suggestMeals` and returns 
 Every form follows this pattern:
 
 **Schema** (`src/lib/schemas/<domain>.ts`):
+
 ```ts
 import { z } from 'zod';
 export const mySchema = z.object({ ... });
@@ -183,6 +193,7 @@ export type MySchema = typeof mySchema;
 ```
 
 **Server** (`+page.server.ts`):
+
 ```ts
 import { superValidate, message } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -203,14 +214,19 @@ throw redirect(302, '/destination');
 ```
 
 **Client** (`+page.svelte`):
+
 ```ts
 // svelte-ignore state_referenced_locally — superForm is intentionally initialized once from props
-const { form, errors, constraints, enhance, message, submitting } = superForm(data.form, {
-  validators: zod4Client(mySchema)
-});
+const { form, errors, constraints, enhance, message, submitting } = superForm(
+  data.form,
+  {
+    validators: zod4Client(mySchema),
+  },
+);
 ```
 
 **Email inputs** — do NOT spread `$constraints.email`. Apply individually:
+
 ```svelte
 <input type="email" required={$constraints.email?.required} ... />
 ```
@@ -220,6 +236,7 @@ const { form, errors, constraints, enhance, message, submitting } = superForm(da
 ## Security
 
 All configured in `src/hooks.server.ts`:
+
 - `X-Frame-Options: DENY`
 - `X-Content-Type-Options: nosniff`
 - `Referrer-Policy: strict-origin-when-cross-origin`
@@ -253,9 +270,9 @@ npm run db:studio    # Drizzle visual browser
 - Node 22 slim image
 - Set secrets before first deploy:
   ```bash
-  fly secrets set BETTER_AUTH_SECRET=... ANTHROPIC_API_KEY=... BETTER_AUTH_BASE_URL=https://meal-planner.fly.dev
+  fly secrets set BETTER_AUTH_SECRET=... ANTHROPIC_API_KEY=... BETTER_AUTH_BASE_URL=https://sheppakai-mealplanner.fly.dev
   ```
-- The `trustedOrigins` in `auth/index.ts` includes `https://synapse.fly.dev` — update this to match the actual fly.io app URL.
+- The `trustedOrigins` in `auth/index.ts` includes `https://sheppakai-mealplanner.fly.dev` — update this to match the actual fly.io app URL.
 
 ---
 

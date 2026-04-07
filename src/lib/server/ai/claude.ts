@@ -2,8 +2,11 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { MealSuggestion } from '$lib/types';
 import { logger } from '$lib/logger';
 
+import { getEnv } from '../../../env';
+const env = getEnv();
+
 const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  apiKey: env.ANTHROPIC_API_KEY,
 });
 
 const SYSTEM_PROMPT = `You are a home cooking assistant specializing in dinner recipes.
@@ -193,7 +196,10 @@ const variationsTool: Anthropic.Tool = {
                 properties: {
                   name: { type: 'string' },
                   quantity: { type: 'string' },
-                  unit: { type: 'string', description: 'e.g. cups, tbsp, g, pieces' },
+                  unit: {
+                    type: 'string',
+                    description: 'e.g. cups, tbsp, g, pieces',
+                  },
                 },
               },
             },
@@ -218,7 +224,9 @@ interface SuggestVariationsInput {
   variations: MealSuggestion[];
 }
 
-export async function suggestVariations(mealName: string): Promise<MealSuggestion[]> {
+export async function suggestVariations(
+  mealName: string,
+): Promise<MealSuggestion[]> {
   logger.info('Requesting meal variations', { mealName });
 
   const response = await client.messages.create({

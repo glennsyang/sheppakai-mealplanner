@@ -74,7 +74,7 @@
 	onSaveToPlanner={handleSaveToPlanner}
 />
 
-<div class="mx-auto max-w-4xl px-4 py-10 space-y-8">
+<div class="mx-auto max-w-5xl px-4 py-10 space-y-8">
 	<div in:fly={{ y: 20, duration: 300 }}>
 		<h1 class="h2 font-bold">✨ Get Dinner Suggestions</h1>
 		<p class="text-surface-500 mt-1">

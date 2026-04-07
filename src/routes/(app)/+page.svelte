@@ -25,7 +25,7 @@
 		<!-- Feature card: AI suggestions -->
 		<a
 			href="/suggest"
-			class="card preset-filled-primary-500 card-lift sm:col-span-3 flex flex-col justify-between gap-8 p-8 min-h-[220px]"
+			class="card preset-filled-primary-500 card-lift sm:col-span-3 flex flex-col justify-between gap-8 p-8 min-h-55"
 			in:fly={{ y: 24, delay: 80, duration: 500, easing: expoOut }}
 		>
 			<div>
@@ -34,7 +34,7 @@
 					Discover tonight's<br />dinner
 				</h2>
 				<p class="text-primary-100 text-sm mt-3 leading-relaxed font-light">
-					Tell us what's in your pantry — Claude suggests dinners and full recipes.
+					Tell us what's in your pantry — MealPlanner suggests dinners and full recipes.
 				</p>
 			</div>
 			<div class="flex items-center gap-2 text-sm font-medium">

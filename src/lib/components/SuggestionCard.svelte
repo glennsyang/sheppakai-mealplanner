@@ -18,7 +18,7 @@
 <div
 	in:fly={{ y: 24, delay, duration: 500, easing: expoOut }}
 	out:scale={{ duration: 200 }}
-	class="card preset-outlined-surface-300-700 card-lift flex flex-col gap-4 p-6"
+	class="card preset-outlined-surface-300-700 card-lift flex flex-col gap-4 p-6 overflow-hidden"
 	style="animation-delay: {delay}ms"
 >
 	<!-- Header: name + metadata -->
@@ -30,35 +30,38 @@
 		</div>
 	</div>
 
-	<!-- Description -->
-	<p class="text-surface-500 text-sm leading-relaxed font-light">{suggestion.description}</p>
+	<!-- Content -->
+	<div class="flex flex-col gap-4 flex-1">
+		<!-- Description -->
+		<p class="text-surface-500 text-sm leading-relaxed font-light">{suggestion.description}</p>
 
-	<!-- Key ingredients -->
-	<div>
-		<p class="text-xs font-medium uppercase tracking-widest text-surface-400 mb-2">Key ingredients</p>
-		<div class="flex flex-wrap gap-1.5">
-			{#each suggestion.ingredients.slice(0, 5) as ing}
-				<span class="chip preset-tonal-surface text-xs font-light">{ing.name}</span>
-			{/each}
-			{#if suggestion.ingredients.length > 5}
-				<span class="chip preset-outlined-surface-300-700 text-xs font-light">+{suggestion.ingredients.length - 5} more</span>
-			{/if}
+		<!-- Key ingredients -->
+		<div>
+			<p class="text-xs font-medium uppercase tracking-widest text-surface-400 mb-2">Key ingredients</p>
+			<div class="flex flex-wrap gap-1.5">
+				{#each suggestion.ingredients.slice(0, 5) as ing}
+					<span class="chip preset-tonal-surface text-xs font-light">{ing.name}</span>
+				{/each}
+				{#if suggestion.ingredients.length > 5}
+					<span class="chip preset-outlined-surface-300-700 text-xs font-light">+{suggestion.ingredients.length - 5} more</span>
+				{/if}
+			</div>
 		</div>
 	</div>
 
 	<!-- Actions -->
-	<div class="flex gap-2 mt-auto pt-1">
+	<div class="grid grid-cols-2 gap-2 pt-1">
 		<button
 			type="button"
 			onclick={() => onViewRecipe(suggestion)}
-			class="btn preset-outlined-surface-500 flex-1 text-sm"
+			class="btn preset-outlined-surface-500 text-sm min-w-0"
 		>
 			View recipe
 		</button>
 		<button
 			type="button"
 			onclick={() => onSaveToPlanner(suggestion)}
-			class="btn preset-filled-primary-500 flex-1 text-sm"
+			class="btn preset-filled-primary-500 text-sm min-w-0"
 		>
 			Add to planner
 		</button>

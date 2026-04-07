@@ -4,11 +4,14 @@ import { db } from '../db';
 import * as schema from '../db/schema';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 import { getRequestEvent } from '$app/server';
+import { getEnv } from '../../../env';
+
+const env = getEnv();
 
 export const auth = betterAuth({
   appName: 'Meal Planner',
-  secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_BASE_URL,
+  secret: env.BETTER_AUTH_SECRET,
+  baseURL: env.BETTER_AUTH_BASE_URL,
   database: drizzleAdapter(db, {
     provider: 'sqlite',
     schema: {
@@ -26,7 +29,7 @@ export const auth = betterAuth({
     resetPasswordTokenExpiresIn: 60 * 10, // 10 minutes
   },
   advanced: {
-    cookiePrefix: 'synapse_auth_',
+    cookiePrefix: 'mealplanner_auth_',
     useSecureCookies: true,
     ipAddress: {
       // Enable IP address and user agent tracking
@@ -47,16 +50,14 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [
-    'https://synapse.fly.dev',
-    ...(process.env.NODE_ENV === 'development'
-      ? ['http://localhost:5173']
-      : []),
+    'https://sheppakai-mealplanner.fly.dev',
+    ...(env.NODE_ENV === 'development' ? ['http://localhost:5173'] : []),
   ],
   rateLimit: {
     enabled: true,
     window: 60, // 1 minute
     max: 5, // max 5 requests per window per IP
-    storage: process.env.NODE_ENV === 'production' ? 'database' : 'memory',
+    storage: env.NODE_ENV === 'production' ? 'database' : 'memory',
   },
   plugins: [sveltekitCookies(getRequestEvent)], // make sure this is the last plugin in the array
 });
