@@ -23,6 +23,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Pantry — MealPlanner</title>
+</svelte:head>
+
 <div class="mx-auto max-w-2xl px-4 py-10 space-y-8">
 	<div in:fly={{ y: 20, duration: 300 }}>
 		<h1 class="h2 font-bold">My Pantry</h1>

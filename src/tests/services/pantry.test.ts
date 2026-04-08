@@ -8,7 +8,7 @@ vi.mock('../../lib/logger', () => ({
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from '../../lib/server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 
 function makeDb() {
@@ -42,8 +42,8 @@ describe('pantry operations (in-memory SQLite)', () => {
 
 	beforeEach(() => {
 		const now = new Date();
-		// Clear and re-seed user
-		db.delete(schema.pantryItems).where(eq(schema.pantryItems.userId, userId)).run();
+		// Clear all pantry items (shared data model — no per-user filtering)
+		db.delete(schema.pantryItems).run();
 		try {
 			db.insert(schema.user).values({
 				id: userId,
@@ -66,45 +66,40 @@ describe('pantry operations (in-memory SQLite)', () => {
 			createdAt: now, updatedAt: now
 		}).run();
 
-		const items = db.select().from(schema.pantryItems)
-			.where(eq(schema.pantryItems.userId, userId)).all();
+		const items = db.select().from(schema.pantryItems).all();
 		expect(items).toHaveLength(1);
 		expect(items[0].name).toBe('Tomatoes');
 		expect(items[0].quantity).toBe(3);
 	});
 
-	it('deletes a pantry item', () => {
+	it('deletes a pantry item by id regardless of owner', () => {
 		const now = new Date();
 		const id = randomUUID();
+		const otherUserId = 'other-user';
 		db.insert(schema.pantryItems).values({
-			id, userId, name: 'Garlic', quantity: null, unit: null,
+			id, userId: otherUserId, name: 'Garlic', quantity: null, unit: null,
 			createdAt: now, updatedAt: now
 		}).run();
 
-		db.delete(schema.pantryItems)
-			.where(and(eq(schema.pantryItems.id, id), eq(schema.pantryItems.userId, userId)))
-			.run();
+		// Any user can delete any item by id in the shared model
+		db.delete(schema.pantryItems).where(eq(schema.pantryItems.id, id)).run();
 
-		const items = db.select().from(schema.pantryItems)
-			.where(eq(schema.pantryItems.userId, userId)).all();
+		const items = db.select().from(schema.pantryItems).all();
 		expect(items).toHaveLength(0);
 	});
 
-	it('does not delete another user\'s items', () => {
+	it('lists items from all users', () => {
 		const now = new Date();
-		const id = randomUUID();
-		const otherId = 'other-user';
 		db.insert(schema.pantryItems).values({
-			id, userId, name: 'Onion', quantity: null, unit: null,
+			id: randomUUID(), userId, name: 'Onion', quantity: null, unit: null,
+			createdAt: now, updatedAt: now
+		}).run();
+		db.insert(schema.pantryItems).values({
+			id: randomUUID(), userId: 'other-user', name: 'Garlic', quantity: null, unit: null,
 			createdAt: now, updatedAt: now
 		}).run();
 
-		db.delete(schema.pantryItems)
-			.where(and(eq(schema.pantryItems.id, id), eq(schema.pantryItems.userId, otherId)))
-			.run();
-
-		const items = db.select().from(schema.pantryItems)
-			.where(eq(schema.pantryItems.userId, userId)).all();
-		expect(items).toHaveLength(1);
+		const items = db.select().from(schema.pantryItems).all();
+		expect(items).toHaveLength(2);
 	});
 });

@@ -5,10 +5,9 @@ import { suggestFromPantrySchema } from '$lib/schemas/pantry';
 import { listPantryItems } from '$lib/server/services/pantry';
 import type { PageServerLoad, Actions } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const userId = locals.user!.id;
+export const load: PageServerLoad = async () => {
 	const [pantryItems, form] = await Promise.all([
-		listPantryItems(userId),
+		listPantryItems(),
 		superValidate(zod4(suggestFromPantrySchema))
 	]);
 	return { pantryItems, form };

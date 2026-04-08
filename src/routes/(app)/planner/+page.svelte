@@ -134,6 +134,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Weekly Planner — MealPlanner</title>
+</svelte:head>
+
 <!-- Day picker modal for pending suggestion -->
 {#if showDayPicker && pendingSuggestion}
 	<div

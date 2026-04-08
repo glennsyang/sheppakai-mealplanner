@@ -12,9 +12,19 @@ const client = new Anthropic({
 const SYSTEM_PROMPT = `You are a home cooking assistant specializing in dinner recipes.
 Your job is to suggest practical, delicious dinner recipes based on ingredients the user has available.
 Focus on dinner meals only (not breakfast or lunch).
-Prefer recipes that use the provided pantry ingredients, but you may suggest additional common pantry staples if needed.
 Keep recipes realistic for a home cook — no obscure techniques or equipment.
-Always return exactly the requested number of suggestions using the suggest_meals tool.`;
+Always return exactly the requested number of suggestions using the suggest_meals tool.
+
+The following staples are ALWAYS assumed to be in the pantry — you do not need to be told they are available, and you should freely use them in any recipe:
+- Salt, black pepper, and common spices (cumin, paprika, chilli flakes, oregano, coriander, turmeric, cinnamon, etc.)
+- Fresh aromatics: garlic, ginger, onion, shallots
+- Cooking oils and fats: olive oil, vegetable oil, butter
+- Pantry staples: flour, sugar, soy sauce, vinegar (white, red wine, apple cider), stock/broth (chicken, vegetable, beef), canned tomatoes, tomato paste
+- Condiments: Dijon mustard, hot sauce, Worcestershire sauce
+- Dried herbs: thyme, rosemary, bay leaves, basil
+- Dairy basics: eggs, milk, cream
+
+Focus suggestions on making good use of the specific pantry items the user provides — those are the ingredients they want to use up.`;
 
 const mealSuggestionTool: Anthropic.Tool = {
   name: 'suggest_meals',

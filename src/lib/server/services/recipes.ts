@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { recipes } from '../db/schema';
 import type { Recipe, Ingredient, RecipeSource } from '$lib/types';
@@ -21,19 +21,15 @@ function rowToRecipe(row: typeof recipes.$inferSelect): Recipe {
 	};
 }
 
-export async function listRecipes(userId: string): Promise<Recipe[]> {
-	logger.debug('listRecipes', { userId });
-	const rows = await db.select().from(recipes).where(eq(recipes.userId, userId)).all();
+export async function listRecipes(): Promise<Recipe[]> {
+	logger.debug('listRecipes');
+	const rows = await db.select().from(recipes).all();
 	return rows.map(rowToRecipe);
 }
 
-export async function getRecipe(userId: string, recipeId: string): Promise<Recipe | null> {
-	logger.debug('getRecipe', { userId, recipeId });
-	const [row] = await db
-		.select()
-		.from(recipes)
-		.where(and(eq(recipes.id, recipeId), eq(recipes.userId, userId)))
-		.all();
+export async function getRecipe(recipeId: string): Promise<Recipe | null> {
+	logger.debug('getRecipe', { recipeId });
+	const [row] = await db.select().from(recipes).where(eq(recipes.id, recipeId)).all();
 	return row ? rowToRecipe(row) : null;
 }
 
@@ -69,9 +65,7 @@ export async function saveRecipe(
 	return rowToRecipe(row);
 }
 
-export async function deleteRecipe(userId: string, recipeId: string): Promise<void> {
-	logger.debug('deleteRecipe', { userId, recipeId });
-	await db
-		.delete(recipes)
-		.where(and(eq(recipes.id, recipeId), eq(recipes.userId, userId)));
+export async function deleteRecipe(recipeId: string): Promise<void> {
+	logger.debug('deleteRecipe', { recipeId });
+	await db.delete(recipes).where(eq(recipes.id, recipeId));
 }

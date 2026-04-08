@@ -8,6 +8,10 @@
 	const firstName = $derived(data.user?.name?.split(' ')[0] ?? 'there');
 </script>
 
+<svelte:head>
+	<title>Home — MealPlanner</title>
+</svelte:head>
+
 <div class="mx-auto max-w-5xl px-6 py-14 space-y-12">
 	<!-- Greeting -->
 	<section in:fly={{ y: 24, duration: 500, easing: expoOut }}>

@@ -13,12 +13,11 @@ import { logger } from '$lib/logger';
 import type { Actions, PageServerLoad } from './$types';
 import type { Ingredient } from '$lib/types';
 
-export const load: PageServerLoad = async ({ locals, url }) => {
-	const userId = locals.user!.id;
+export const load: PageServerLoad = async ({ url }) => {
 	const weekStartDate = url.searchParams.get('week') ?? getMondayOfCurrentWeek();
 
 	const [entries, addEntryForm, addCustomForm] = await Promise.all([
-		getMealPlanWithEntries(userId, weekStartDate),
+		getMealPlanWithEntries(weekStartDate),
 		superValidate(zod4(addMealPlanEntrySchema)),
 		superValidate(zod4(addCustomMealSchema))
 	]);
@@ -69,7 +68,7 @@ export const actions: Actions = {
 		if (!form.valid) return fail(400, { form });
 
 		try {
-			await removeMealPlanEntry(userId, form.data.entryId);
+			await removeMealPlanEntry(form.data.entryId);
 		} catch (err) {
 			logger.error('Failed to remove meal plan entry', { userId, err });
 			return fail(500, {});

@@ -40,7 +40,10 @@
 			}
 
 			const res = await fetch(`/api/suggest?${params.toString()}`);
-			if (!res.ok) throw new Error('Failed to get suggestions');
+			if (!res.ok) {
+				const body = await res.json().catch(() => ({})) as { message?: string };
+				throw new Error(body.message ?? 'Failed to get suggestions');
+			}
 
 			const data = await res.json() as MealSuggestion[];
 			suggestions = data;
@@ -67,6 +70,10 @@
 		}
 	});
 </script>
+
+<svelte:head>
+	<title>Suggest Dinners — MealPlanner</title>
+</svelte:head>
 
 <RecipeDrawer
 	suggestion={drawerSuggestion}

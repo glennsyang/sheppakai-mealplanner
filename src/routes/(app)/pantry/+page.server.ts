@@ -13,10 +13,9 @@ import {
 import { logger } from '$lib/logger';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
-  const userId = locals.user!.id;
+export const load: PageServerLoad = async () => {
   const [items, addForm] = await Promise.all([
-    listPantryItems(userId),
+    listPantryItems(),
     superValidate(zod4(addPantryItemSchema)),
   ]);
   return { items, addForm };
@@ -49,7 +48,7 @@ export const actions: Actions = {
     if (!form.valid) return fail(400, { removeForm: form });
 
     try {
-      await removePantryItem(userId, form.data.id);
+      await removePantryItem(form.data.id);
     } catch (err) {
       logger.error('Failed to remove pantry item', { userId, err });
       return fail(500, { removeForm: form });

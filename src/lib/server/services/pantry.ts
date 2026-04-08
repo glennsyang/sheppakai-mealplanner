@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { pantryItems } from '../db/schema';
 import type { PantryItem } from '$lib/types';
@@ -17,13 +17,9 @@ function rowToItem(row: typeof pantryItems.$inferSelect): PantryItem {
 	};
 }
 
-export async function listPantryItems(userId: string): Promise<PantryItem[]> {
-	logger.debug('listPantryItems', { userId });
-	const rows = await db
-		.select()
-		.from(pantryItems)
-		.where(eq(pantryItems.userId, userId))
-		.all();
+export async function listPantryItems(): Promise<PantryItem[]> {
+	logger.debug('listPantryItems');
+	const rows = await db.select().from(pantryItems).all();
 	return rows.map(rowToItem);
 }
 
@@ -53,14 +49,12 @@ export async function addPantryItem(
 	return rowToItem(row);
 }
 
-export async function removePantryItem(userId: string, itemId: string): Promise<void> {
-	logger.debug('removePantryItem', { userId, itemId });
-	await db
-		.delete(pantryItems)
-		.where(and(eq(pantryItems.id, itemId), eq(pantryItems.userId, userId)));
+export async function removePantryItem(itemId: string): Promise<void> {
+	logger.debug('removePantryItem', { itemId });
+	await db.delete(pantryItems).where(eq(pantryItems.id, itemId));
 }
 
-export async function clearPantry(userId: string): Promise<void> {
-	logger.debug('clearPantry', { userId });
-	await db.delete(pantryItems).where(eq(pantryItems.userId, userId));
+export async function clearPantry(): Promise<void> {
+	logger.debug('clearPantry');
+	await db.delete(pantryItems);
 }

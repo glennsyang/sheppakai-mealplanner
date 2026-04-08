@@ -31,7 +31,7 @@ export async function getOrCreateMealPlan(userId: string, weekStartDate: string)
 	const [existing] = await db
 		.select()
 		.from(mealPlans)
-		.where(and(eq(mealPlans.userId, userId), eq(mealPlans.weekStartDate, weekStartDate)))
+		.where(eq(mealPlans.weekStartDate, weekStartDate))
 		.all();
 
 	if (existing) return rowToMealPlan(existing);
@@ -56,15 +56,14 @@ export interface MealPlanEntryWithRecipe {
 }
 
 export async function getMealPlanWithEntries(
-	userId: string,
 	weekStartDate: string
 ): Promise<MealPlanEntryWithRecipe[]> {
-	logger.debug('getMealPlanWithEntries', { userId, weekStartDate });
+	logger.debug('getMealPlanWithEntries', { weekStartDate });
 
 	const [plan] = await db
 		.select()
 		.from(mealPlans)
-		.where(and(eq(mealPlans.userId, userId), eq(mealPlans.weekStartDate, weekStartDate)))
+		.where(eq(mealPlans.weekStartDate, weekStartDate))
 		.all();
 
 	if (!plan) return [];
@@ -146,29 +145,8 @@ export async function addMealPlanEntry(
 	return rowToEntry(created);
 }
 
-export async function removeMealPlanEntry(userId: string, entryId: string): Promise<void> {
-	logger.debug('removeMealPlanEntry', { userId, entryId });
-
-	// Verify the entry belongs to the user via mealPlan
-	const [entry] = await db
-		.select()
-		.from(mealPlanEntries)
-		.where(eq(mealPlanEntries.id, entryId))
-		.all();
-
-	if (!entry) return;
-
-	const [plan] = await db
-		.select()
-		.from(mealPlans)
-		.where(and(eq(mealPlans.id, entry.mealPlanId), eq(mealPlans.userId, userId)))
-		.all();
-
-	if (!plan) {
-		logger.warn('Attempted to remove meal plan entry for another user', { userId, entryId });
-		return;
-	}
-
+export async function removeMealPlanEntry(entryId: string): Promise<void> {
+	logger.debug('removeMealPlanEntry', { entryId });
 	await db.delete(mealPlanEntries).where(eq(mealPlanEntries.id, entryId));
 }
 

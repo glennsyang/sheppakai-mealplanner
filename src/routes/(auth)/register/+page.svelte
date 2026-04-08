@@ -14,6 +14,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Create Account — MealPlanner</title>
+</svelte:head>
+
 <div class="flex min-h-dvh">
 	<!-- Brand panel — hidden on mobile, visible lg+ -->
 	<div class="hidden lg:flex lg:flex-col lg:w-5/12 auth-brand-panel p-12 justify-between text-white">
