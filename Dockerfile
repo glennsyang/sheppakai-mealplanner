@@ -1,35 +1,65 @@
-ARG NODE_VERSION=22.21.1
+# syntax = docker/dockerfile:1
+
+# Adjust NODE_VERSION as desired
+ARG NODE_VERSION=22.22.2
 FROM node:${NODE_VERSION}-slim AS base
 
+LABEL fly_launch_runtime="SvelteKit"
+
+# SvelteKit app lives here
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+# Set production environment
+ENV NODE_ENV="production"
 
+
+# Throw-away build stage to reduce size of final image
+FROM base AS build
+
+# Install packages needed to build node modules
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
+
+# Install node modules
+COPY .npmrc package-lock.json package.json ./
+RUN npm ci --include=dev
+
+# Copy application code
 COPY . .
+
+# Build application
 RUN npm run build
 
-# Prune dev dependencies
-RUN npm prune --production
+# Remove development dependencies
+RUN npm prune --omit=dev
 
-# ─── Production image ───────────────────────────────────────────────
-FROM node:${NODE_VERSION}-slim
 
-WORKDIR /app
+# Final stage for app image
+FROM base
 
-# Copy built output and production node_modules
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
+# Install sqlite3 CLI for database backups
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y sqlite3 && \
+    rm -rf /var/lib/apt/lists/*
 
-# Create data directory for SQLite
+# Copy built application
+COPY --from=build /app/build /app/build
+COPY --from=build /app/node_modules /app/node_modules
+COPY --from=build /app/package.json /app
+
+# Copy Drizzle config and migrations for drizzle-kit CLI
+COPY --from=build /app/drizzle.config.ts /app/drizzle.config.ts
+COPY --from=build /app/src/lib/server/db/migrations /app/src/lib/server/db/migrations
+
+# Setup sqlite3 on a separate volume
 RUN mkdir -p /data
 VOLUME /data
 
-ENV NODE_ENV=production
-ENV PORT=3000
+# Copy and set permissions for startup script
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-ENV DATABASE_URL="/data/db.sqlite"
-CMD ["node", "build"]
+ENV DATABASE_URL="file:///data/db.sqlite"
+CMD [ "/app/start.sh" ]

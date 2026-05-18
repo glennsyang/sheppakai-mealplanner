@@ -1,0 +1,139 @@
+name: Database Backup
+
+on:
+  workflow_dispatch: # Allow manual triggers
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  backup:
+    name: Backup SQLite Database
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Get timestamp
+        id: timestamp
+        run: echo "date=$(date -u +'%Y-%m-%d-%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Dump database from Fly.io
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          echo "Creating database backup..."
+          flyctl ssh console -a meal-planner -C "sqlite3 /data/db.sqlite .dump" > backup-${{ steps.timestamp.outputs.date }}.sql
+
+      - name: Compress backup
+        run: |
+          echo "Compressing backup..."
+          gzip -9 backup-${{ steps.timestamp.outputs.date }}.sql
+
+      - name: Validate backup
+        run: |
+          BACKUP_FILE="backup-${{ steps.timestamp.outputs.date }}.sql.gz"
+
+          if [ ! -s "$BACKUP_FILE" ]; then
+            echo "Error: Backup file is empty or does not exist"
+            exit 1
+          fi
+
+          BACKUP_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
+          echo "✓ Backup validation passed"
+          echo "Backup size: $BACKUP_SIZE"
+          echo "backup_size=$BACKUP_SIZE" >> $GITHUB_OUTPUT
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: db-backup-${{ steps.timestamp.outputs.date }}
+          path: backup-${{ steps.timestamp.outputs.date }}.sql.gz
+          retention-days: 30
+          compression-level: 9
+
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const title = '[Automated] Database Backup Failure';
+
+            // Check for existing open issues with same title
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'backup-failure',
+            });
+
+            const duplicateIssue = existingIssues.data.find(issue => issue.title === title);
+
+            if (!duplicateIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: `## Database Backup Failure Report
+                
+                **Workflow**: Database Backup
+                **Run**: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+                
+                **Details**:
+                - Branch: \`${context.ref}\`
+                - Commit: ${context.sha}
+                - Actor: @${context.actor}
+                - Timestamp: ${new Date().toISOString()}
+                
+                The automated database backup failed. Please review the [workflow logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.
+                
+                **Next Steps**:
+                1. Review the logs to identify the cause
+                2. Fix any issues with Fly.io connectivity or database access
+                3. Run the backup manually using workflow_dispatch if needed
+                4. This issue will auto-close when the next backup succeeds`,
+                labels: ['backup-failure', 'automated', 'bug'],
+                assignees: [context.actor]
+              });
+              console.log('Created issue for backup failure');
+            } else {
+              console.log('Duplicate issue already exists, skipping creation');
+            }
+
+      - name: Close backup failure issues on success
+        if: success()
+        uses: actions/github-script@v9
+        with:
+          script: |
+            // Find all open issues with backup-failure label
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'backup-failure',
+            });
+
+            // Close each one
+            for (const issue of issues.data) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed'
+              });
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `✓ Database backup succeeded on ${new Date().toISOString()}\n\nWorkflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nAuto-closing this issue.`
+              });
+              
+              console.log(`Closed issue #${issue.number}: ${issue.title}`);
+            }
+
+            if (issues.data.length === 0) {
+              console.log('No open backup-failure issues to close');
+            }

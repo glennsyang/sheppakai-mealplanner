@@ -1,0 +1,50 @@
+# See https://fly.io/docs/app-guides/continuous-deployment-with-github-actions/
+
+name: Fly Deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    name: Deploy app
+    runs-on: ubuntu-latest
+    concurrency: deploy-group # optional: ensure only one action runs at a time
+    steps:
+      - uses: actions/checkout@v6
+
+      # Install dependencies
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22.22.2'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Run security audit
+      - name: Run npm audit
+        run: npm audit --production --audit-level=high
+
+      - name: Setup environment for type checking
+        run: cp .env.example .env
+
+      # Run linting
+      - name: Run Ox lint
+        run: npm run lint
+
+      # Run type checking
+      - name: Run Svelte check
+        run: npm run check
+
+      # Run tests
+      - name: Run tests
+        run: npm run test
+
+      # Deploy only if all checks pass
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Fly.io
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

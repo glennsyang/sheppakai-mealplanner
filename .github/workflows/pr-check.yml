@@ -1,0 +1,57 @@
+name: PR Checks
+
+on:
+  pull_request:
+
+jobs:
+  checks:
+    name: Format, Lint, Test
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.22.2'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Run security audit
+      - name: Run npm audit
+        run: npm audit --production --audit-level=high
+
+      # Run formatting
+      - name: Run Ox format
+        run: npm run fmt
+
+      - name: Ensure no formatting changes
+        run: git diff --exit-code
+
+      # Run linting
+      - name: Run Ox lint
+        run: npm run lint:github
+
+      # Run type checking
+      - name: Run Svelte check
+        run: npm run check
+
+      # Run tests
+      - name: Run tests
+        run: npm run test:ci
+
+      # Generate coverage report
+      - name: Report Coverage
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: './coverage/coverage-summary.json'
+          json-final-path: './coverage/coverage-final.json'
