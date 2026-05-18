@@ -1,5 +1,11 @@
 {
   "permissions": {
-    "allow": ["Bash(python3:*)", "Bash(npm run:*)", "Bash(npm:*)", "Bash(npx drizzle-kit:*)"]
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(npm run:*)",
+      "Bash(npm:*)",
+      "Bash(npx drizzle-kit:*)",
+      "Bash(grep -E \"^-.*\\\\.\\(json|ts|js|html\\)$|^d\")"
+    ]
   }
 }
