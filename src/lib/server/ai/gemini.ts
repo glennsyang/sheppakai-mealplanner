@@ -1,9 +1,12 @@
-import { GEMINI_API_KEY } from '$env/static/private';
 import { logger } from '$lib/logger';
 import type { MealSuggestion } from '$lib/types';
 import { GoogleGenAI, Type } from '@google/genai';
 
-const client = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+import { getEnv } from '../../../env';
+
+const env = getEnv();
+
+const client = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
 
 const MODEL = 'gemini-3-flash-preview';
 

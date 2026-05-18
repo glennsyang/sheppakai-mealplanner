@@ -4,7 +4,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 
 import { getEnv } from '../../../env';
-import { db } from '../db';
+import { getDb } from '../db';
 import * as schema from '../db/schema';
 
 const env = getEnv();
@@ -13,7 +13,7 @@ export const auth = betterAuth({
   appName: 'Meal Planner',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_BASE_URL,
-  database: drizzleAdapter(db, {
+  database: drizzleAdapter(getDb(), {
     provider: 'sqlite',
     schema: {
       user: schema.user,

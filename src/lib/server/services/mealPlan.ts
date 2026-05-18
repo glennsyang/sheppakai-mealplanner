@@ -1,10 +1,10 @@
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 import { logger } from '$lib/logger';
 import type { MealPlan, MealPlanEntry, Recipe, Ingredient, RecipeSource } from '$lib/types';
 import { eq, and } from 'drizzle-orm';
 
-import { db } from '../db';
+import { getDb } from '../db';
 import { mealPlans, mealPlanEntries, recipes } from '../db/schema';
 
 function rowToMealPlan(row: typeof mealPlans.$inferSelect): MealPlan {
@@ -33,6 +33,7 @@ export async function getOrCreateMealPlan(
   weekStartDate: string,
 ): Promise<MealPlan> {
   logger.debug('getOrCreateMealPlan', { userId, weekStartDate });
+  const db = getDb();
   const [existing] = await db
     .select()
     .from(mealPlans)
@@ -65,6 +66,7 @@ export async function getMealPlanWithEntries(
 ): Promise<MealPlanEntryWithRecipe[]> {
   logger.debug('getMealPlanWithEntries', { weekStartDate });
 
+  const db = getDb();
   const [plan] = await db
     .select()
     .from(mealPlans)
@@ -118,6 +120,7 @@ export async function addMealPlanEntry(
   const plan = await getOrCreateMealPlan(userId, weekStartDate);
 
   // Remove existing entry for this day if present
+  const db = getDb();
   await db
     .delete(mealPlanEntries)
     .where(and(eq(mealPlanEntries.mealPlanId, plan.id), eq(mealPlanEntries.dayOfWeek, dayOfWeek)));
@@ -139,6 +142,7 @@ export async function addMealPlanEntry(
 
 export async function removeMealPlanEntry(entryId: string): Promise<void> {
   logger.debug('removeMealPlanEntry', { entryId });
+  const db = getDb();
   await db.delete(mealPlanEntries).where(eq(mealPlanEntries.id, entryId));
 }
 

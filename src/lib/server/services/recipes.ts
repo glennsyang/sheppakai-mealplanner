@@ -1,10 +1,10 @@
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 import { logger } from '$lib/logger';
 import type { Recipe, Ingredient, RecipeSource } from '$lib/types';
 import { eq } from 'drizzle-orm';
 
-import { db } from '../db';
+import { getDb } from '../db';
 import { recipes } from '../db/schema';
 
 function rowToRecipe(row: typeof recipes.$inferSelect): Recipe {
@@ -25,12 +25,14 @@ function rowToRecipe(row: typeof recipes.$inferSelect): Recipe {
 
 export async function listRecipes(): Promise<Recipe[]> {
   logger.debug('listRecipes');
+  const db = getDb();
   const rows = await db.select().from(recipes).all();
   return rows.map(rowToRecipe);
 }
 
 export async function getRecipe(recipeId: string): Promise<Recipe | null> {
   logger.debug('getRecipe', { recipeId });
+  const db = getDb();
   const [row] = await db.select().from(recipes).where(eq(recipes.id, recipeId)).all();
   return row ? rowToRecipe(row) : null;
 }
@@ -50,6 +52,7 @@ export async function saveRecipe(
   logger.debug('saveRecipe', { userId, name: data.name });
   const now = new Date();
   const id = randomUUID();
+  const db = getDb();
   await db.insert(recipes).values({
     id,
     userId,
@@ -69,5 +72,6 @@ export async function saveRecipe(
 
 export async function deleteRecipe(recipeId: string): Promise<void> {
   logger.debug('deleteRecipe', { recipeId });
+  const db = getDb();
   await db.delete(recipes).where(eq(recipes.id, recipeId));
 }
