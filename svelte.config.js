@@ -25,13 +25,13 @@ const config = {
       },
     },
     experimental: {
-			tracing: {
-				server: true
-			},
-			instrumentation: {
-				server: true
-			}
-		}
+      tracing: {
+        server: true,
+      },
+      instrumentation: {
+        server: true,
+      },
+    },
   },
 };
 
