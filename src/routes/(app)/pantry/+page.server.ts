@@ -1,16 +1,10 @@
+import { logger } from '$lib/logger';
+import { addPantryItemSchema, removePantryItemSchema } from '$lib/schemas/pantry';
+import { listPantryItems, addPantryItem, removePantryItem } from '$lib/server/services/pantry';
+import { fail } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
-import { fail } from '@sveltejs/kit';
-import {
-  addPantryItemSchema,
-  removePantryItemSchema,
-} from '$lib/schemas/pantry';
-import {
-  listPantryItems,
-  addPantryItem,
-  removePantryItem,
-} from '$lib/server/services/pantry';
-import { logger } from '$lib/logger';
+
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -28,12 +22,7 @@ export const actions: Actions = {
     if (!form.valid) return fail(400, { addForm: form });
 
     try {
-      await addPantryItem(
-        userId,
-        form.data.name,
-        form.data.quantity,
-        form.data.unit,
-      );
+      await addPantryItem(userId, form.data.name, form.data.quantity, form.data.unit);
     } catch (err) {
       logger.error('Failed to add pantry item', { userId, err });
       return fail(500, { addForm: form });

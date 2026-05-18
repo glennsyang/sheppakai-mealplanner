@@ -1,10 +1,11 @@
+import { getRequestEvent } from '$app/server';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { sveltekitCookies } from 'better-auth/svelte-kit';
+
+import { getEnv } from '../../../env';
 import { db } from '../db';
 import * as schema from '../db/schema';
-import { sveltekitCookies } from 'better-auth/svelte-kit';
-import { getRequestEvent } from '$app/server';
-import { getEnv } from '../../../env';
 
 const env = getEnv();
 

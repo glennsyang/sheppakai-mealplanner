@@ -1,7 +1,7 @@
-import { GoogleGenAI, Type } from '@google/genai';
-import type { MealSuggestion } from '$lib/types';
-import { logger } from '$lib/logger';
 import { GEMINI_API_KEY } from '$env/static/private';
+import { logger } from '$lib/logger';
+import type { MealSuggestion } from '$lib/types';
+import { GoogleGenAI, Type } from '@google/genai';
 
 const client = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
@@ -31,14 +31,7 @@ const responseSchema = {
       type: Type.ARRAY,
       items: {
         type: Type.OBJECT,
-        required: [
-          'name',
-          'description',
-          'ingredients',
-          'steps',
-          'prepTimeMinutes',
-          'servings',
-        ],
+        required: ['name', 'description', 'ingredients', 'steps', 'prepTimeMinutes', 'servings'],
         properties: {
           name: { type: Type.STRING, description: 'Name of the dinner dish' },
           description: {
@@ -100,9 +93,7 @@ async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
   throw new Error('Unreachable');
 }
 
-export async function suggestMeals(
-  pantryItems: string[],
-): Promise<MealSuggestion[]> {
+export async function suggestMeals(pantryItems: string[]): Promise<MealSuggestion[]> {
   logger.info('Requesting meal suggestions from Gemini', {
     itemCount: pantryItems.length,
   });
@@ -138,9 +129,7 @@ export async function suggestMeals(
   return parsed.suggestions;
 }
 
-export async function* suggestMealsStream(
-  pantryItems: string[],
-): AsyncGenerator<MealSuggestion> {
+export async function* suggestMealsStream(pantryItems: string[]): AsyncGenerator<MealSuggestion> {
   logger.info('Starting streaming meal suggestions from Gemini', {
     itemCount: pantryItems.length,
   });

@@ -1,9 +1,10 @@
-import { superValidate, message } from 'sveltekit-superforms';
-import { zod4 } from 'sveltekit-superforms/adapters';
-import { isRedirect, redirect } from '@sveltejs/kit';
+import { logger } from '$lib/logger';
 import { loginSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
-import { logger } from '$lib/logger';
+import { isRedirect, redirect } from '@sveltejs/kit';
+import { superValidate, message } from 'sveltekit-superforms';
+import { zod4 } from 'sveltekit-superforms/adapters';
+
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ request }) => {

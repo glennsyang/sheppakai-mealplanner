@@ -1,6 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
-import type { MealSuggestion } from '$lib/types';
 import { logger } from '$lib/logger';
+import type { MealSuggestion } from '$lib/types';
+import Anthropic from '@anthropic-ai/sdk';
 
 import { getEnv } from '../../../env';
 const env = getEnv();
@@ -40,14 +40,7 @@ const mealSuggestionTool: Anthropic.Tool = {
         maxItems: 5,
         items: {
           type: 'object',
-          required: [
-            'name',
-            'description',
-            'ingredients',
-            'steps',
-            'prepTimeMinutes',
-            'servings',
-          ],
+          required: ['name', 'description', 'ingredients', 'steps', 'prepTimeMinutes', 'servings'],
           properties: {
             name: { type: 'string', description: 'Name of the dinner dish' },
             description: {
@@ -90,9 +83,7 @@ interface SuggestMealsInput {
   suggestions: MealSuggestion[];
 }
 
-export async function suggestMeals(
-  pantryItems: string[],
-): Promise<MealSuggestion[]> {
+export async function suggestMeals(pantryItems: string[]): Promise<MealSuggestion[]> {
   logger.info('Requesting meal suggestions', { itemCount: pantryItems.length });
 
   const response = await client.messages.create({
@@ -126,9 +117,7 @@ export async function suggestMeals(
   return input.suggestions;
 }
 
-export async function* suggestMealsStream(
-  pantryItems: string[],
-): AsyncGenerator<MealSuggestion> {
+export async function* suggestMealsStream(pantryItems: string[]): AsyncGenerator<MealSuggestion> {
   logger.info('Starting streaming meal suggestions', {
     itemCount: pantryItems.length,
   });
@@ -150,10 +139,7 @@ export async function* suggestMealsStream(
   let jsonBuffer = '';
 
   for await (const event of stream) {
-    if (
-      event.type === 'content_block_delta' &&
-      event.delta.type === 'input_json_delta'
-    ) {
+    if (event.type === 'content_block_delta' && event.delta.type === 'input_json_delta') {
       jsonBuffer += event.delta.partial_json;
     }
   }
@@ -184,14 +170,7 @@ const variationsTool: Anthropic.Tool = {
         maxItems: 3,
         items: {
           type: 'object',
-          required: [
-            'name',
-            'description',
-            'ingredients',
-            'steps',
-            'prepTimeMinutes',
-            'servings',
-          ],
+          required: ['name', 'description', 'ingredients', 'steps', 'prepTimeMinutes', 'servings'],
           properties: {
             name: { type: 'string', description: 'Name of the variation' },
             description: {
@@ -234,9 +213,7 @@ interface SuggestVariationsInput {
   variations: MealSuggestion[];
 }
 
-export async function suggestVariations(
-  mealName: string,
-): Promise<MealSuggestion[]> {
+export async function suggestVariations(mealName: string): Promise<MealSuggestion[]> {
   logger.info('Requesting meal variations', { mealName });
 
   const response = await client.messages.create({

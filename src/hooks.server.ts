@@ -1,15 +1,11 @@
+import { building, dev } from '$app/environment';
+import { logger } from '$lib/logger';
+import { auth } from '$lib/server/auth';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 
-import { building, dev } from '$app/environment';
-import { auth } from '$lib/server/auth';
-import { logger } from '$lib/logger';
-
 export const handle: Handle = async ({ event, resolve }) => {
-  if (
-    dev &&
-    event.url.pathname === '/.well-known/appspecific/com.chrome.devtools.json'
-  ) {
+  if (dev && event.url.pathname === '/.well-known/appspecific/com.chrome.devtools.json') {
     return new Response(undefined, { status: 404 });
   }
 
@@ -30,10 +26,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set(
-    'Permissions-Policy',
-    'geolocation=(), camera=(), microphone=()',
-  );
+  response.headers.set('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
 
   // HSTS only in production
   if (!dev) {
@@ -66,12 +59,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 /**
  * Global error handler with structured logging and stack trace capture
  */
-export const handleError: HandleServerError = ({
-  error,
-  event,
-  status,
-  message,
-}) => {
+export const handleError: HandleServerError = ({ error, event, status, message }) => {
   const userId = event.locals.user?.id || 'anonymous';
 
   // Log error with sanitized context

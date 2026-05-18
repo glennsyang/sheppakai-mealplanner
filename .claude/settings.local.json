@@ -1,10 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(python3:*)",
-      "Bash(npm run:*)",
-      "Bash(npm:*)",
-      "Bash(npx drizzle-kit:*)"
-    ]
+    "allow": ["Bash(python3:*)", "Bash(npm run:*)", "Bash(npm:*)", "Bash(npx drizzle-kit:*)"]
   }
 }

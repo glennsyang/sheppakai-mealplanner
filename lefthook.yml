@@ -1,0 +1,14 @@
+# lefthook.yml
+
+pre-commit:
+  commands:
+    # We delegate the pre-commit tasks to lint-staged
+    lint-staged:
+      run: npx lint-staged
+
+pre-push:
+  commands:
+    # Runs Vitest before the code leaves your machine
+    # 'run' ensures it doesn't stay in watch mode
+    test:
+      run: npx vitest run

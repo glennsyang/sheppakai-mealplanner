@@ -1,8 +1,9 @@
+import { logger } from '$lib/logger';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import * as schema from './schema';
-import { logger } from '$lib/logger';
+
 import { getEnv } from '../../../env';
+import * as schema from './schema';
 
 const env = getEnv();
 const dbPath = env.DATABASE_URL;

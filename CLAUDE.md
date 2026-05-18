@@ -217,12 +217,9 @@ throw redirect(302, '/destination');
 
 ```ts
 // svelte-ignore state_referenced_locally — superForm is intentionally initialized once from props
-const { form, errors, constraints, enhance, message, submitting } = superForm(
-  data.form,
-  {
-    validators: zod4Client(mySchema),
-  },
-);
+const { form, errors, constraints, enhance, message, submitting } = superForm(data.form, {
+  validators: zod4Client(mySchema),
+});
 ```
 
 **Email inputs** — do NOT spread `$constraints.email`. Apply individually:

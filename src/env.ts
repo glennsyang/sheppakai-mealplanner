@@ -1,8 +1,6 @@
-import { z } from 'zod';
-
 import { building, dev } from '$app/environment';
-
 import { env } from '$env/dynamic/private';
+import { z } from 'zod';
 
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
@@ -13,9 +11,7 @@ const envSchema = z.object({
   RESEND_NEW_USER_ADDRESS: z.email(),
   ANTHROPIC_API_KEY: z.string().min(1),
   GEMINI_API_KEY: z.string().min(1),
-  NODE_ENV: z
-    .enum(['development', 'production', 'test'])
-    .default('development'),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 
 // Only validate in production (skip during build and dev)
@@ -65,21 +61,16 @@ export function getEnv() {
     databaseUrl = ENV_FALLBACKS.DATABASE_URL;
   } else if (dev) {
     // In development: allow fallbacks for convenience
-    betterAuthSecret =
-      env.BETTER_AUTH_SECRET || ENV_FALLBACKS.BETTER_AUTH_SECRET;
+    betterAuthSecret = env.BETTER_AUTH_SECRET || ENV_FALLBACKS.BETTER_AUTH_SECRET;
     databaseUrl = env.DATABASE_URL || ENV_FALLBACKS.DATABASE_URL;
   } else {
     // In production: require real values, no fallbacks
     if (!env.BETTER_AUTH_SECRET) {
-      console.error(
-        '❌ CRITICAL: BETTER_AUTH_SECRET is required in production',
-      );
+      console.error('❌ CRITICAL: BETTER_AUTH_SECRET is required in production');
       process.exit(1);
     }
     if (env.BETTER_AUTH_SECRET === ENV_FALLBACKS.BETTER_AUTH_SECRET) {
-      console.error(
-        '❌ CRITICAL: Cannot use dummy BETTER_AUTH_SECRET in production',
-      );
+      console.error('❌ CRITICAL: Cannot use dummy BETTER_AUTH_SECRET in production');
       process.exit(1);
     }
     if (!env.DATABASE_URL) {
@@ -99,17 +90,12 @@ export function getEnv() {
     DATABASE_URL: databaseUrl,
     BETTER_AUTH_SECRET: betterAuthSecret,
     // Less critical vars can use fallbacks in any environment
-    BETTER_AUTH_BASE_URL:
-      env.BETTER_AUTH_BASE_URL || ENV_FALLBACKS.BETTER_AUTH_BASE_URL,
+    BETTER_AUTH_BASE_URL: env.BETTER_AUTH_BASE_URL || ENV_FALLBACKS.BETTER_AUTH_BASE_URL,
     RESEND_API_KEY: env.RESEND_API_KEY || ENV_FALLBACKS.RESEND_API_KEY,
-    RESEND_FROM_ADDRESS:
-      env.RESEND_FROM_ADDRESS || ENV_FALLBACKS.RESEND_FROM_ADDRESS,
-    RESEND_NEW_USER_ADDRESS:
-      env.RESEND_NEW_USER_ADDRESS || ENV_FALLBACKS.RESEND_NEW_USER_ADDRESS,
+    RESEND_FROM_ADDRESS: env.RESEND_FROM_ADDRESS || ENV_FALLBACKS.RESEND_FROM_ADDRESS,
+    RESEND_NEW_USER_ADDRESS: env.RESEND_NEW_USER_ADDRESS || ENV_FALLBACKS.RESEND_NEW_USER_ADDRESS,
     ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY || ENV_FALLBACKS.ANTHROPIC_API_KEY,
     GEMINI_API_KEY: env.GEMINI_API_KEY || ENV_FALLBACKS.GEMINI_API_KEY,
-    NODE_ENV:
-      (env.NODE_ENV as 'development' | 'production' | 'test') ||
-      ENV_FALLBACKS.NODE_ENV,
+    NODE_ENV: (env.NODE_ENV as 'development' | 'production' | 'test') || ENV_FALLBACKS.NODE_ENV,
   };
 }

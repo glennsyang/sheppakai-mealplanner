@@ -7,130 +7,146 @@
 
 /* ── Font theme tokens (Tailwind v4 utilities: font-sans, font-serif) ────── */
 @theme {
-	--font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
-	--font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
 }
 
 /* ── Base typography ─────────────────────────────────────────────────────── */
 html {
-	font-family: var(--font-sans);
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	font-feature-settings: 'kern' 1, 'liga' 1;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings:
+    'kern' 1,
+    'liga' 1;
 }
 
 /* Apply Playfair Display to all heading levels and Skeleton heading utilities */
-h1, h2, h3,
-.h1, .h2, .h3 {
-	font-family: var(--font-serif);
-	letter-spacing: -0.025em;
-	text-wrap: balance;
+h1,
+h2,
+h3,
+.h1,
+.h2,
+.h3 {
+  font-family: var(--font-serif);
+  letter-spacing: -0.025em;
+  text-wrap: balance;
 }
 
 /* Pretty wrapping for body copy */
 p {
-	text-wrap: pretty;
+  text-wrap: pretty;
 }
 
 /* ── Custom easing properties ────────────────────────────────────────────── */
 :root {
-	--ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
-	--ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-	--ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ── Keyframes ───────────────────────────────────────────────────────────── */
 @keyframes reveal-up {
-	from {
-		opacity: 0;
-		transform: translateY(20px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes reveal-scale {
-	from {
-		opacity: 0;
-		transform: translateY(16px) scale(0.97);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0) scale(1);
-	}
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes shimmer {
-	0% { background-position: -200% 0; }
-	100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* ── Animation utilities ─────────────────────────────────────────────────── */
 .animate-reveal {
-	animation: reveal-up 0.55s var(--ease-expo) both;
+  animation: reveal-up 0.55s var(--ease-expo) both;
 }
 
 .animate-card-enter {
-	animation: reveal-scale 0.5s var(--ease-expo) both;
+  animation: reveal-scale 0.5s var(--ease-expo) both;
 }
 
 .animate-shimmer {
-	background: linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.15) 50%, transparent 100%);
-	background-size: 200% 100%;
-	animation: shimmer 1.5s infinite;
+  background: linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.15) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
 /* Respect reduced motion — disable all custom animations and transitions */
 @media (prefers-reduced-motion: reduce) {
-	.animate-reveal,
-	.animate-card-enter {
-		animation: none;
-		opacity: 1;
-		transform: none;
-	}
-	.animate-shimmer {
-		animation: none;
-		background: oklch(1 0 0 / 0.08);
-	}
-	.card-lift {
-		transition: none;
-	}
+  .animate-reveal,
+  .animate-card-enter {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .animate-shimmer {
+    animation: none;
+    background: oklch(1 0 0 / 0.08);
+  }
+  .card-lift {
+    transition: none;
+  }
 }
 
 /* ── Navigation active indicator ─────────────────────────────────────────── */
 .nav-active {
-	position: relative;
-	font-weight: 500;
+  position: relative;
+  font-weight: 500;
 }
 
 .nav-active::after {
-	content: '';
-	position: absolute;
-	bottom: -3px;
-	left: 0;
-	right: 0;
-	height: 1.5px;
-	background: currentColor;
-	border-radius: 1px;
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: currentColor;
+  border-radius: 1px;
 }
 
 /* ── Auth split panel ────────────────────────────────────────────────────── */
 .auth-brand-panel {
-	background: linear-gradient(160deg, oklch(from var(--color-primary-600) l c h / 1) 0%, oklch(from var(--color-primary-800) l c h / 1) 100%);
+  background: linear-gradient(
+    160deg,
+    oklch(from var(--color-primary-600) l c h / 1) 0%,
+    oklch(from var(--color-primary-800) l c h / 1) 100%
+  );
 }
 
 /* ── Card hover lift ─────────────────────────────────────────────────────── */
 .card-lift {
-	transition: transform 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth);
+  transition:
+    transform 0.2s var(--ease-smooth),
+    box-shadow 0.2s var(--ease-smooth);
 }
 
 .card-lift:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 8px 24px oklch(0 0 0 / 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px oklch(0 0 0 / 0.12);
 }
 
 .dark .card-lift:hover {
-	box-shadow: 0 8px 24px oklch(0 0 0 / 0.4);
+  box-shadow: 0 8px 24px oklch(0 0 0 / 0.4);
 }

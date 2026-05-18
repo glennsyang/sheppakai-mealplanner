@@ -17,7 +17,30 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.test
+.env.test
 
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Vitest
+coverage/
+
+# SQLite
+data/
+*.sqlite
+*.db
+*.db-shm
+*.db-wal
+*.sqlite-shm
+*.sqlite-wal
+
+# docs
+docs/security-review
+docs/structure-review
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+# Fallow
+.fallow/
