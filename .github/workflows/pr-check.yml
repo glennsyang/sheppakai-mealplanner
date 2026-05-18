@@ -29,9 +29,11 @@ jobs:
       - name: Run npm audit
         run: npm audit --production --audit-level=high
 
+      - run: npm install --frozen-lockfile
+      
       # Run formatting
       - name: Run Ox format
-        run: npm run fmt
+        run: npm run fmt:check
 
       - name: Ensure no formatting changes
         run: git diff --exit-code
