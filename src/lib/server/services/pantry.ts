@@ -1,10 +1,10 @@
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 import { logger } from '$lib/logger';
 import type { PantryItem } from '$lib/types';
 import { eq } from 'drizzle-orm';
 
-import { db } from '../db';
+import { getDb } from '../db';
 import { pantryItems } from '../db/schema';
 
 function rowToItem(row: typeof pantryItems.$inferSelect): PantryItem {
@@ -21,6 +21,7 @@ function rowToItem(row: typeof pantryItems.$inferSelect): PantryItem {
 
 export async function listPantryItems(): Promise<PantryItem[]> {
   logger.debug('listPantryItems');
+  const db = getDb();
   const rows = await db.select().from(pantryItems).all();
   return rows.map(rowToItem);
 }
@@ -34,6 +35,7 @@ export async function addPantryItem(
   logger.debug('addPantryItem', { userId, name });
   const now = new Date();
   const id = randomUUID();
+  const db = getDb();
   await db.insert(pantryItems).values({
     id,
     userId,
@@ -49,10 +51,12 @@ export async function addPantryItem(
 
 export async function removePantryItem(itemId: string): Promise<void> {
   logger.debug('removePantryItem', { itemId });
+  const db = getDb();
   await db.delete(pantryItems).where(eq(pantryItems.id, itemId));
 }
 
 export async function clearPantry(): Promise<void> {
   logger.debug('clearPantry');
+  const db = getDb();
   await db.delete(pantryItems);
 }

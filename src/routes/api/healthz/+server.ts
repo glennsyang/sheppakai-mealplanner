@@ -1,5 +1,5 @@
 import { logger } from '$lib/logger';
-import { db } from '$lib/server/db';
+import { getDb } from '$lib/server/db';
 
 import type { RequestHandler } from './$types';
 
@@ -7,6 +7,7 @@ export const GET: RequestHandler = async () => {
   try {
     // 1. Verify the DB is responsive
     // This ensures the Fly.io volume is mounted and the file is readable
+    const db = getDb();
     db.run('SELECT 1');
 
     return new Response('OK', { status: 200, headers: { 'Cache-Control': 'no-cache' } });
