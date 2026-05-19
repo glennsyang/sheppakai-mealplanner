@@ -1,74 +1,74 @@
 {
-  "name": "sheppakai-mealplanner",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview",
-    "prepare": "svelte-kit sync || echo ''",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check",
-    "lint": "oxlint .",
-    "lint:fix": "oxlint --fix .",
-    "lint:github": "oxlint --format=github",
-    "test": "npm run test:unit -- --run",
-    "test:unit": "vitest",
-    "test:ci": "npm run test:unit -- --run && npm run test:coverage",
-    "test:coverage": "vitest run --coverage",
-    "check:all": "npm run fmt && npm run lint && npm run test",
-    "update-deps": "npm outdated || npm update",
-    "db:push": "drizzle-kit push",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.96.0",
-    "@flydotio/dockerfile": "^0.7.10",
-    "@formkit/auto-animate": "^0.9.0",
-    "@google/genai": "^2.4.0",
-    "@sentry/sveltekit": "^10.53.1",
-    "better-auth": "^1.6.11",
-    "better-sqlite3": "^12.10.0",
-    "drizzle-orm": "^0.45.2"
-  },
-  "devDependencies": {
-    "@skeletonlabs/skeleton": "^4.12.1",
-    "@skeletonlabs/skeleton-svelte": "^4.12.1",
-    "@sveltejs/adapter-node": "^5.5.4",
-    "@sveltejs/kit": "^2.50.2",
-    "@sveltejs/vite-plugin-svelte": "^7.1.2",
-    "@tailwindcss/vite": "^4.2.1",
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "^25.9.0",
-    "@vitest/coverage-v8": "^4.1.6",
-    "drizzle-kit": "^0.31.10",
-    "lefthook": "^2.1.6",
-    "lint-staged": "^17.0.5",
-    "oxfmt": "^0.50.0",
-    "oxlint": "^1.65.0",
-    "svelte": "^5.55.8",
-    "svelte-check": "^4.4.2",
-    "sveltekit-superforms": "^2.30.1",
-    "tailwindcss": "^4.2.1",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.13",
-    "vitest": "^4.1.6",
-    "zod": "^4.4.3"
-  },
-  "lint-staged": {
-    "*.(js|ts|svelte)": [
-      "oxfmt --no-error-on-unmatched-pattern",
-      "npm run lint"
-    ],
-    "*.svelte": [
-      "svelte-check --threshold error"
-    ],
-    "*.(json|md|css|html|svg)": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
-  }
+	"name": "sheppakai-mealplanner",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"fmt": "oxfmt",
+		"fmt:check": "oxfmt --check",
+		"lint": "oxlint .",
+		"lint:fix": "oxlint --fix .",
+		"lint:github": "oxlint --format=github",
+		"test": "npm run test:unit -- --run",
+		"test:unit": "vitest",
+		"test:ci": "npm run test:unit -- --run && npm run test:coverage",
+		"test:coverage": "vitest run --coverage",
+		"check:all": "npm run fmt && npm run lint && npm run test",
+		"update-deps": "npm outdated || npm update",
+		"db:push": "drizzle-kit push",
+		"db:migrate": "drizzle-kit migrate",
+		"db:studio": "drizzle-kit studio"
+	},
+	"dependencies": {
+		"@anthropic-ai/sdk": "^0.97.1",
+		"@flydotio/dockerfile": "^0.7.10",
+		"@formkit/auto-animate": "^0.9.0",
+		"@google/genai": "^2.4.0",
+		"@sentry/sveltekit": "^10.53.1",
+		"better-auth": "^1.6.11",
+		"better-sqlite3": "^12.10.0",
+		"drizzle-orm": "^0.45.2"
+	},
+	"devDependencies": {
+		"@skeletonlabs/skeleton": "^4.12.1",
+		"@skeletonlabs/skeleton-svelte": "^4.12.1",
+		"@sveltejs/adapter-node": "^5.5.4",
+		"@sveltejs/kit": "^2.50.2",
+		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"@tailwindcss/vite": "^4.2.1",
+		"@types/better-sqlite3": "^7.6.13",
+		"@types/node": "^25.9.1",
+		"@vitest/coverage-v8": "^4.1.6",
+		"drizzle-kit": "^0.31.10",
+		"lefthook": "^2.1.6",
+		"lint-staged": "^17.0.5",
+		"oxfmt": "^0.51.0",
+		"oxlint": "^1.66.0",
+		"svelte": "^5.55.8",
+		"svelte-check": "^4.4.2",
+		"sveltekit-superforms": "^2.30.1",
+		"tailwindcss": "^4.2.1",
+		"typescript": "^5.9.3",
+		"vite": "^8.0.13",
+		"vitest": "^4.1.6",
+		"zod": "^4.4.3"
+	},
+	"lint-staged": {
+		"*.(js|ts|svelte)": [
+			"oxfmt --no-error-on-unmatched-pattern",
+			"npm run lint"
+		],
+		"*.svelte": [
+			"svelte-check --threshold error"
+		],
+		"*.(json|md|css|html|svg)": [
+			"oxfmt --no-error-on-unmatched-pattern"
+		]
+	}
 }

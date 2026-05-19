@@ -1,17 +1,17 @@
 import { z } from 'zod';
 
 export const addPantryItemSchema = z.object({
-  name: z.string().min(1, 'Item name is required').max(100, 'Item name too long'),
-  quantity: z.coerce.number().positive().nullable().optional(),
-  unit: z.string().max(30, 'Unit too long').nullable().optional(),
+	name: z.string().min(1, 'Item name is required').max(100, 'Item name too long'),
+	quantity: z.coerce.number().positive().nullable().optional(),
+	unit: z.string().max(30, 'Unit too long').nullable().optional()
 });
 
 export const removePantryItemSchema = z.object({
-  id: z.string().min(1, 'Item ID is required'),
+	id: z.string().min(1, 'Item ID is required')
 });
 
 export const suggestFromPantrySchema = z.object({
-  items: z.array(z.string().min(1)).min(1, 'Select at least one item'),
+	items: z.array(z.string().min(1)).min(1, 'Select at least one item')
 });
 
 export type AddPantryItemSchema = typeof addPantryItemSchema;

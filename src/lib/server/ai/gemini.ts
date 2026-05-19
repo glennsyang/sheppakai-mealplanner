@@ -27,137 +27,137 @@ The following staples are ALWAYS assumed to be in the pantry — you do not need
 Focus suggestions on making good use of the specific pantry items the user provides — those are the ingredients they want to use up.`;
 
 const responseSchema = {
-  type: Type.OBJECT,
-  required: ['suggestions'],
-  properties: {
-    suggestions: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        required: ['name', 'description', 'ingredients', 'steps', 'prepTimeMinutes', 'servings'],
-        properties: {
-          name: { type: Type.STRING, description: 'Name of the dinner dish' },
-          description: {
-            type: Type.STRING,
-            description: 'Short appetizing description (1-2 sentences)',
-          },
-          ingredients: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              required: ['name', 'quantity', 'unit'],
-              properties: {
-                name: { type: Type.STRING },
-                quantity: { type: Type.STRING },
-                unit: {
-                  type: Type.STRING,
-                  description: 'e.g. cups, tbsp, g, pieces',
-                },
-              },
-            },
-          },
-          steps: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description: 'Step-by-step cooking instructions',
-          },
-          prepTimeMinutes: {
-            type: Type.NUMBER,
-            description: 'Total prep + cook time in minutes',
-          },
-          servings: { type: Type.NUMBER, description: 'Number of servings' },
-        },
-      },
-    },
-  },
+	type: Type.OBJECT,
+	required: ['suggestions'],
+	properties: {
+		suggestions: {
+			type: Type.ARRAY,
+			items: {
+				type: Type.OBJECT,
+				required: ['name', 'description', 'ingredients', 'steps', 'prepTimeMinutes', 'servings'],
+				properties: {
+					name: { type: Type.STRING, description: 'Name of the dinner dish' },
+					description: {
+						type: Type.STRING,
+						description: 'Short appetizing description (1-2 sentences)'
+					},
+					ingredients: {
+						type: Type.ARRAY,
+						items: {
+							type: Type.OBJECT,
+							required: ['name', 'quantity', 'unit'],
+							properties: {
+								name: { type: Type.STRING },
+								quantity: { type: Type.STRING },
+								unit: {
+									type: Type.STRING,
+									description: 'e.g. cups, tbsp, g, pieces'
+								}
+							}
+						}
+					},
+					steps: {
+						type: Type.ARRAY,
+						items: { type: Type.STRING },
+						description: 'Step-by-step cooking instructions'
+					},
+					prepTimeMinutes: {
+						type: Type.NUMBER,
+						description: 'Total prep + cook time in minutes'
+					},
+					servings: { type: Type.NUMBER, description: 'Number of servings' }
+				}
+			}
+		}
+	}
 };
 
 interface SuggestMealsOutput {
-  suggestions: MealSuggestion[];
+	suggestions: MealSuggestion[];
 }
 
 async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      return await fn();
-    } catch (err) {
-      const status = (err as { status?: number }).status;
-      if (status === 429 && attempt < maxAttempts) {
-        const delayMs = 1000 * 2 ** attempt;
-        logger.warn('Gemini rate limited, retrying', { attempt, delayMs });
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-        continue;
-      }
-      const message = (err as { message?: string }).message;
-      logger.error('Gemini API error', { status, message, attempt });
-      throw err;
-    }
-  }
-  throw new Error('Unreachable');
+	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+		try {
+			return await fn();
+		} catch (err) {
+			const status = (err as { status?: number }).status;
+			if (status === 429 && attempt < maxAttempts) {
+				const delayMs = 1000 * 2 ** attempt;
+				logger.warn('Gemini rate limited, retrying', { attempt, delayMs });
+				await new Promise((resolve) => setTimeout(resolve, delayMs));
+				continue;
+			}
+			const message = (err as { message?: string }).message;
+			logger.error('Gemini API error', { status, message, attempt });
+			throw err;
+		}
+	}
+	throw new Error('Unreachable');
 }
 
 export async function suggestMeals(pantryItems: string[]): Promise<MealSuggestion[]> {
-  logger.info('Requesting meal suggestions from Gemini', {
-    itemCount: pantryItems.length,
-  });
+	logger.info('Requesting meal suggestions from Gemini', {
+		itemCount: pantryItems.length
+	});
 
-  const response = await withRetry(() =>
-    client.models.generateContent({
-      model: MODEL,
-      contents: `Please suggest 3-5 dinner recipes I can make with these pantry items: ${pantryItems.join(', ')}.`,
-      config: {
-        systemInstruction: SYSTEM_PROMPT,
-        responseMimeType: 'application/json',
-        responseSchema,
-      },
-    }),
-  );
+	const response = await withRetry(() =>
+		client.models.generateContent({
+			model: MODEL,
+			contents: `Please suggest 3-5 dinner recipes I can make with these pantry items: ${pantryItems.join(', ')}.`,
+			config: {
+				systemInstruction: SYSTEM_PROMPT,
+				responseMimeType: 'application/json',
+				responseSchema
+			}
+		})
+	);
 
-  const text = response.text;
-  if (!text) {
-    logger.error('Gemini returned empty response');
-    throw new Error('No meal suggestions returned from AI');
-  }
+	const text = response.text;
+	if (!text) {
+		logger.error('Gemini returned empty response');
+		throw new Error('No meal suggestions returned from AI');
+	}
 
-  const parsed = JSON.parse(text) as SuggestMealsOutput;
+	const parsed = JSON.parse(text) as SuggestMealsOutput;
 
-  if (!Array.isArray(parsed.suggestions)) {
-    logger.error('Gemini response missing suggestions array', { parsed });
-    throw new Error('Invalid response structure from AI');
-  }
+	if (!Array.isArray(parsed.suggestions)) {
+		logger.error('Gemini response missing suggestions array', { parsed });
+		throw new Error('Invalid response structure from AI');
+	}
 
-  logger.info('Meal suggestions received', {
-    count: parsed.suggestions.length,
-  });
-  return parsed.suggestions;
+	logger.info('Meal suggestions received', {
+		count: parsed.suggestions.length
+	});
+	return parsed.suggestions;
 }
 
 export async function* suggestMealsStream(pantryItems: string[]): AsyncGenerator<MealSuggestion> {
-  logger.info('Starting streaming meal suggestions from Gemini', {
-    itemCount: pantryItems.length,
-  });
+	logger.info('Starting streaming meal suggestions from Gemini', {
+		itemCount: pantryItems.length
+	});
 
-  const stream = await withRetry(() =>
-    client.models.generateContentStream({
-      model: MODEL,
-      contents: `Please suggest 3-5 dinner recipes I can make with these pantry items: ${pantryItems.join(', ')}.`,
-      config: {
-        systemInstruction: SYSTEM_PROMPT,
-        responseMimeType: 'application/json',
-        responseSchema,
-      },
-    }),
-  );
+	const stream = await withRetry(() =>
+		client.models.generateContentStream({
+			model: MODEL,
+			contents: `Please suggest 3-5 dinner recipes I can make with these pantry items: ${pantryItems.join(', ')}.`,
+			config: {
+				systemInstruction: SYSTEM_PROMPT,
+				responseMimeType: 'application/json',
+				responseSchema
+			}
+		})
+	);
 
-  let jsonBuffer = '';
-  for await (const chunk of stream) {
-    jsonBuffer += chunk.text ?? '';
-  }
+	let jsonBuffer = '';
+	for await (const chunk of stream) {
+		jsonBuffer += chunk.text ?? '';
+	}
 
-  const parsed = JSON.parse(jsonBuffer) as SuggestMealsOutput;
-  for (const suggestion of parsed.suggestions) {
-    yield suggestion;
-  }
+	const parsed = JSON.parse(jsonBuffer) as SuggestMealsOutput;
+	for (const suggestion of parsed.suggestions) {
+		yield suggestion;
+	}
 }
 
 export { type MealSuggestion, type Ingredient } from '$lib/types';
