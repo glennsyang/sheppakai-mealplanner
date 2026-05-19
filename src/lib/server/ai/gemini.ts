@@ -160,4 +160,4 @@ export async function* suggestMealsStream(pantryItems: string[]): AsyncGenerator
 	}
 }
 
-export { type MealSuggestion, type Ingredient } from '$lib/types';
+export { type MealSuggestion } from '$lib/types';

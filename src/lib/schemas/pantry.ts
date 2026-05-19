@@ -13,7 +13,3 @@ export const removePantryItemSchema = z.object({
 export const suggestFromPantrySchema = z.object({
 	items: z.array(z.string().min(1)).min(1, 'Select at least one item')
 });
-
-export type AddPantryItemSchema = typeof addPantryItemSchema;
-export type RemovePantryItemSchema = typeof removePantryItemSchema;
-export type SuggestFromPantrySchema = typeof suggestFromPantrySchema;

@@ -54,9 +54,3 @@ export async function removePantryItem(itemId: string): Promise<void> {
 	const db = getDb();
 	await db.delete(pantryItems).where(eq(pantryItems.id, itemId));
 }
-
-export async function clearPantry(): Promise<void> {
-	logger.debug('clearPantry');
-	const db = getDb();
-	await db.delete(pantryItems);
-}

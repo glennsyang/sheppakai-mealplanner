@@ -23,20 +23,6 @@ function rowToRecipe(row: typeof recipes.$inferSelect): Recipe {
 	};
 }
 
-export async function listRecipes(): Promise<Recipe[]> {
-	logger.debug('listRecipes');
-	const db = getDb();
-	const rows = db.select().from(recipes).all();
-	return rows.map(rowToRecipe);
-}
-
-export async function getRecipe(recipeId: string): Promise<Recipe | null> {
-	logger.debug('getRecipe', { recipeId });
-	const db = getDb();
-	const [row] = db.select().from(recipes).where(eq(recipes.id, recipeId)).all();
-	return row ? rowToRecipe(row) : null;
-}
-
 export async function saveRecipe(
 	userId: string,
 	data: {
@@ -68,10 +54,4 @@ export async function saveRecipe(
 	});
 	const [row] = db.select().from(recipes).where(eq(recipes.id, id)).all();
 	return rowToRecipe(row);
-}
-
-export async function deleteRecipe(recipeId: string): Promise<void> {
-	logger.debug('deleteRecipe', { recipeId });
-	const db = getDb();
-	await db.delete(recipes).where(eq(recipes.id, recipeId));
 }

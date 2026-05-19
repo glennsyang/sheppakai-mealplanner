@@ -247,4 +247,4 @@ export async function suggestVariations(mealName: string): Promise<MealSuggestio
 	return input.variations;
 }
 
-export { type MealSuggestion, type Ingredient } from '$lib/types';
+export { type MealSuggestion } from '$lib/types';

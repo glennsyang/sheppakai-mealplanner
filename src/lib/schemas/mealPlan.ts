@@ -24,8 +24,3 @@ export const addCustomMealSchema = z.object({
 	weekStartDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format'),
 	dayOfWeek: z.coerce.number().int().min(0).max(6)
 });
-
-export type AddMealPlanEntrySchema = typeof addMealPlanEntrySchema;
-export type RemoveMealPlanEntrySchema = typeof removeMealPlanEntrySchema;
-export type SaveRecipeSchema = typeof saveRecipeSchema;
-export type AddCustomMealSchema = typeof addCustomMealSchema;

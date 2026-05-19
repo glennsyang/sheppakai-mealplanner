@@ -56,15 +56,6 @@ export interface MealPlanEntry {
 	updatedAt: Date;
 }
 
-export interface Suggestion {
-	id: string;
-	userId: string;
-	pantrySnapshotJson: string[];
-	resultsJson: MealSuggestion[];
-	createdAt: Date;
-	updatedAt: Date;
-}
-
 export const DAY_LABELS = [
 	'Monday',
 	'Tuesday',
@@ -74,4 +65,3 @@ export const DAY_LABELS = [
 	'Saturday',
 	'Sunday'
 ] as const;
-export type DayLabel = (typeof DAY_LABELS)[number];
