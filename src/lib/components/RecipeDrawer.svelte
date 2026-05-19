@@ -1,130 +1,130 @@
 <script lang="ts">
-  import type { MealSuggestion } from '$lib/types';
-  import { expoOut, linear } from 'svelte/easing';
-  import { fly } from 'svelte/transition';
+	import type { MealSuggestion } from '$lib/types';
+	import { expoOut, linear } from 'svelte/easing';
+	import { fly } from 'svelte/transition';
 
-  interface Props {
-    suggestion: MealSuggestion | null;
-    onClose: () => void;
-    onSaveToPlanner: (suggestion: MealSuggestion) => void;
-  }
+	interface Props {
+		suggestion: MealSuggestion | null;
+		onClose: () => void;
+		onSaveToPlanner: (suggestion: MealSuggestion) => void;
+	}
 
-  let { suggestion, onClose, onSaveToPlanner }: Props = $props();
+	let { suggestion, onClose, onSaveToPlanner }: Props = $props();
 
-  const isOpen = $derived(suggestion !== null);
+	const isOpen = $derived(suggestion !== null);
 
-  function handleBackdropClick(e: MouseEvent) {
-    if (e.target === e.currentTarget) onClose();
-  }
+	function handleBackdropClick(e: MouseEvent) {
+		if (e.target === e.currentTarget) onClose();
+	}
 
-  function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') onClose();
-  }
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') onClose();
+	}
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
 {#if isOpen && suggestion}
-  <!-- Backdrop -->
-  <div
-    role="button"
-    tabindex="-1"
-    class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-    onclick={handleBackdropClick}
-    onkeydown={() => {}}
-    in:fly={{ duration: 250, easing: linear }}
-    out:fly={{ duration: 200, easing: linear }}
-  ></div>
+	<!-- Backdrop -->
+	<div
+		role="button"
+		tabindex="-1"
+		class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+		onclick={handleBackdropClick}
+		onkeydown={() => {}}
+		in:fly={{ duration: 250, easing: linear }}
+		out:fly={{ duration: 200, easing: linear }}
+	></div>
 
-  <!-- Drawer panel -->
-  <div
-    class="bg-surface-50-950 fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col shadow-2xl"
-    in:fly={{ x: 420, duration: 380, easing: expoOut }}
-    out:fly={{ x: 420, duration: 250, easing: expoOut }}
-  >
-    <!-- Header -->
-    <div class="border-surface-200-800 flex items-start justify-between gap-4 border-b px-6 py-5">
-      <div class="space-y-1.5">
-        <h2 class="font-serif text-2xl leading-snug font-semibold tracking-tight">
-          {suggestion.name}
-        </h2>
-        <div class="text-surface-400 flex gap-4 text-xs font-medium">
-          <span>{suggestion.prepTimeMinutes} min prep</span>
-          <span>·</span>
-          <span>{suggestion.servings} servings</span>
-        </div>
-      </div>
-      <button
-        type="button"
-        onclick={onClose}
-        class="text-surface-400 hover:bg-surface-100-900 hover:text-surface-950-50 mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full transition-colors"
-        aria-label="Close recipe"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.75"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg
-        >
-      </button>
-    </div>
+	<!-- Drawer panel -->
+	<div
+		class="bg-surface-50-950 fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col shadow-2xl"
+		in:fly={{ x: 420, duration: 380, easing: expoOut }}
+		out:fly={{ x: 420, duration: 250, easing: expoOut }}
+	>
+		<!-- Header -->
+		<div class="border-surface-200-800 flex items-start justify-between gap-4 border-b px-6 py-5">
+			<div class="space-y-1.5">
+				<h2 class="font-serif text-2xl leading-snug font-semibold tracking-tight">
+					{suggestion.name}
+				</h2>
+				<div class="text-surface-400 flex gap-4 text-xs font-medium">
+					<span>{suggestion.prepTimeMinutes} min prep</span>
+					<span>·</span>
+					<span>{suggestion.servings} servings</span>
+				</div>
+			</div>
+			<button
+				type="button"
+				onclick={onClose}
+				class="text-surface-400 hover:bg-surface-100-900 hover:text-surface-950-50 mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full transition-colors"
+				aria-label="Close recipe"
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.75"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg
+				>
+			</button>
+		</div>
 
-    <!-- Scrollable content -->
-    <div class="flex-1 space-y-8 overflow-y-auto px-6 py-6">
-      <!-- Description -->
-      <p class="text-surface-600-400 text-sm leading-relaxed font-light italic">
-        {suggestion.description}
-      </p>
+		<!-- Scrollable content -->
+		<div class="flex-1 space-y-8 overflow-y-auto px-6 py-6">
+			<!-- Description -->
+			<p class="text-surface-600-400 text-sm leading-relaxed font-light italic">
+				{suggestion.description}
+			</p>
 
-      <!-- Ingredients -->
-      <section>
-        <h3 class="mb-4 font-serif text-lg font-semibold tracking-tight">Ingredients</h3>
-        <ul class="space-y-2">
-          {#each suggestion.ingredients as ing}
-            <li class="flex items-baseline gap-3 text-sm">
-              <span class="bg-primary-500 mt-2 h-1 w-1 shrink-0 rounded-full"></span>
-              <span class="text-surface-950-50 font-medium tabular-nums"
-                >{ing.quantity} {ing.unit}</span
-              >
-              <span class="text-surface-500 font-light">{ing.name}</span>
-            </li>
-          {/each}
-        </ul>
-      </section>
+			<!-- Ingredients -->
+			<section>
+				<h3 class="mb-4 font-serif text-lg font-semibold tracking-tight">Ingredients</h3>
+				<ul class="space-y-2">
+					{#each suggestion.ingredients as ing}
+						<li class="flex items-baseline gap-3 text-sm">
+							<span class="bg-primary-500 mt-2 h-1 w-1 shrink-0 rounded-full"></span>
+							<span class="text-surface-950-50 font-medium tabular-nums"
+								>{ing.quantity} {ing.unit}</span
+							>
+							<span class="text-surface-500 font-light">{ing.name}</span>
+						</li>
+					{/each}
+				</ul>
+			</section>
 
-      <!-- Steps -->
-      <section>
-        <h3 class="mb-4 font-serif text-lg font-semibold tracking-tight">Instructions</h3>
-        <ol class="space-y-4">
-          {#each suggestion.steps as step, i}
-            <li class="flex gap-4 text-sm">
-              <span
-                class="border-primary-500 text-primary-500 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold tabular-nums"
-              >
-                {i + 1}
-              </span>
-              <span class="text-surface-700-300 pt-0.5 leading-relaxed font-light">{step}</span>
-            </li>
-          {/each}
-        </ol>
-      </section>
-    </div>
+			<!-- Steps -->
+			<section>
+				<h3 class="mb-4 font-serif text-lg font-semibold tracking-tight">Instructions</h3>
+				<ol class="space-y-4">
+					{#each suggestion.steps as step, i}
+						<li class="flex gap-4 text-sm">
+							<span
+								class="border-primary-500 text-primary-500 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold tabular-nums"
+							>
+								{i + 1}
+							</span>
+							<span class="text-surface-700-300 pt-0.5 leading-relaxed font-light">{step}</span>
+						</li>
+					{/each}
+				</ol>
+			</section>
+		</div>
 
-    <!-- Footer -->
-    <div class="border-surface-200-800 border-t px-6 py-4">
-      <button
-        type="button"
-        onclick={() => onSaveToPlanner(suggestion!)}
-        class="btn preset-filled-primary-500 w-full"
-      >
-        Add to weekly planner
-      </button>
-    </div>
-  </div>
+		<!-- Footer -->
+		<div class="border-surface-200-800 border-t px-6 py-4">
+			<button
+				type="button"
+				onclick={() => onSaveToPlanner(suggestion!)}
+				class="btn preset-filled-primary-500 w-full"
+			>
+				Add to weekly planner
+			</button>
+		</div>
+	</div>
 {/if}
