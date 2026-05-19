@@ -22,7 +22,7 @@ function rowToItem(row: typeof pantryItems.$inferSelect): PantryItem {
 export async function listPantryItems(): Promise<PantryItem[]> {
 	logger.debug('listPantryItems');
 	const db = getDb();
-	const rows = await db.select().from(pantryItems).all();
+	const rows = db.select().from(pantryItems).all();
 	return rows.map(rowToItem);
 }
 
@@ -45,7 +45,7 @@ export async function addPantryItem(
 		createdAt: now,
 		updatedAt: now
 	});
-	const [row] = await db.select().from(pantryItems).where(eq(pantryItems.id, id)).all();
+	const [row] = db.select().from(pantryItems).where(eq(pantryItems.id, id)).all();
 	return rowToItem(row);
 }
 

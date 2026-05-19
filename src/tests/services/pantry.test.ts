@@ -2,10 +2,15 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 vi.mock('../../lib/server/db/index', () => ({ db: {} }));
 vi.mock('../../lib/logger', () => ({
-	logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }
+	logger: {
+		debug: vi.fn<() => void>(),
+		info: vi.fn<() => void>(),
+		warn: vi.fn<() => void>(),
+		error: vi.fn<() => void>()
+	}
 }));
 
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 import Database from 'better-sqlite3';
 import { eq } from 'drizzle-orm';

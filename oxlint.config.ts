@@ -1,11 +1,12 @@
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({
-	plugins: ['unicorn', 'typescript', 'oxc'],
-	categories: { correctness: 'warn' },
+	categories: { correctness: 'error', perf: 'off', style: 'off', suspicious: 'off' },
 	env: {
 		browser: true,
-		node: true
+		node: true,
+		svelte: true,
+		vitest: true
 	},
 	ignorePatterns: [
 		'**/node_modules',
@@ -19,6 +20,11 @@ export default defineConfig({
 		'!**/.env.test',
 		'**/*.db'
 	],
+	options: {
+		typeAware: true,
+		typeCheck: true
+	},
+	plugins: ['eslint', 'typescript', 'oxc', 'vitest', 'unicorn'],
 	rules: {
 		'no-unused-vars': [
 			'error',

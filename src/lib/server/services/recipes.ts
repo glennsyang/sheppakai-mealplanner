@@ -26,14 +26,14 @@ function rowToRecipe(row: typeof recipes.$inferSelect): Recipe {
 export async function listRecipes(): Promise<Recipe[]> {
 	logger.debug('listRecipes');
 	const db = getDb();
-	const rows = await db.select().from(recipes).all();
+	const rows = db.select().from(recipes).all();
 	return rows.map(rowToRecipe);
 }
 
 export async function getRecipe(recipeId: string): Promise<Recipe | null> {
 	logger.debug('getRecipe', { recipeId });
 	const db = getDb();
-	const [row] = await db.select().from(recipes).where(eq(recipes.id, recipeId)).all();
+	const [row] = db.select().from(recipes).where(eq(recipes.id, recipeId)).all();
 	return row ? rowToRecipe(row) : null;
 }
 
@@ -66,7 +66,7 @@ export async function saveRecipe(
 		createdAt: now,
 		updatedAt: now
 	});
-	const [row] = await db.select().from(recipes).where(eq(recipes.id, id)).all();
+	const [row] = db.select().from(recipes).where(eq(recipes.id, id)).all();
 	return rowToRecipe(row);
 }
 

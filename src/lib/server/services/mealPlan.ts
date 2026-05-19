@@ -34,7 +34,7 @@ export async function getOrCreateMealPlan(
 ): Promise<MealPlan> {
 	logger.debug('getOrCreateMealPlan', { userId, weekStartDate });
 	const db = getDb();
-	const [existing] = await db
+	const [existing] = db
 		.select()
 		.from(mealPlans)
 		.where(eq(mealPlans.weekStartDate, weekStartDate))
@@ -52,7 +52,7 @@ export async function getOrCreateMealPlan(
 		updatedAt: now
 	});
 
-	const [created] = await db.select().from(mealPlans).where(eq(mealPlans.id, id)).all();
+	const [created] = db.select().from(mealPlans).where(eq(mealPlans.id, id)).all();
 	return rowToMealPlan(created);
 }
 
@@ -67,7 +67,7 @@ export async function getMealPlanWithEntries(
 	logger.debug('getMealPlanWithEntries', { weekStartDate });
 
 	const db = getDb();
-	const [plan] = await db
+	const [plan] = db
 		.select()
 		.from(mealPlans)
 		.where(eq(mealPlans.weekStartDate, weekStartDate))
@@ -75,7 +75,7 @@ export async function getMealPlanWithEntries(
 
 	if (!plan) return [];
 
-	const entries = await db
+	const entries = db
 		.select()
 		.from(mealPlanEntries)
 		.where(eq(mealPlanEntries.mealPlanId, plan.id))
@@ -84,7 +84,7 @@ export async function getMealPlanWithEntries(
 	const result: MealPlanEntryWithRecipe[] = [];
 
 	for (const entry of entries) {
-		const [recipe] = await db.select().from(recipes).where(eq(recipes.id, entry.recipeId)).all();
+		const [recipe] = db.select().from(recipes).where(eq(recipes.id, entry.recipeId)).all();
 
 		if (recipe) {
 			result.push({
@@ -136,7 +136,7 @@ export async function addMealPlanEntry(
 		updatedAt: now
 	});
 
-	const [created] = await db.select().from(mealPlanEntries).where(eq(mealPlanEntries.id, id)).all();
+	const [created] = db.select().from(mealPlanEntries).where(eq(mealPlanEntries.id, id)).all();
 	return rowToEntry(created);
 }
 
