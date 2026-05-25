@@ -26,7 +26,7 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"dependencies": {
-		"@anthropic-ai/sdk": "^0.97.1",
+		"@anthropic-ai/sdk": "^0.98.0",
 		"@flydotio/dockerfile": "^0.7.10",
 		"@formkit/auto-animate": "^0.9.0",
 		"@google/genai": "^2.4.0",
