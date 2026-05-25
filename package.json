@@ -40,7 +40,7 @@
 		"@skeletonlabs/skeleton": "^4.12.1",
 		"@skeletonlabs/skeleton-svelte": "^4.12.1",
 		"@sveltejs/adapter-node": "^5.5.4",
-		"@sveltejs/kit": "^2.50.2",
+		"@sveltejs/kit": "^2.61.1",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
 		"@tailwindcss/vite": "^4.2.1",
 		"@types/better-sqlite3": "^7.6.13",
