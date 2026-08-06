@@ -19,24 +19,22 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22.22.2'
+          node-version: '22.22.3'
           cache: npm
+
+      - name: Upgrade npm
+        run: npm install -g npm@11
 
       - name: Install dependencies
         run: npm ci
 
       # Run security audit
       - name: Run npm audit
-        run: npm audit --production --audit-level=high
-
-      - run: npm install --frozen-lockfile
+        run: npm audit --omit=dev --audit-level=high
 
       # Run formatting
       - name: Run Ox format
         run: npm run fmt:check
-
-      - name: Ensure no formatting changes
-        run: git diff --exit-code
 
       # Run linting
       - name: Run Ox lint
