@@ -1,19 +1,18 @@
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
+import { DATABASE_URL, NODE_ENV } from '$app/env/private';
 import { logger } from '$lib/logger';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 
-import { getEnv } from '../../../env';
 import * as schema from './schema';
 
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 export function getDb() {
 	if (!_db) {
-		const env = getEnv();
-		const dbUrl = env.DATABASE_URL;
+		const dbUrl = DATABASE_URL;
 
 		// Extract file path from DATABASE_URL (remove 'file://' prefix if present)
 		const dbPath = dbUrl.replace(/^file:\/\//, '');
@@ -25,7 +24,8 @@ export function getDb() {
 		const connection = new Database(dbPath);
 		// Enable WAL mode for better concurrency
 		connection.pragma('journal_mode = WAL');
-		_db = drizzle(connection, { schema, logger: true });
+		const enableQueryLogging = NODE_ENV !== 'production';
+		_db = drizzle(connection, { schema, logger: enableQueryLogging });
 
 		logger.info('Database connected', { path: dbPath });
 	}

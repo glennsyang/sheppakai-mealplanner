@@ -1,8 +1,14 @@
 import { building, dev } from '$app/environment';
-import { logger } from '$lib/logger';
 import { auth } from '$lib/server/auth';
-import type { Handle, HandleServerError } from '@sveltejs/kit';
+import * as Sentry from '@sentry/sveltekit';
+import type { Handle } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
+
+Sentry.init({
+	dsn: 'https://9488e2141b5fc14a91a545a6425e0422@o4510809399492608.ingest.us.sentry.io/4511412699725824',
+	tracesSampleRate: 1.0,
+	enableLogs: true
+});
 
 export const handle: Handle = async ({ event, resolve }) => {
 	if (dev && event.url.pathname === '/.well-known/appspecific/com.chrome.devtools.json') {
@@ -45,17 +51,4 @@ export const handle: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-/**
- * Global error handler with structured logging and stack trace capture
- */
-export const handleError: HandleServerError = ({ error, event, status, message }) => {
-	const userId = event.locals.user?.id || 'anonymous';
-
-	// Log error with sanitized context
-	logger.error('Unhandled server error', { error, userId, status, message });
-
-	// Return safe error message to client (hide internals in production)
-	return {
-		message: dev ? message : 'An unexpected error occurred'
-	};
-};
+export const handleError = Sentry.handleErrorWithSentry();

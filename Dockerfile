@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:1
 
 # Adjust NODE_VERSION as desired
-ARG NODE_VERSION=22.22.2
+ARG NODE_VERSION=22.22.3
 FROM node:${NODE_VERSION}-slim AS base
 
 LABEL fly_launch_runtime="SvelteKit"
@@ -22,7 +22,7 @@ RUN apt-get update -qq && \
 
 # Install node modules
 COPY .npmrc package-lock.json package.json ./
-RUN npm ci --include=dev
+RUN npm install -g npm@11 && npm ci --include=dev
 
 # Copy application code
 COPY . .

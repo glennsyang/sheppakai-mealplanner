@@ -1,12 +1,10 @@
+import { ANTHROPIC_API_KEY } from '$app/env/private';
 import { logger } from '$lib/logger';
 import type { MealSuggestion } from '$lib/types';
 import Anthropic from '@anthropic-ai/sdk';
 
-import { getEnv } from '../../../env';
-const env = getEnv();
-
 const client = new Anthropic({
-	apiKey: env.ANTHROPIC_API_KEY
+	apiKey: ANTHROPIC_API_KEY
 });
 
 const SYSTEM_PROMPT = `You are a home cooking assistant specializing in dinner recipes.
