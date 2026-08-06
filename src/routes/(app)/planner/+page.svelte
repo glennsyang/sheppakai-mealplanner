@@ -295,8 +295,7 @@
 						bind:value={$customForm.notes}
 						class="textarea"
 						rows="3"
-						placeholder="Any notes or description…"
-					></textarea>
+						placeholder="Any notes or description…"></textarea>
 				</label>
 
 				<div class="flex gap-2">
