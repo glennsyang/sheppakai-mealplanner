@@ -129,32 +129,4 @@ export async function suggestMeals(pantryItems: string[]): Promise<MealSuggestio
 	return parsed.suggestions;
 }
 
-export async function* suggestMealsStream(pantryItems: string[]): AsyncGenerator<MealSuggestion> {
-	logger.info('Starting streaming meal suggestions from Gemini', {
-		itemCount: pantryItems.length
-	});
-
-	const stream = await withRetry(() =>
-		client.models.generateContentStream({
-			model: MODEL,
-			contents: `Please suggest 3-5 dinner recipes I can make with these pantry items: ${pantryItems.join(', ')}.`,
-			config: {
-				systemInstruction: SYSTEM_PROMPT,
-				responseMimeType: 'application/json',
-				responseSchema
-			}
-		})
-	);
-
-	let jsonBuffer = '';
-	for await (const chunk of stream) {
-		jsonBuffer += chunk.text ?? '';
-	}
-
-	const parsed = JSON.parse(jsonBuffer) as SuggestMealsOutput;
-	for (const suggestion of parsed.suggestions) {
-		yield suggestion;
-	}
-}
-
 export { type MealSuggestion } from '$lib/types';

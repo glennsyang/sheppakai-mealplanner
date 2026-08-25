@@ -22,13 +22,12 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ url }) => {
 	const weekStartDate = url.searchParams.get('week') ?? getMondayOfCurrentWeek();
 
-	const [entries, addEntryForm, addCustomForm] = await Promise.all([
+	const [entries, addCustomForm] = await Promise.all([
 		getMealPlanWithEntries(weekStartDate),
-		superValidate(zod4(addMealPlanEntrySchema)),
 		superValidate(zod4(addCustomMealSchema))
 	]);
 
-	return { entries, weekStartDate, addEntryForm, addCustomForm };
+	return { entries, weekStartDate, addCustomForm };
 };
 
 export const actions: Actions = {

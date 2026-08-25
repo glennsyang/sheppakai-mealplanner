@@ -12,9 +12,13 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"fmt": "oxfmt",
 		"fmt:check": "oxfmt --check",
-		"lint": "oxlint",
+		"lint": "oxlint && npm run lint:static",
 		"lint:fix": "oxlint --fix",
+		"lint:static": "npm run check:dead-exports && npm run check:redirect-throws && npm run check:no-explicit-any && npm run check:dead-code",
 		"lint:github": "oxlint --format=github",
+		"check:dead-exports": "node scripts/check-dead-exports.mjs",
+		"check:redirect-throws": "node scripts/check-redirect-throws.mjs",
+		"check:no-explicit-any": "node scripts/check-no-explicit-any.mjs",
 		"check:dead-code": "fallow dead-code --format human",
 		"check:all": "npm run fmt && npm run lint && npm run test",
 		"test": "npm run test:unit -- --run",
@@ -48,6 +52,7 @@
 		"@vitest/coverage-v8": "^4.1.11",
 		"drizzle-kit": "^0.31.10",
 		"fallow": "^3.18.0",
+		"knip": "^6.32.2",
 		"lefthook": "^2.1.6",
 		"lint-staged": "^17.0.5",
 		"oxfmt": "^0.65.0",
@@ -61,17 +66,5 @@
 		"vite": "^8.2.2",
 		"vitest": "^4.1.11",
 		"zod": "^4.4.3"
-	},
-	"lint-staged": {
-		"*.(js|ts|svelte)": [
-			"oxfmt --no-error-on-unmatched-pattern",
-			"npm run lint"
-		],
-		"*.svelte": [
-			"svelte-check --threshold error"
-		],
-		"*.(json|md|css|html|svg)": [
-			"oxfmt --no-error-on-unmatched-pattern"
-		]
 	}
 }

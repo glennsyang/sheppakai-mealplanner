@@ -7,11 +7,8 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async () => {
-	const [pantryItems, form] = await Promise.all([
-		listPantryItems(),
-		superValidate(zod4(suggestFromPantrySchema))
-	]);
-	return { pantryItems, form };
+	const pantryItems = await listPantryItems();
+	return { pantryItems };
 };
 
 export const actions: Actions = {
