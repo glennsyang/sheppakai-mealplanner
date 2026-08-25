@@ -118,7 +118,11 @@ if (!fs.existsSync(srcDir)) {
 	process.exit(2);
 }
 
-const files = collectServerFiles(srcDir);
+const explicitFiles = process.argv.slice(2);
+const files =
+	explicitFiles.length > 0
+		? explicitFiles.filter((f) => targetServerFileRegex.test(f))
+		: collectServerFiles(srcDir);
 const issues = [];
 
 for (const filePath of files) {

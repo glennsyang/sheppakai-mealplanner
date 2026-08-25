@@ -33,7 +33,8 @@ export default defineConfig({
 				varsIgnorePattern: '^_'
 			}
 		],
-		'no-unused-expressions': 'error'
+		'no-unused-expressions': 'error',
+		'typescript/no-explicit-any': 'error'
 	},
 	overrides: [
 		{
