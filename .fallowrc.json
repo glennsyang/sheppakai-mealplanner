@@ -5,7 +5,11 @@
 	"ignoreDependencies": [
 		"@flydotio/dockerfile",
 		"@skeletonlabs/skeleton-svelte",
-		"@tailwindcss/vite"
+		"@sveltejs/kit",
+		"@tailwindcss/vite",
+		"svelte",
+		"sveltekit-superforms",
+		"zod"
 	],
 	"rules": {
 		"unresolved-imports": "error",
