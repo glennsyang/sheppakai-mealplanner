@@ -123,7 +123,7 @@ function analyzeFile(filePath, issues) {
 
 	if (filePath.endsWith('.svelte') && !filePath.endsWith('.svelte.ts')) {
 		const lineStarts = buildLineStarts(sourceText);
-		const scriptBlockRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/g;
+		const scriptBlockRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
 		let match = scriptBlockRegex.exec(sourceText);
 
 		while (match) {
