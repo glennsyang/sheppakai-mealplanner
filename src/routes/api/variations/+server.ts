@@ -1,6 +1,6 @@
-import { logger } from '$lib/logger';
 import { suggestVariations } from '$lib/server/ai/claude';
 import { auth } from '$lib/server/auth';
+import { logger } from '$lib/server/logger';
 import { json, error } from '@sveltejs/kit';
 
 import type { RequestHandler } from './$types';

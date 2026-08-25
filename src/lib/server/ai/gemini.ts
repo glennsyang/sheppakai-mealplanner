@@ -1,5 +1,5 @@
 import { GEMINI_API_KEY } from '$app/env/private';
-import { logger } from '$lib/logger';
+import { logger } from '$lib/server/logger';
 import type { MealSuggestion } from '$lib/types';
 import { GoogleGenAI, Type } from '@google/genai';
 

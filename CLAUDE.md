@@ -41,7 +41,7 @@ Always use **Node.js 22.21.1** for all development, testing, and tooling. Do not
 
 ### Logging
 
-- **Never use `console.log`** anywhere. Always import and use `$lib/logger`.
+- **Never use `console.log`** anywhere. Always import and use `$lib/server/logger`.
 - Logger levels: `debug | info | warn | error`.
 
 ### Database
@@ -71,12 +71,12 @@ src/
 ├── app.css                      # Tailwind v4 + Skeleton CSS imports
 ├── app.html                     # data-theme="cerberus" on <html>
 ├── lib/
-│   ├── logger.ts                # App-wide logger — use this, never console.log
 │   ├── types.ts                 # Shared TS interfaces (camelCase)
 │   ├── auth-client.ts           # Client-side better-auth (better-auth/svelte)
 │   ├── schemas/                 # Zod v4 schemas — auth.ts, pantry.ts, mealPlan.ts
 │   ├── components/              # Svelte 5 UI components
 │   └── server/
+│       ├── logger.ts            # App-wide logger — use this, never console.log (server-only, keeps it out of client bundles)
 │       ├── db/
 │       │   ├── schema.ts        # All Drizzle tables (auth + app)
 │       │   └── index.ts         # Drizzle client (WAL mode enabled)

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 vi.mock('../../lib/server/db/index', () => ({ db: {} }));
-vi.mock('../../lib/logger', () => ({
+vi.mock('../../lib/server/logger', () => ({
 	logger: {
 		debug: vi.fn<() => void>(),
 		info: vi.fn<() => void>(),

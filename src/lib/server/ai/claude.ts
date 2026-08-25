@@ -1,5 +1,5 @@
 import { ANTHROPIC_API_KEY } from '$app/env/private';
-import { logger } from '$lib/logger';
+import { logger } from '$lib/server/logger';
 import type { MealSuggestion } from '$lib/types';
 import Anthropic from '@anthropic-ai/sdk';
 

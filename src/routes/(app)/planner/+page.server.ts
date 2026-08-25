@@ -1,10 +1,10 @@
-import { logger } from '$lib/logger';
 import {
 	addMealPlanEntrySchema,
 	removeMealPlanEntrySchema,
 	saveRecipeSchema,
 	addCustomMealSchema
 } from '$lib/schemas/mealPlan';
+import { logger } from '$lib/server/logger';
 import {
 	getMealPlanWithEntries,
 	addMealPlanEntry,

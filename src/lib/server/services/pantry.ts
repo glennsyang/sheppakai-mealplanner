@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { logger } from '$lib/logger';
+import { logger } from '$lib/server/logger';
 import type { PantryItem } from '$lib/types';
 import { eq } from 'drizzle-orm';
 

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { logger } from '$lib/logger';
+import { logger } from '$lib/server/logger';
 import type { MealPlan, MealPlanEntry, Recipe, Ingredient, RecipeSource } from '$lib/types';
 import { eq, and } from 'drizzle-orm';
 
