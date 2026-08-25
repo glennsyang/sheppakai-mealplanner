@@ -243,6 +243,16 @@ All configured in `src/hooks.server.ts`:
 
 ---
 
+## Shared Tooling & Review
+
+This repo shares skills/agents/commands with `sheppakai-budget` and `synapse` via the `sveltekit-toolkit` Claude Code plugin (see `../claude-sveltekit-toolkit`), enabled in `.claude/settings.json`. It provides `svelte-code-writer`, `svelte5-best-practices`, `better-auth-best-practices`, `shadcn-svelte-components`, `frontend-design`, `tailwind-patterns`, `web-design-reviewer`, and a `/propagate` command for replicating a shared-dependency fix across the sibling repos.
+
+Note: this repo uses Skeleton UI v4, not shadcn-svelte/bits-ui — the `shadcn-svelte-components` skill won't be relevant here.
+
+The `code-structure-reviewer` and `security-reviewer` agents (also from the shared plugin) are available on demand — invoke them when you want a structural or security pass on a change, not automatically on every PR.
+
+---
+
 ## Common Commands
 
 ```bash

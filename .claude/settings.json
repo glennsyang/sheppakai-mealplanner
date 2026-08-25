@@ -1,0 +1,13 @@
+{
+	"extraKnownMarketplaces": {
+		"sveltekit-toolkit-marketplace": {
+			"source": {
+				"source": "directory",
+				"path": "/Users/glennsheppard/Development/Personal/claude-sveltekit-toolkit"
+			}
+		}
+	},
+	"enabledPlugins": {
+		"sveltekit-toolkit@sveltekit-toolkit-marketplace": true
+	}
+}
