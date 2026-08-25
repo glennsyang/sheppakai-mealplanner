@@ -28,10 +28,7 @@ function rowToEntry(row: typeof mealPlanEntries.$inferSelect): MealPlanEntry {
 	};
 }
 
-export async function getOrCreateMealPlan(
-	userId: string,
-	weekStartDate: string
-): Promise<MealPlan> {
+async function getOrCreateMealPlan(userId: string, weekStartDate: string): Promise<MealPlan> {
 	logger.debug('getOrCreateMealPlan', { userId, weekStartDate });
 	const db = getDb();
 	const [existing] = db

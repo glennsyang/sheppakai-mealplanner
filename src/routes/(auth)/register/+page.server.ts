@@ -9,7 +9,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ request }) => {
 	const session = await auth.api.getSession({ headers: request.headers });
-	if (session) redirect(302, '/');
+	if (session) throw redirect(302, '/');
 
 	const form = await superValidate(zod4(registerSchema));
 	return { form };

@@ -4,6 +4,7 @@
 	"ignorePatterns": ["**/*.generated.ts", "**/*.config.ts", "src/env.ts", "src/app.css"],
 	"ignoreDependencies": [
 		"@flydotio/dockerfile",
+		"@skeletonlabs/skeleton",
 		"@skeletonlabs/skeleton-svelte",
 		"@sveltejs/kit",
 		"@tailwindcss/vite",
