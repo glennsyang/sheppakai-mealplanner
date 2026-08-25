@@ -1,4 +1,4 @@
-import { logger } from '$lib/logger';
+import { logger } from '$lib/server/logger';
 import { registerSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import { isRedirect, redirect } from '@sveltejs/kit';

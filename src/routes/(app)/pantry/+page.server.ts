@@ -1,4 +1,4 @@
-import { logger } from '$lib/logger';
+import { logger } from '$lib/server/logger';
 import { addPantryItemSchema, removePantryItemSchema } from '$lib/schemas/pantry';
 import { listPantryItems, addPantryItem, removePantryItem } from '$lib/server/services/pantry';
 import { fail } from '@sveltejs/kit';

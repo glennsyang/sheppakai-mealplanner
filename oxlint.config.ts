@@ -34,5 +34,16 @@ export default defineConfig({
 			}
 		],
 		'no-unused-expressions': 'error'
-	}
+	},
+	overrides: [
+		{
+			// src/lib/server/logger.ts is shared verbatim across sibling repos (see
+			// claude-sveltekit-toolkit/plugins/sveltekit-toolkit/shared/server/logger.ts) — it
+			// must not be edited per-repo, so lint exceptions for it belong here instead.
+			files: ['src/lib/server/logger.ts'],
+			rules: {
+				'typescript/no-base-to-string': 'off'
+			}
+		}
+	]
 });

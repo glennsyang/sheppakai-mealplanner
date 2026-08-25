@@ -1,4 +1,4 @@
-import { logger } from '$lib/logger';
+import { logger } from '$lib/server/logger';
 import { getDb } from '$lib/server/db';
 
 import type { RequestHandler } from './$types';

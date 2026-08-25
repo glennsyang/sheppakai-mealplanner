@@ -1,7 +1,8 @@
 import { building, dev } from '$app/environment';
 import { auth } from '$lib/server/auth';
+import { logger } from '$lib/server/logger';
 import * as Sentry from '@sentry/sveltekit';
-import type { Handle } from '@sveltejs/kit';
+import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 
 Sentry.init({
@@ -15,6 +16,19 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return new Response(undefined, { status: 404 });
 	}
 
+	const requestId = crypto.randomUUID();
+	let requestLogger = logger.child({
+		requestId,
+		method: event.request.method,
+		url: event.url.pathname
+	});
+
+	requestLogger.info('Incoming request', {
+		userAgent: event.request.headers.get('user-agent')
+	});
+
+	const startTime = Date.now();
+
 	// Better-auth session middleware
 	const session = await auth.api.getSession({
 		headers: event.request.headers
@@ -24,15 +38,24 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (session) {
 		event.locals.session = session.session;
 		event.locals.user = session.user;
+		requestLogger = requestLogger.child({ userId: session.user.id });
 	}
 
+	event.locals.requestId = requestId;
+
 	const response = await svelteKitHandler({ event, resolve, auth, building });
+
+	requestLogger.info('Request completed', {
+		status: response.status,
+		duration: `${Date.now() - startTime}ms`
+	});
 
 	// Security headers
 	response.headers.set('X-Frame-Options', 'DENY');
 	response.headers.set('X-Content-Type-Options', 'nosniff');
 	response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 	response.headers.set('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
+	response.headers.set('X-Request-ID', requestId);
 
 	// HSTS only in production
 	if (!dev) {
@@ -51,4 +74,22 @@ export const handle: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-export const handleError = Sentry.handleErrorWithSentry();
+export const handleError: HandleServerError = ({ error, event, status, message }) => {
+	const requestId = event.locals.requestId ?? 'unknown';
+	const userId = event.locals.user?.id ?? 'anonymous';
+
+	logger.error('Unhandled server error', error, {
+		requestId,
+		userId,
+		url: event.url.pathname,
+		method: event.request.method,
+		status,
+		message,
+		userAgent: event.request.headers.get('user-agent')
+	});
+
+	return {
+		message: dev ? message : 'An unexpected error occurred',
+		requestId
+	};
+};

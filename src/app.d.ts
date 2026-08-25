@@ -5,6 +5,7 @@ declare global {
 		interface Locals {
 			user: import('better-auth').User | null;
 			session: import('better-auth').Session | null;
+			requestId?: string;
 		}
 		// interface Error {}
 		// interface PageData {}
