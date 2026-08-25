@@ -15,7 +15,7 @@
 	"rules": {
 		"unresolved-imports": "error",
 		"unlisted-dependencies": "error",
-		"unused-exports": "warn",
+		"unused-exports": "error",
 		"circular-dependencies": "warn"
 	}
 }
