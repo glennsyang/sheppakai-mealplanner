@@ -1,6 +1,6 @@
-import { logger } from '$lib/server/logger';
 import { registerSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
+import { logger } from '$lib/server/logger';
 import { isRedirect, redirect } from '@sveltejs/kit';
 import { superValidate, message } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';

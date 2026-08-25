@@ -1,5 +1,5 @@
-import { logger } from '$lib/server/logger';
 import { addPantryItemSchema, removePantryItemSchema } from '$lib/schemas/pantry';
+import { logger } from '$lib/server/logger';
 import { listPantryItems, addPantryItem, removePantryItem } from '$lib/server/services/pantry';
 import { fail } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
