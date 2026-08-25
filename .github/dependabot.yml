@@ -10,5 +10,4 @@ updates:
       timezone: Etc/GMT+8
     open-pull-requests-limit: 5
     labels:
-      - dependencies
       - dependabot
