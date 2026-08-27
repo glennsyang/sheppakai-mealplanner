@@ -137,8 +137,8 @@ DATABASE_URL=/data/db.sqlite                     # or ./data/db.sqlite in dev
 ### Working with the DB
 
 ```bash
-npm run db:push      # Push schema to dev SQLite (creates ./data/db.sqlite)
-npm run db:migrate   # Run migrations (production)
+npm run db:generate  # Generate a migration from schema.ts changes
+npm run db:migrate   # Apply committed migrations (dev creates ./data/db.sqlite, prod runs on boot via start.sh)
 npm run db:studio    # Open Drizzle visual browser
 ```
 
@@ -264,7 +264,8 @@ npm run test:watch   # Vitest watch mode
 npm run check        # svelte-check (TypeScript + Svelte)
 npm run lint         # oxlint
 npm run lint:fix     # oxlint --fix
-npm run db:push      # drizzle-kit push (sync schema to SQLite)
+npm run db:generate  # drizzle-kit generate (write a migration from schema.ts)
+npm run db:migrate   # drizzle-kit migrate (apply committed migrations)
 npm run db:studio    # Drizzle visual browser
 ```
 

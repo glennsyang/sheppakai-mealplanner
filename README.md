@@ -64,7 +64,7 @@ GEMINI_API_KEY=<your Google Gemini API key>
 ### Database setup
 
 ```bash
-npm run db:push      # Create ./data/db.sqlite and sync schema
+npm run db:migrate   # Create ./data/db.sqlite and apply committed migrations
 ```
 
 ### Dev server
@@ -88,8 +88,8 @@ npm run test:coverage  # Tests with v8 coverage report
 npm run check          # svelte-check (TypeScript + Svelte)
 npm run lint           # oxlint
 npm run fmt            # oxfmt (format)
-npm run db:push        # Push schema to SQLite (dev)
-npm run db:migrate     # Run migrations (production)
+npm run db:generate    # Generate a migration from schema.ts changes
+npm run db:migrate     # Apply committed migrations to SQLite
 npm run db:studio      # Drizzle visual browser
 ```
 
@@ -170,12 +170,9 @@ fly secrets set \
 fly deploy
 ```
 
-SQLite is stored on a persistent volume mounted at `/data/db.sqlite`. Run migrations after deploy:
-
-```bash
-fly ssh console -C "node -e \"require('./build/server/db/migrate.js')\""
-# or use: npm run db:migrate
-```
+SQLite is stored on a persistent volume mounted at `/data/db.sqlite`. Migrations run
+automatically on boot — `start.sh` applies any committed, unapplied migrations via
+`scripts/migrate.js` before the server starts, so a normal `fly deploy` is enough.
 
 ---
 

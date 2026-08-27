@@ -5,7 +5,7 @@ echo "🚀 Starting Meal Planner..."
 
 # Run database migrations
 echo "📦 Running database migrations..."
-npx drizzle-kit migrate
+node ./scripts/migrate.js
 
 # Start the SvelteKit app
 echo "🚀 Starting SvelteKit server..."
