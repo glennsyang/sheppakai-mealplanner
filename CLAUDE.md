@@ -26,6 +26,16 @@ Always use **Node.js 22.21.1** for all development, testing, and tooling. Do not
 
 ---
 
+## Product Data-Sharing Model (Critical Requirement)
+
+- This app is intentionally a **shared-data** system for exactly **two users** — the same model used by the sibling `sheppakai-budget` repo (see its `AGENTS.md`, "Product Data-Sharing Model").
+- Both users are expected to see and edit the same household data: `pantry_items`, `recipes`, `meal_plans`, `meal_plan_entries`, and `suggestions` are shared, not per-user-private. There is one shared pantry and one shared weekly planner, not one per user.
+- Do **not** treat cross-user visibility or editing of these tables as a tenant-isolation bug (IDOR) in this project unless this product requirement changes. A full-codebase security review (2026-08-27) initially flagged this as critical in #31 and #32 — both were closed as by-design once this was clarified.
+- This does **not** extend to auth-only data. Session tokens, account credentials, and verification records must stay strictly per-user and never be exposed to another user or leaked to the client beyond what better-auth already scopes — that's a real security bug, not a data-sharing question (see #33, still open).
+- If this model ever changes (e.g. adding private per-user pantries or workspaces), reclassify cross-user access to the app tables above as a high-severity security issue and revisit every data-access check that currently relies on this decision.
+
+---
+
 ## Non-Negotiable Conventions
 
 ### TypeScript
