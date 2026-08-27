@@ -23,7 +23,7 @@
 		"test:ci": "npm run test:unit -- --run && npm run test:coverage",
 		"test:coverage": "vitest run --coverage",
 		"update-deps": "npm outdated || npm update",
-		"db:push": "drizzle-kit push",
+		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio"
 	},
