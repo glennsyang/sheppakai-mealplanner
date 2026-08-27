@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 // ─── better-auth tables ─────────────────────────────────────────────────────
 
@@ -25,23 +25,31 @@ export const session = sqliteTable('session', {
 	updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
 });
 
-export const account = sqliteTable('account', {
-	id: text('id').primaryKey(),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
-	accountId: text('account_id').notNull(),
-	providerId: text('provider_id').notNull(),
-	accessToken: text('access_token'),
-	refreshToken: text('refresh_token'),
-	idToken: text('id_token'),
-	accessTokenExpiresAt: integer('access_token_expires_at', { mode: 'timestamp' }),
-	refreshTokenExpiresAt: integer('refresh_token_expires_at', { mode: 'timestamp' }),
-	scope: text('scope'),
-	password: text('password'),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-	updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
-});
+export const account = sqliteTable(
+	'account',
+	{
+		id: text('id').primaryKey(),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		accountId: text('account_id').notNull(),
+		providerId: text('provider_id').notNull(),
+		// Scopes account identity by issuer (e.g. "local:credential"), required by
+		// better-auth 1.7+. All accounts here are credential accounts, so the
+		// default backfills existing rows correctly with no data migration needed.
+		issuer: text('issuer').notNull().default('local:credential'),
+		accessToken: text('access_token'),
+		refreshToken: text('refresh_token'),
+		idToken: text('id_token'),
+		accessTokenExpiresAt: integer('access_token_expires_at', { mode: 'timestamp' }),
+		refreshTokenExpiresAt: integer('refresh_token_expires_at', { mode: 'timestamp' }),
+		scope: text('scope'),
+		password: text('password'),
+		createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+		updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
+	},
+	(table) => [uniqueIndex('account_issuer_account_id_idx').on(table.issuer, table.accountId)]
+);
 
 export const verification = sqliteTable('verification', {
 	id: text('id').primaryKey(),
