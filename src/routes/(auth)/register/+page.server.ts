@@ -47,6 +47,6 @@ export const actions: Actions = {
 			});
 		}
 
-		throw redirect(302, '/');
+		throw redirect(302, `/verify-email?email=${encodeURIComponent(form.data.email)}`);
 	}
 };
