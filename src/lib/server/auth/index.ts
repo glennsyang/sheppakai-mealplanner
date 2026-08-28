@@ -6,6 +6,8 @@ import { sveltekitCookies } from 'better-auth/svelte-kit';
 
 import { getDb } from '../db';
 import * as schema from '../db/schema';
+import { sendVerificationEmail } from '../email';
+import { logger } from '../logger';
 
 export const auth = betterAuth({
 	appName: 'Meal Planner',
@@ -26,6 +28,15 @@ export const auth = betterAuth({
 		minPasswordLength: 12,
 		maxPasswordLength: 128,
 		resetPasswordTokenExpiresIn: 60 * 10 // 10 minutes
+	},
+	emailVerification: {
+		sendOnSignUp: true,
+		autoSignInAfterVerification: true,
+		sendVerificationEmail: async ({ user, url, token }) => {
+			logger.debug('✉️ Email verification sent');
+			const verifyUrl = `${url}?token=${token}`;
+			void sendVerificationEmail(user.email, user.name || user.email, verifyUrl);
+		}
 	},
 	advanced: {
 		cookiePrefix: 'mealplanner_auth_',
