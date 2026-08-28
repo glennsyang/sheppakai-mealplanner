@@ -94,7 +94,11 @@
 		variationsList = null;
 
 		try {
-			const res = await fetch(`/api/variations?meal=${encodeURIComponent(mealName)}`);
+			const res = await fetch('/api/variations', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ meal: mealName })
+			});
 			if (!res.ok) throw new Error('Failed to get variations');
 			variationsList = (await res.json()) as MealSuggestion[];
 		} catch {
