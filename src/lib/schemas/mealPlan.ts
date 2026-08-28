@@ -24,3 +24,7 @@ export const addCustomMealSchema = z.object({
 	weekStartDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format'),
 	dayOfWeek: z.coerce.number().int().min(0).max(6)
 });
+
+export const suggestVariationsSchema = z.object({
+	meal: z.string().trim().min(1, 'Meal name is required').max(200, 'Meal name too long')
+});

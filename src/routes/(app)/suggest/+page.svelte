@@ -35,12 +35,11 @@
 		suggestions = [];
 
 		try {
-			const params = new URLSearchParams();
-			for (const item of selectedItems) {
-				params.append('items', item);
-			}
-
-			const res = await fetch(`/api/suggest?${params.toString()}`);
+			const res = await fetch('/api/suggest', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ items: Array.from(selectedItems) })
+			});
 			if (!res.ok) {
 				const body = (await res.json().catch(() => ({}))) as { message?: string };
 				throw new Error(body.message ?? 'Failed to get suggestions');

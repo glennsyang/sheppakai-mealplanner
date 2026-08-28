@@ -11,5 +11,8 @@ export const removePantryItemSchema = z.object({
 });
 
 export const suggestFromPantrySchema = z.object({
-	items: z.array(z.string().min(1)).min(1, 'Select at least one item')
+	items: z
+		.array(z.string().trim().min(1).max(100, 'Item name too long'))
+		.min(1, 'Select at least one item')
+		.max(15, 'Too many items selected')
 });
