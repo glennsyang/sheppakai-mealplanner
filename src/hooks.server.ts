@@ -9,6 +9,12 @@ Sentry.init({
 	dsn: 'https://9488e2141b5fc14a91a545a6425e0422@o4510809399492608.ingest.us.sentry.io/4511412699725824',
 	tracesSampleRate: 1.0,
 	enableLogs: true
+	// sendDefaultPii intentionally left at its default (false) here, unlike hooks.client.ts.
+	// Enabling it server-side would let Sentry capture full request headers and cookies —
+	// including the auth session cookie — which client-side sendDefaultPii can't reach since
+	// browser JS has no access to HttpOnly cookies or server-internal headers. Server-side
+	// error context is already captured explicitly below (requestId, userId, url, method,
+	// status) via the structured logger, so Sentry's own PII capture isn't needed here.
 });
 
 export const handle: Handle = async ({ event, resolve }) => {

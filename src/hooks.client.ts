@@ -11,6 +11,10 @@ Sentry.init({
 
 	// Enable sending user PII (Personally Identifiable Information)
 	// https://docs.sentry.io/platforms/javascript/guides/sveltekit/configuration/options/#sendDefaultPii
+	//
+	// Intentionally asymmetric with hooks.server.ts (see the comment there): client-side
+	// this is bounded to the browser's public IP and similar client-visible context, since
+	// browser JS has no access to HttpOnly cookies or server-internal request headers.
 	sendDefaultPii: true
 });
 
