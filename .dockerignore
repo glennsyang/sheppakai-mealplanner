@@ -67,6 +67,8 @@ specs/
 
 # Scripts
 scripts/
+# ...except the standalone migration runner, which start.sh runs at container boot
+!scripts/migrate.js
 
 # Config files
 .prettierrc
