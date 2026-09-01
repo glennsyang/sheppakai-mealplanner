@@ -32,9 +32,35 @@ jobs:
           echo "Compressing backup..."
           gzip -9 backup-${{ steps.timestamp.outputs.date }}.sql
 
+      - name: Encrypt backup
+        env:
+          BACKUP_ENCRYPTION_PASSPHRASE: ${{ secrets.BACKUP_ENCRYPTION_PASSPHRASE }}
+        run: |
+          # The dump contains password hashes and live session tokens, so it must never
+          # land in the (unencrypted, 30-day-retained) Actions artifact store as plaintext.
+          # Fail closed if the secret isn't configured, rather than silently uploading
+          # an unencrypted backup.
+          if [ -z "$BACKUP_ENCRYPTION_PASSPHRASE" ]; then
+            echo "Error: BACKUP_ENCRYPTION_PASSPHRASE secret is not set. Refusing to upload an unencrypted database dump." >&2
+            echo "Generate one (e.g. 'openssl rand -base64 32') and add it as a repo secret named BACKUP_ENCRYPTION_PASSPHRASE." >&2
+            exit 1
+          fi
+
+          echo "Encrypting backup..."
+          BACKUP_FILE="backup-${{ steps.timestamp.outputs.date }}.sql.gz"
+          gpg --batch --yes --pinentry-mode loopback \
+            --passphrase "$BACKUP_ENCRYPTION_PASSPHRASE" \
+            --symmetric --cipher-algo AES256 \
+            --output "$BACKUP_FILE.gpg" "$BACKUP_FILE"
+
+          # Remove the plaintext archive so only the encrypted copy remains on disk.
+          rm "$BACKUP_FILE"
+
+          echo "To decrypt: gpg --batch --yes --pinentry-mode loopback --passphrase \"\$BACKUP_ENCRYPTION_PASSPHRASE\" --decrypt --output backup.sql.gz $BACKUP_FILE.gpg"
+
       - name: Validate backup
         run: |
-          BACKUP_FILE="backup-${{ steps.timestamp.outputs.date }}.sql.gz"
+          BACKUP_FILE="backup-${{ steps.timestamp.outputs.date }}.sql.gz.gpg"
 
           if [ ! -s "$BACKUP_FILE" ]; then
             echo "Error: Backup file is empty or does not exist"
@@ -50,7 +76,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: db-backup-${{ steps.timestamp.outputs.date }}
-          path: backup-${{ steps.timestamp.outputs.date }}.sql.gz
+          path: backup-${{ steps.timestamp.outputs.date }}.sql.gz.gpg
           retention-days: 30
           compression-level: 9
 
