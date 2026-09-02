@@ -8,6 +8,13 @@
 			"when": 1787805695087,
 			"tag": "0000_fuzzy_gladiator",
 			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "6",
+			"when": 1788391321631,
+			"tag": "0001_exotic_silhouette",
+			"breakpoints": true
 		}
 	]
 }
