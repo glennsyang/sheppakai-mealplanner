@@ -19,7 +19,8 @@ export const auth = betterAuth({
 			user: schema.user,
 			session: schema.session,
 			account: schema.account,
-			verification: schema.verification
+			verification: schema.verification,
+			rateLimit: schema.rateLimit
 		}
 	}),
 	emailAndPassword: {
@@ -33,10 +34,12 @@ export const auth = betterAuth({
 	emailVerification: {
 		sendOnSignUp: true,
 		autoSignInAfterVerification: true,
-		sendVerificationEmail: async ({ user, url, token }) => {
+		sendVerificationEmail: async ({ user, url }) => {
 			logger.debug('✉️ Email verification sent');
-			const verifyUrl = `${url}?token=${token}`;
-			void sendVerificationEmail(user.email, user.name || user.email, verifyUrl);
+			// `url` is already the complete verification link (token + callbackURL).
+			// Don't append `?token=` again — that produced a malformed double-`?` URL
+			// and leaked the token into the post-verification redirect target.
+			void sendVerificationEmail(user.email, user.name || user.email, url);
 		}
 	},
 	advanced: {
