@@ -6,11 +6,21 @@ import { logger } from '../logger';
 // Initialize Resend email client
 const resend = new Resend(RESEND_API_KEY);
 
+/**
+ * Sends the account verification email via Resend.
+ *
+ * Throws on any failure so callers (and better-auth) can react. The Resend SDK
+ * does NOT throw on API-level rejections — invalid API key, unverified sending
+ * domain, malformed `from` — it resolves with `{ data: null, error: {...} }`.
+ * That `error` must be inspected explicitly; otherwise the failure is swallowed
+ * and nothing is logged even though no mail was ever delivered.
+ */
 export async function sendVerificationEmail(to: string, name: string, verificationUrl: string) {
-	logger.debug('📧 Sending Verification Email to:', { to });
+	logger.debug('Sending verification email', { to });
 
+	let result;
 	try {
-		await resend.emails.send({
+		result = await resend.emails.send({
 			from: RESEND_FROM_ADDRESS,
 			to,
 			subject: '[Meal Planner] Verify your email address',
@@ -51,9 +61,18 @@ export async function sendVerificationEmail(to: string, name: string, verificati
 				</html>
 			`
 		});
-		return null;
-	} catch (error) {
-		logger.error('❌ Failed to send verification email:', error);
-		return error;
+	} catch (cause) {
+		// Network / unexpected transport failure (the SDK rejected the promise).
+		logger.error('Failed to send verification email (transport error)', cause, { to });
+		throw cause instanceof Error ? cause : new Error('Resend request failed', { cause });
 	}
+
+	if (result.error) {
+		logger.error('Failed to send verification email (Resend API error)', result.error, { to });
+		throw new Error(
+			`Resend rejected verification email: ${result.error.name} — ${result.error.message}`
+		);
+	}
+
+	logger.info('Verification email sent', { to, resendId: result.data?.id });
 }

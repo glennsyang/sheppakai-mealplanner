@@ -4,6 +4,8 @@ import { z } from 'zod';
 
 const DUMMY_DB_URL = 'file:///tmp/build.db';
 const DUMMY_AUTH_SECRET = 'build_time_dummy_secret_min_32_chars_long';
+const DUMMY_RESEND_KEY = 'dummy_key_for_build';
+const DUMMY_RESEND_FROM = 'noreply@example.com';
 
 export const variables = defineEnvVars({
 	DATABASE_URL: {
@@ -34,11 +36,25 @@ export const variables = defineEnvVars({
 	},
 	RESEND_API_KEY: {
 		description: 'Resend API key for sending transactional emails',
-		schema: z.string().default('dummy_key_for_build')
+		// Falls back to a dummy only during `building`; at runtime a real key is
+		// required. Without this guard a missing secret silently no-ops every
+		// email send (Resend returns a 401 error object it never throws).
+		schema: building
+			? z.string().default(DUMMY_RESEND_KEY)
+			: z
+					.string()
+					.min(1)
+					.refine((val) => val !== DUMMY_RESEND_KEY, {
+						message: 'RESEND_API_KEY cannot be the dummy value outside of build'
+					})
 	},
 	RESEND_FROM_ADDRESS: {
 		description: 'From address for outgoing transactional emails',
-		schema: z.email().default('noreply@example.com')
+		schema: building
+			? z.email().default(DUMMY_RESEND_FROM)
+			: z.email().refine((val) => val !== DUMMY_RESEND_FROM, {
+					message: 'RESEND_FROM_ADDRESS cannot be the dummy value outside of build'
+				})
 	},
 	RESEND_NEW_USER_ADDRESS: {
 		description: 'Address to CC on new user registration confirmation emails',
