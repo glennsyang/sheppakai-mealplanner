@@ -7,7 +7,6 @@ import { sveltekitCookies } from 'better-auth/svelte-kit';
 import { getDb } from '../db';
 import * as schema from '../db/schema';
 import { sendVerificationEmail } from '../email';
-import { logger } from '../logger';
 
 export const auth = betterAuth({
 	appName: 'Meal Planner',
@@ -35,11 +34,16 @@ export const auth = betterAuth({
 		sendOnSignUp: true,
 		autoSignInAfterVerification: true,
 		sendVerificationEmail: async ({ user, url }) => {
-			logger.debug('✉️ Email verification sent');
 			// `url` is already the complete verification link (token + callbackURL).
 			// Don't append `?token=` again — that produced a malformed double-`?` URL
 			// and leaked the token into the post-verification redirect target.
-			void sendVerificationEmail(user.email, user.name || user.email, url);
+			//
+			// Await the send (don't fire-and-forget): sendVerificationEmail throws on
+			// failure, and letting that propagate keeps the send tied to the request
+			// lifecycle (Fly can suspend the machine as soon as the response returns)
+			// and surfaces delivery failures in the logs / Sentry instead of a silent
+			// "link sent" with no email.
+			await sendVerificationEmail(user.email, user.name || user.email, url);
 		}
 	},
 	advanced: {
