@@ -34,7 +34,7 @@
 		"@getbrevo/brevo": "^6.0.3",
 		"@google/genai": "^2.18.0",
 		"@sentry/sveltekit": "^10.71.0",
-		"better-auth": "^1.7.1",
+		"better-auth": "^1.7.2",
 		"better-sqlite3": "^12.10.0",
 		"drizzle-orm": "^0.45.2"
 	},
