@@ -28,12 +28,12 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"dependencies": {
-		"@anthropic-ai/sdk": "^0.122.0",
+		"@anthropic-ai/sdk": "^0.124.0",
 		"@flydotio/dockerfile": "^0.7.10",
 		"@formkit/auto-animate": "^0.10.0",
 		"@getbrevo/brevo": "^6.0.3",
-		"@google/genai": "^2.18.0",
-		"@sentry/sveltekit": "^10.71.0",
+		"@google/genai": "^2.21.0",
+		"@sentry/sveltekit": "^10.73.0",
 		"better-auth": "^1.7.2",
 		"better-sqlite3": "^12.10.0",
 		"drizzle-orm": "^0.45.2"
@@ -46,22 +46,22 @@
 		"@sveltejs/vite-plugin-svelte": "^7.3.0",
 		"@tailwindcss/vite": "^4.2.1",
 		"@types/better-sqlite3": "^7.6.13",
-		"@types/node": "^26.3.0",
+		"@types/node": "^26.4.1",
 		"@vitest/coverage-v8": "^4.1.11",
 		"drizzle-kit": "^0.31.10",
-		"fallow": "^3.18.0",
+		"fallow": "^3.22.0",
 		"lefthook": "^2.1.12",
-		"lint-staged": "^17.0.5",
-		"oxfmt": "^0.65.0",
-		"oxlint": "^1.80.0",
+		"lint-staged": "^17.4.1",
+		"oxfmt": "^0.66.0",
+		"oxlint": "^1.81.0",
 		"oxlint-tsgolint": "^7.0.2001",
-		"svelte": "^5.56.10",
+		"svelte": "^5.57.0",
 		"svelte-check": "^4.7.6",
 		"sveltekit-superforms": "^2.30.1",
 		"tailwindcss": "^4.2.1",
 		"typescript": "^5.9.3",
 		"vite": "^8.2.2",
 		"vitest": "^4.1.11",
-		"zod": "^4.4.3"
+		"zod": "^4.5.4"
 	}
 }
