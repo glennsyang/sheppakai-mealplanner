@@ -11,13 +11,13 @@ const { sendMock, loggerMock } = vi.hoisted(() => ({
 }));
 
 vi.mock('$app/env/private', () => ({
-	RESEND_API_KEY: 're_test_key',
-	RESEND_FROM_ADDRESS: 'test@example.com'
+	BREVO_API_KEY: 'xkeysib_test_key',
+	BREVO_FROM_ADDRESS: 'test@example.com'
 }));
 
-vi.mock('resend', () => ({
-	Resend: class {
-		emails = { send: sendMock };
+vi.mock('@getbrevo/brevo', () => ({
+	BrevoClient: class {
+		transactionalEmails = { sendTransacEmail: sendMock };
 	}
 }));
 
@@ -31,7 +31,7 @@ describe('sendVerificationEmail', () => {
 	});
 
 	it('resolves and logs on a successful send', async () => {
-		sendMock.mockResolvedValueOnce({ data: { id: 'email_123' }, error: null });
+		sendMock.mockResolvedValueOnce({ messageId: '<msg-123@brevo>' });
 
 		await expect(
 			sendVerificationEmail('user@example.com', 'User', 'https://app/verify?token=abc')
@@ -40,28 +40,26 @@ describe('sendVerificationEmail', () => {
 		expect(loggerMock.error).not.toHaveBeenCalled();
 		expect(loggerMock.info).toHaveBeenCalledWith('Verification email sent', {
 			to: 'user@example.com',
-			resendId: 'email_123'
+			brevoMessageId: '<msg-123@brevo>'
 		});
 	});
 
-	it('throws and logs when Resend returns an API error object (no throw)', async () => {
-		sendMock.mockResolvedValueOnce({
-			data: null,
-			error: { name: 'validation_error', message: 'The domain is not verified', statusCode: 403 }
-		});
+	it('throws and logs when the Brevo SDK rejects with an API error', async () => {
+		// Brevo throws a BrevoError (extends Error, carries statusCode/body) rather
+		// than resolving with an error object the way Resend did.
+		const apiError = Object.assign(new Error('Sender not valid'), { statusCode: 403 });
+		sendMock.mockRejectedValueOnce(apiError);
 
 		await expect(
 			sendVerificationEmail('user@example.com', 'User', 'https://app/verify?token=abc')
-		).rejects.toThrow(/Resend rejected verification email/);
+		).rejects.toThrow(/Sender not valid/);
 
-		expect(loggerMock.error).toHaveBeenCalledWith(
-			'Failed to send verification email (Resend API error)',
-			expect.objectContaining({ name: 'validation_error' }),
-			{ to: 'user@example.com' }
-		);
+		expect(loggerMock.error).toHaveBeenCalledWith('Failed to send verification email', apiError, {
+			to: 'user@example.com'
+		});
 	});
 
-	it('throws and logs when the Resend SDK rejects (transport error)', async () => {
+	it('throws and logs when the Brevo SDK rejects (transport error)', async () => {
 		sendMock.mockRejectedValueOnce(new Error('network down'));
 
 		await expect(
@@ -69,7 +67,7 @@ describe('sendVerificationEmail', () => {
 		).rejects.toThrow('network down');
 
 		expect(loggerMock.error).toHaveBeenCalledWith(
-			'Failed to send verification email (transport error)',
+			'Failed to send verification email',
 			expect.any(Error),
 			{ to: 'user@example.com' }
 		);
