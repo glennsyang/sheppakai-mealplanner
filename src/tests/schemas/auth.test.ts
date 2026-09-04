@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { loginSchema, registerSchema } from '../../lib/schemas/auth';
+import { loginSchema, registerSchema, resendVerificationSchema } from '../../lib/schemas/auth';
 
 describe('loginSchema', () => {
 	it('accepts valid credentials', () => {
@@ -49,5 +49,15 @@ describe('registerSchema', () => {
 			confirmPassword: 'short'
 		});
 		expect(result.success).toBe(false);
+	});
+});
+
+describe('resendVerificationSchema', () => {
+	it('accepts a valid email address', () => {
+		expect(resendVerificationSchema.safeParse({ email: 'user@example.com' }).success).toBe(true);
+	});
+
+	it('rejects an invalid email address', () => {
+		expect(resendVerificationSchema.safeParse({ email: 'not-an-email' }).success).toBe(false);
 	});
 });

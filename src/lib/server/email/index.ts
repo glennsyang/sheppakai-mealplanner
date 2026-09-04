@@ -18,7 +18,9 @@ const brevo = new BrevoClient({ apiKey: BREVO_API_KEY });
  * from looking like a successful one.
  */
 export async function sendVerificationEmail(to: string, name: string, verificationUrl: string) {
-	logger.debug('Sending verification email', { to });
+	// This is intentionally info-level: production suppresses debug logs, and
+	// this event distinguishes an untriggered auth flow from a provider failure.
+	logger.info('Sending verification email', { to });
 
 	let result;
 	try {
