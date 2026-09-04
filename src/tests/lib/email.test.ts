@@ -38,6 +38,9 @@ describe('sendVerificationEmail', () => {
 		).resolves.toBeUndefined();
 
 		expect(loggerMock.error).not.toHaveBeenCalled();
+		expect(loggerMock.info).toHaveBeenCalledWith('Sending verification email', {
+			to: 'user@example.com'
+		});
 		expect(loggerMock.info).toHaveBeenCalledWith('Verification email sent', {
 			to: 'user@example.com',
 			brevoMessageId: '<msg-123@brevo>'

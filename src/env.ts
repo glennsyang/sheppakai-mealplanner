@@ -36,9 +36,6 @@ export const variables = defineEnvVars({
 	},
 	BREVO_API_KEY: {
 		description: 'Brevo API key for sending transactional emails',
-		// Falls back to a dummy only during `building`; at runtime a real key is
-		// required. Without this guard a missing secret silently breaks every
-		// email send (the Brevo SDK throws an UnauthorizedError on send).
 		schema: building
 			? z.string().default(DUMMY_BREVO_KEY)
 			: z

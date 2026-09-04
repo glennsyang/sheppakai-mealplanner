@@ -1,7 +1,16 @@
 <script lang="ts">
+	import { resendVerificationSchema } from '$lib/schemas/auth';
+	import { superForm } from 'sveltekit-superforms';
+	import { zod4Client } from 'sveltekit-superforms/adapters';
+
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+
+	// svelte-ignore state_referenced_locally — superForm is intentionally initialized once from props
+	const { form, errors, enhance, message, submitting } = superForm(data.verificationForm, {
+		validators: zod4Client(resendVerificationSchema)
+	});
 </script>
 
 <svelte:head>
@@ -61,9 +70,13 @@
 					</svg>
 				</div>
 				<h1 class="h2 font-semibold tracking-tight">Check your email</h1>
-				<p class="text-surface-500 mt-2 text-sm">We've sent a verification link to</p>
+				<p class="text-surface-500 mt-2 text-sm">Look for a verification link at</p>
 				<p class="mt-1 text-sm font-medium">{data.email}</p>
 			</div>
+
+			{#if $message}
+				<div class="alert preset-tonal-surface text-sm" role="status">{$message}</div>
+			{/if}
 
 			<div class="card preset-outlined-surface-300-700 space-y-4 p-6">
 				<div>
@@ -71,7 +84,7 @@
 					<ol class="text-surface-500 mt-3 space-y-2 text-sm">
 						<li class="flex items-start">
 							<span class="mr-2 font-semibold">1.</span>
-							<span>Open the email we just sent you</span>
+							<span>Open the most recent verification email</span>
 						</li>
 						<li class="flex items-start">
 							<span class="mr-2 font-semibold">2.</span>
@@ -91,6 +104,16 @@
 					</p>
 				</div>
 			</div>
+
+			<form method="POST" action="?/resend" use:enhance class="space-y-2">
+				<input type="hidden" name="email" bind:value={$form.email} />
+				<button type="submit" disabled={$submitting} class="btn preset-outlined-primary-500 w-full">
+					{$submitting ? 'Sending verification email…' : 'Resend verification email'}
+				</button>
+				{#if $errors.email}
+					<p class="text-error-500 text-center text-xs">{$errors.email}</p>
+				{/if}
+			</form>
 
 			<p class="text-surface-500 text-center text-sm">
 				Wrong email address?
