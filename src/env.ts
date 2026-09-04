@@ -4,8 +4,8 @@ import { z } from 'zod';
 
 const DUMMY_DB_URL = 'file:///tmp/build.db';
 const DUMMY_AUTH_SECRET = 'build_time_dummy_secret_min_32_chars_long';
-const DUMMY_RESEND_KEY = 'dummy_key_for_build';
-const DUMMY_RESEND_FROM = 'noreply@example.com';
+const DUMMY_BREVO_KEY = 'dummy_key_for_build';
+const DUMMY_BREVO_FROM = 'noreply@example.com';
 
 export const variables = defineEnvVars({
 	DATABASE_URL: {
@@ -34,31 +34,28 @@ export const variables = defineEnvVars({
 		description: 'Base URL for Better Auth callbacks and password reset redirects',
 		schema: z.url().default('http://localhost:5173')
 	},
-	RESEND_API_KEY: {
-		description: 'Resend API key for sending transactional emails',
+	BREVO_API_KEY: {
+		description: 'Brevo API key for sending transactional emails',
 		// Falls back to a dummy only during `building`; at runtime a real key is
-		// required. Without this guard a missing secret silently no-ops every
-		// email send (Resend returns a 401 error object it never throws).
+		// required. Without this guard a missing secret silently breaks every
+		// email send (the Brevo SDK throws an UnauthorizedError on send).
 		schema: building
-			? z.string().default(DUMMY_RESEND_KEY)
+			? z.string().default(DUMMY_BREVO_KEY)
 			: z
 					.string()
 					.min(1)
-					.refine((val) => val !== DUMMY_RESEND_KEY, {
-						message: 'RESEND_API_KEY cannot be the dummy value outside of build'
+					.refine((val) => val !== DUMMY_BREVO_KEY, {
+						message: 'BREVO_API_KEY cannot be the dummy value outside of build'
 					})
 	},
-	RESEND_FROM_ADDRESS: {
-		description: 'From address for outgoing transactional emails',
+	BREVO_FROM_ADDRESS: {
+		description:
+			'From address for outgoing transactional emails (must be a confirmed Brevo sender)',
 		schema: building
-			? z.email().default(DUMMY_RESEND_FROM)
-			: z.email().refine((val) => val !== DUMMY_RESEND_FROM, {
-					message: 'RESEND_FROM_ADDRESS cannot be the dummy value outside of build'
+			? z.email().default(DUMMY_BREVO_FROM)
+			: z.email().refine((val) => val !== DUMMY_BREVO_FROM, {
+					message: 'BREVO_FROM_ADDRESS cannot be the dummy value outside of build'
 				})
-	},
-	RESEND_NEW_USER_ADDRESS: {
-		description: 'Address to CC on new user registration confirmation emails',
-		schema: z.email().default('admin@example.com')
 	},
 	ANTHROPIC_API_KEY: {
 		description: 'Anthropic API key',

@@ -1,30 +1,32 @@
-import { RESEND_API_KEY, RESEND_FROM_ADDRESS } from '$app/env/private';
-import { Resend } from 'resend';
+import { BREVO_API_KEY, BREVO_FROM_ADDRESS } from '$app/env/private';
+import { BrevoClient } from '@getbrevo/brevo';
 
 import { logger } from '../logger';
 
-// Initialize Resend email client
-const resend = new Resend(RESEND_API_KEY);
+// Initialize Brevo email client
+const brevo = new BrevoClient({ apiKey: BREVO_API_KEY });
 
 /**
- * Sends the account verification email via Resend.
+ * Sends the account verification email via Brevo.
  *
- * Throws on any failure so callers (and better-auth) can react. The Resend SDK
- * does NOT throw on API-level rejections — invalid API key, unverified sending
- * domain, malformed `from` — it resolves with `{ data: null, error: {...} }`.
- * That `error` must be inspected explicitly; otherwise the failure is swallowed
- * and nothing is logged even though no mail was ever delivered.
+ * Throws on any failure so callers (and better-auth) can react. Unlike the
+ * Resend SDK (which resolved with `{ data, error }`), the Brevo SDK rejects the
+ * promise on every failure — invalid API key, an unconfirmed / not-yet-approved
+ * sender address, a malformed request — with a `BrevoError` (or subclass) that
+ * carries `.statusCode` / `.body`. A single try/catch therefore covers both
+ * transport and API-level failures; letting it propagate keeps a failed send
+ * from looking like a successful one.
  */
 export async function sendVerificationEmail(to: string, name: string, verificationUrl: string) {
 	logger.debug('Sending verification email', { to });
 
 	let result;
 	try {
-		result = await resend.emails.send({
-			from: RESEND_FROM_ADDRESS,
-			to,
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Meal Planner', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
 			subject: '[Meal Planner] Verify your email address',
-			html: `
+			htmlContent: `
 				<!DOCTYPE html>
 				<html>
 				<head>
@@ -62,17 +64,12 @@ export async function sendVerificationEmail(to: string, name: string, verificati
 			`
 		});
 	} catch (cause) {
-		// Network / unexpected transport failure (the SDK rejected the promise).
-		logger.error('Failed to send verification email (transport error)', cause, { to });
-		throw cause instanceof Error ? cause : new Error('Resend request failed', { cause });
+		// The Brevo SDK rejects on every failure (auth, unapproved sender,
+		// malformed request, network). BrevoError extends Error and carries the
+		// status code / response body, so rethrow it as-is.
+		logger.error('Failed to send verification email', cause, { to });
+		throw cause instanceof Error ? cause : new Error('Brevo request failed', { cause });
 	}
 
-	if (result.error) {
-		logger.error('Failed to send verification email (Resend API error)', result.error, { to });
-		throw new Error(
-			`Resend rejected verification email: ${result.error.name} — ${result.error.message}`
-		);
-	}
-
-	logger.info('Verification email sent', { to, resendId: result.data?.id });
+	logger.info('Verification email sent', { to, brevoMessageId: result.messageId });
 }
