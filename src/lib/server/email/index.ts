@@ -3,20 +3,8 @@ import { BrevoClient } from '@getbrevo/brevo';
 
 import { logger } from '../logger';
 
-// Initialize Brevo email client
 const brevo = new BrevoClient({ apiKey: BREVO_API_KEY });
 
-/**
- * Sends the account verification email via Brevo.
- *
- * Throws on any failure so callers (and better-auth) can react. Unlike the
- * Resend SDK (which resolved with `{ data, error }`), the Brevo SDK rejects the
- * promise on every failure — invalid API key, an unconfirmed / not-yet-approved
- * sender address, a malformed request — with a `BrevoError` (or subclass) that
- * carries `.statusCode` / `.body`. A single try/catch therefore covers both
- * transport and API-level failures; letting it propagate keeps a failed send
- * from looking like a successful one.
- */
 export async function sendVerificationEmail(to: string, name: string, verificationUrl: string) {
 	// This is intentionally info-level: production suppresses debug logs, and
 	// this event distinguishes an untriggered auth flow from a provider failure.
@@ -66,9 +54,6 @@ export async function sendVerificationEmail(to: string, name: string, verificati
 			`
 		});
 	} catch (cause) {
-		// The Brevo SDK rejects on every failure (auth, unapproved sender,
-		// malformed request, network). BrevoError extends Error and carries the
-		// status code / response body, so rethrow it as-is.
 		logger.error('Failed to send verification email', cause, { to });
 		throw cause instanceof Error ? cause : new Error('Brevo request failed', { cause });
 	}
