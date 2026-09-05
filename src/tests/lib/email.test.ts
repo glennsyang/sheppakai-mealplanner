@@ -49,7 +49,7 @@ describe('sendVerificationEmail', () => {
 
 	it('throws and logs when the Brevo SDK rejects with an API error', async () => {
 		// Brevo throws a BrevoError (extends Error, carries statusCode/body) rather
-		// than resolving with an error object the way Resend did.
+		// than resolving with an error object.
 		const apiError = Object.assign(new Error('Sender not valid'), { statusCode: 403 });
 		sendMock.mockRejectedValueOnce(apiError);
 
