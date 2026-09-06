@@ -8,12 +8,15 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ request }) => {
+export const load: PageServerLoad = async ({ request, url }) => {
 	const session = await auth.api.getSession({ headers: request.headers });
 	if (session) throw redirect(302, '/');
 
 	const form = await superValidate(zod4(loginSchema));
-	return { form };
+	// Whitelisted flag only — the reset-password action redirects here with
+	// ?reset=success so we can confirm the change. No query text is reflected.
+	const resetComplete = url.searchParams.get('reset') === 'success';
+	return { form, resetComplete };
 };
 
 export const actions: Actions = {
