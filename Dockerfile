@@ -27,8 +27,12 @@ RUN npm install -g npm@11 && npm ci --include=dev
 # Copy application code
 COPY . .
 
-# Build application
-RUN npm run build
+# Build application. SENTRY_AUTH_TOKEN (optional) lets @sentry/sveltekit's Vite plugin upload
+# source maps — passed as a BuildKit secret (mounted only for this step, never persisted into an
+# image layer or the build cache) rather than an ARG/ENV, since ARGs land in image history. Build
+# succeeds with source-map upload skipped if the secret isn't supplied.
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+    SENTRY_AUTH_TOKEN="$(cat /run/secrets/SENTRY_AUTH_TOKEN 2>/dev/null || true)" npm run build
 
 # Remove development dependencies
 RUN npm prune --omit=dev
