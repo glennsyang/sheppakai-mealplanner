@@ -51,15 +51,13 @@ npm install
 
 ### Environment variables
 
-Create a `.env` file at the project root:
-
-```env
-DATABASE_URL=./data/db.sqlite
-BETTER_AUTH_SECRET=<random 32+ character string>
-BETTER_AUTH_BASE_URL=http://localhost:5173
-ANTHROPIC_API_KEY=<your Anthropic API key>
-GEMINI_API_KEY=<your Google Gemini API key>
+```bash
+cp .env.example .env
+# then fill in the values
 ```
+
+See [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) for the full reference — every variable the app
+uses, which are required, their defaults, and where each is consumed.
 
 ### Database setup
 
@@ -162,30 +160,23 @@ All app tables use UUID text primary keys and `created_at` / `updated_at` audit 
 # Set secrets
 fly secrets set \
   BETTER_AUTH_SECRET=... \
+  BETTER_AUTH_BASE_URL=https://sheppakai-mealplanner.fly.dev \
   ANTHROPIC_API_KEY=... \
   GEMINI_API_KEY=... \
-  BETTER_AUTH_BASE_URL=https://sheppakai-mealplanner.fly.dev
+  BREVO_API_KEY=... \
+  BREVO_FROM_ADDRESS=...
 
 # Deploy
 fly deploy
 ```
 
+`DATABASE_URL` and `NODE_ENV` are intentionally _not_ set here — they're baked into the
+`Dockerfile` instead. See [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) for the full variable
+reference, including build-time and CI-only vars.
+
 SQLite is stored on a persistent volume mounted at `/data/db.sqlite`. Migrations run
 automatically on boot — `start.sh` applies any committed, unapplied migrations via
 `scripts/migrate.js` before the server starts, so a normal `fly deploy` is enough.
-
----
-
-## Environment Variables
-
-| Variable               | Required | Description                                                  |
-| ---------------------- | -------- | ------------------------------------------------------------ |
-| `DATABASE_URL`         | Yes      | SQLite path (`./data/db.sqlite` dev, `/data/db.sqlite` prod) |
-| `BETTER_AUTH_SECRET`   | Yes      | Random 32+ char string for auth signing                      |
-| `BETTER_AUTH_BASE_URL` | Yes      | App origin URL (used for auth callbacks)                     |
-| `ANTHROPIC_API_KEY`    | Yes      | Claude API key (recipe variations)                           |
-| `GEMINI_API_KEY`       | Yes      | Gemini API key (meal suggestions)                            |
-| `NODE_ENV`             | No       | `development` \| `production` \| `test`                      |
 
 ---
 

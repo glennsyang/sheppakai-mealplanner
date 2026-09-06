@@ -1,3 +1,4 @@
+import { PUBLIC_SENTRY_DSN } from '$app/env/public';
 import { building, dev } from '$app/environment';
 import { auth } from '$lib/server/auth';
 import { logger } from '$lib/server/logger';
@@ -6,7 +7,7 @@ import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 
 Sentry.init({
-	dsn: 'https://9488e2141b5fc14a91a545a6425e0422@o4510809399492608.ingest.us.sentry.io/4511412699725824',
+	dsn: PUBLIC_SENTRY_DSN,
 	tracesSampleRate: 1.0,
 	enableLogs: true
 	// sendDefaultPii intentionally left at its default (false) here, unlike hooks.client.ts.

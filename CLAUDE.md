@@ -127,12 +127,9 @@ src/
 
 ### Environment variables required
 
-```
-BETTER_AUTH_SECRET=<random 32+ char string>
-BETTER_AUTH_BASE_URL=https://your-app.fly.dev   # or http://localhost:5173 in dev
-ANTHROPIC_API_KEY=<key>
-DATABASE_URL=/data/db.sqlite                     # or ./data/db.sqlite in dev
-```
+See [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) for the full reference (every variable, which
+are required, defaults, and where each is consumed) — it's the canonical source, kept in sync
+with `.env.example`. Don't duplicate the list here; update that doc instead.
 
 ---
 
