@@ -9,7 +9,8 @@ export default defineConfig({
 	plugins: [
 		sentrySvelteKit({
 			org: 'sheppakai',
-			project: 'sheppakai-mealplanner'
+			project: 'sheppakai-mealplanner',
+			authToken: process.env.SENTRY_AUTH_TOKEN
 		}),
 		tailwindcss(),
 		sveltekit()

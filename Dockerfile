@@ -16,9 +16,11 @@ ENV NODE_ENV="production"
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
-# Install packages needed to build node modules
+# Install packages needed to build node modules. ca-certificates is required for the
+# bundled sentry-cli binary (used by the Sentry vite plugin) to verify TLS when uploading
+# source maps — it doesn't share Node's bundled cert store.
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
+    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3 ca-certificates
 
 # Install node modules
 COPY .npmrc package-lock.json package.json ./
