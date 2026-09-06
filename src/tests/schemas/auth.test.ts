@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 
-import { loginSchema, registerSchema, resendVerificationSchema } from '../../lib/schemas/auth';
+import {
+	forgotPasswordSchema,
+	loginSchema,
+	registerSchema,
+	resendVerificationSchema,
+	resetPasswordSchema
+} from '../../lib/schemas/auth';
 
 describe('loginSchema', () => {
 	it('accepts valid credentials', () => {
@@ -59,5 +65,46 @@ describe('resendVerificationSchema', () => {
 
 	it('rejects an invalid email address', () => {
 		expect(resendVerificationSchema.safeParse({ email: 'not-an-email' }).success).toBe(false);
+	});
+});
+
+describe('forgotPasswordSchema', () => {
+	it('accepts a valid email address', () => {
+		expect(forgotPasswordSchema.safeParse({ email: 'user@example.com' }).success).toBe(true);
+	});
+
+	it('rejects an invalid email address', () => {
+		expect(forgotPasswordSchema.safeParse({ email: 'not-an-email' }).success).toBe(false);
+	});
+});
+
+describe('resetPasswordSchema', () => {
+	const valid = {
+		password: 'brand-new-secret',
+		confirmPassword: 'brand-new-secret',
+		token: 'reset-token-123'
+	};
+
+	it('accepts a matching 12+ character password', () => {
+		expect(resetPasswordSchema.safeParse(valid).success).toBe(true);
+	});
+
+	it('treats the token as optional', () => {
+		const { token, ...withoutToken } = valid;
+		void token;
+		expect(resetPasswordSchema.safeParse(withoutToken).success).toBe(true);
+	});
+
+	it('rejects mismatched passwords', () => {
+		expect(
+			resetPasswordSchema.safeParse({ ...valid, confirmPassword: 'something-else' }).success
+		).toBe(false);
+	});
+
+	it('rejects a password shorter than 12 characters', () => {
+		expect(
+			resetPasswordSchema.safeParse({ ...valid, password: 'short', confirmPassword: 'short' })
+				.success
+		).toBe(false);
 	});
 });

@@ -6,7 +6,7 @@ import { sveltekitCookies } from 'better-auth/svelte-kit';
 
 import { getDb } from '../db';
 import * as schema from '../db/schema';
-import { sendVerificationEmail } from '../email';
+import { sendPasswordResetEmail, sendVerificationEmail } from '../email';
 
 export const auth = betterAuth({
 	appName: 'Meal Planner',
@@ -28,7 +28,25 @@ export const auth = betterAuth({
 		requireEmailVerification: true,
 		minPasswordLength: 12,
 		maxPasswordLength: 128,
-		resetPasswordTokenExpiresIn: 60 * 10 // 10 minutes
+		resetPasswordTokenExpiresIn: 60 * 10, // 10 minutes
+		// Invalidate every existing session when the password is reset — a reset is
+		// the recovery path for a suspected-compromised account, so any session an
+		// attacker may hold must not survive it.
+		revokeSessionsOnPasswordReset: true,
+		sendResetPassword: async ({ user, url }) => {
+			// `url` is better-auth's complete reset link. It points at the GET verifier
+			// (/api/auth/reset-password/<token>?callbackURL=/reset-password), which
+			// checks the token then 302s to /reset-password?token=<token> (or
+			// ?error=INVALID_TOKEN). Pass it straight through — same as
+			// sendVerificationEmail — don't append `?token=` again.
+			//
+			// Await the send (don't fire-and-forget): sendPasswordResetEmail throws on
+			// failure, and letting that propagate keeps the send tied to the request
+			// lifecycle (Fly can suspend the machine as soon as the response returns)
+			// and surfaces delivery failures in the logs / Sentry instead of a silent
+			// "link sent" with no email.
+			await sendPasswordResetEmail(user.email, user.name || user.email, url);
+		}
 	},
 	emailVerification: {
 		sendOnSignUp: true,

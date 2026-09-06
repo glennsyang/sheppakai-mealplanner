@@ -23,7 +23,7 @@ vi.mock('@getbrevo/brevo', () => ({
 
 vi.mock('../../lib/server/logger', () => ({ logger: loggerMock }));
 
-import { sendVerificationEmail } from '../../lib/server/email';
+import { sendPasswordResetEmail, sendVerificationEmail } from '../../lib/server/email';
 
 describe('sendVerificationEmail', () => {
 	beforeEach(() => {
@@ -71,6 +71,56 @@ describe('sendVerificationEmail', () => {
 
 		expect(loggerMock.error).toHaveBeenCalledWith(
 			'Failed to send verification email',
+			expect.any(Error),
+			{ to: 'user@example.com' }
+		);
+	});
+});
+
+describe('sendPasswordResetEmail', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('resolves and logs on a successful send', async () => {
+		sendMock.mockResolvedValueOnce({ messageId: '<reset-456@brevo>' });
+
+		await expect(
+			sendPasswordResetEmail('user@example.com', 'User', 'https://app/reset?token=abc')
+		).resolves.toBeUndefined();
+
+		expect(loggerMock.error).not.toHaveBeenCalled();
+		expect(loggerMock.info).toHaveBeenCalledWith('Sending password reset email', {
+			to: 'user@example.com'
+		});
+		expect(loggerMock.info).toHaveBeenCalledWith('Password reset email sent', {
+			to: 'user@example.com',
+			brevoMessageId: '<reset-456@brevo>'
+		});
+	});
+
+	it('sends the reset URL in the email body', async () => {
+		sendMock.mockResolvedValueOnce({ messageId: '<reset-456@brevo>' });
+
+		await sendPasswordResetEmail('user@example.com', 'User', 'https://app/reset?token=xyz');
+
+		const payload = (sendMock.mock.calls[0] as unknown[])[0] as {
+			htmlContent: string;
+			subject: string;
+		};
+		expect(payload.subject).toBe('[Meal Planner] Reset your password');
+		expect(payload.htmlContent).toContain('https://app/reset?token=xyz');
+	});
+
+	it('throws and logs when the Brevo SDK rejects', async () => {
+		sendMock.mockRejectedValueOnce(new Error('network down'));
+
+		await expect(
+			sendPasswordResetEmail('user@example.com', 'User', 'https://app/reset?token=abc')
+		).rejects.toThrow('network down');
+
+		expect(loggerMock.error).toHaveBeenCalledWith(
+			'Failed to send password reset email',
 			expect.any(Error),
 			{ to: 'user@example.com' }
 		);

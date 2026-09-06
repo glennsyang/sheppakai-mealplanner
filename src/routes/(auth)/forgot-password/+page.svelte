@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { loginSchema } from '$lib/schemas/auth';
+	import { forgotPasswordSchema } from '$lib/schemas/auth';
 	import { expoOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms';
@@ -11,12 +11,12 @@
 
 	// svelte-ignore state_referenced_locally — superForm is intentionally initialized once from props
 	const { form, errors, constraints, enhance, message, submitting } = superForm(data.form, {
-		validators: zod4Client(loginSchema)
+		validators: zod4Client(forgotPasswordSchema)
 	});
 </script>
 
 <svelte:head>
-	<title>Sign In — MealPlanner</title>
+	<title>Forgot Password — MealPlanner</title>
 </svelte:head>
 
 <div class="flex min-h-dvh">
@@ -31,11 +31,11 @@
 		</div>
 		<div class="space-y-6">
 			<blockquote class="font-serif text-4xl leading-tight font-semibold tracking-tight italic">
-				"Plan your week<br />with intention."
+				"Locked out?<br />Let's fix that."
 			</blockquote>
 			<p class="text-primary-100 max-w-xs text-sm leading-relaxed font-light">
-				From pantry to plate — discover dinners from what you already have, then build your week
-				around them.
+				Enter your email and we'll send a link to set a new password — you'll be back to planning in
+				a minute.
 			</p>
 		</div>
 		<p class="text-primary-200 text-xs">© 2026 Meal Planner</p>
@@ -52,18 +52,12 @@
 			</div>
 
 			<div class="space-y-1">
-				<h1 class="h2 font-semibold tracking-tight">Welcome back</h1>
-				<p class="text-surface-500 text-sm font-light">Sign in to continue planning</p>
+				<h1 class="h2 font-semibold tracking-tight">Forgot your password?</h1>
+				<p class="text-surface-500 text-sm font-light">We'll email you a link to reset it</p>
 			</div>
 
-			{#if data.resetComplete}
-				<div class="alert preset-tonal-success text-sm" role="status">
-					Your password has been reset. Please sign in.
-				</div>
-			{/if}
-
 			{#if $message}
-				<div class="alert preset-tonal-error text-sm">{$message}</div>
+				<div class="alert preset-tonal-surface text-sm" role="status">{$message}</div>
 			{/if}
 
 			<form method="POST" use:enhance class="space-y-5">
@@ -84,43 +78,19 @@
 					{/if}
 				</label>
 
-				<label class="label">
-					<span class="label-text text-sm font-medium">Password</span>
-					<input
-						type="password"
-						name="password"
-						bind:value={$form.password}
-						class="input mt-1"
-						class:input-error={$errors.password}
-						required={$constraints.password?.required}
-						placeholder="••••••••••••"
-						autocomplete="current-password"
-					/>
-					{#if $errors.password}
-						<span class="text-error-500 mt-1 block text-xs">{$errors.password}</span>
-					{/if}
-				</label>
-
-				<div class="-mt-2 text-right">
-					<a
-						href="/forgot-password"
-						class="text-primary-600 text-xs underline-offset-2 hover:underline">Forgot password?</a
-					>
-				</div>
-
 				<button
 					type="submit"
 					disabled={$submitting}
 					class="btn preset-filled-primary-500 mt-2 w-full"
 				>
-					{$submitting ? 'Signing in…' : 'Sign in'}
+					{$submitting ? 'Sending reset link…' : 'Send reset link'}
 				</button>
 			</form>
 
 			<p class="text-surface-500 text-center text-sm">
-				No account yet?&ensp;<a
-					href="/register"
-					class="text-primary-600 font-medium underline-offset-2 hover:underline">Create one</a
+				Remembered it?&ensp;<a
+					href="/login"
+					class="text-primary-600 font-medium underline-offset-2 hover:underline">Back to sign in</a
 				>
 			</p>
 		</div>
