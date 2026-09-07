@@ -37,7 +37,7 @@
 		"@tanstack/svelte-table": "^9.2.4",
 		"@tanstack/table-core": "^9.2.4",
 		"better-auth": "^1.7.2",
-		"better-sqlite3": "^12.10.0",
+		"better-sqlite3": "^13.0.3",
 		"drizzle-orm": "^0.45.2"
 	},
 	"devDependencies": {
