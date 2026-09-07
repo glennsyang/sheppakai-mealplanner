@@ -8,6 +8,11 @@ export const user = sqliteTable('user', {
 	email: text('email').notNull().unique(),
 	emailVerified: integer('email_verified', { mode: 'boolean' }).notNull().default(false),
 	image: text('image'),
+	// Present for future admin-plugin parity with sheppakai-budget (tracking:
+	// sheppakai-budget#432). The better-auth `admin` plugin is not wired up in this
+	// app yet; these columns are unused until it is.
+	role: text('role').notNull().default('user'),
+	banned: integer('banned', { mode: 'boolean' }).notNull().default(false),
 	createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 	updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
 });

@@ -6,7 +6,9 @@ import { sveltekitCookies } from 'better-auth/svelte-kit';
 
 import { getDb } from '../db';
 import * as schema from '../db/schema';
-import { sendPasswordResetEmail, sendVerificationEmail } from '../email';
+import { sendPasswordChangedEmail, sendPasswordResetEmail, sendVerificationEmail } from '../email';
+import { logger } from '../logger';
+import { sendAuthAlerts } from '../notifications';
 
 export const auth = betterAuth({
 	appName: 'Meal Planner',
@@ -46,6 +48,29 @@ export const auth = betterAuth({
 			// and surfaces delivery failures in the logs / Sentry instead of a silent
 			// "link sent" with no email.
 			await sendPasswordResetEmail(user.email, user.name || user.email, url);
+		},
+		// Runs after a reset completes and every session has been revoked
+		// (revokeSessionsOnPasswordReset above). Fire-and-forget: the reset itself
+		// has already succeeded, so a failing confirmation email or push alert must
+		// not break the response. Parity with sheppakai-budget (tracking:
+		// sheppakai-budget#432).
+		onPasswordReset: async ({ user }) => {
+			logger.info('Security event: password reset completed and sessions revoked', {
+				userId: user.id,
+				email: user.email,
+				timestamp: new Date().toISOString()
+			});
+			void sendPasswordChangedEmail({
+				to: user.email,
+				name: user.name || user.email,
+				changedAt: new Date(),
+				source: 'Password reset flow'
+			}).catch((err) => logger.error('Password changed email failed', err));
+			void sendAuthAlerts(
+				`⚠️ Password reset for ${user.name || user.email} ${user.email} at ${new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}. All sessions revoked.`,
+				'Meal Planner - Security Alert',
+				4
+			);
 		}
 	},
 	emailVerification: {

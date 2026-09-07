@@ -62,6 +62,10 @@ export const variables = defineEnvVars({
 		description: 'Gemini API key',
 		schema: z.string().min(1).default('dummy_key_for_build')
 	},
+	AUTH_ALERTS_URL: {
+		description: 'Ntfy.sh URL for authentication and security alert push notifications',
+		schema: z.url().default('https://notification-service.com/dummy-auth-alerts')
+	},
 	NODE_ENV: {
 		description: 'Application runtime environment',
 		schema: z.enum(['development', 'production', 'test']).default('development')

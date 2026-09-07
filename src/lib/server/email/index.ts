@@ -5,6 +5,17 @@ import { logger } from '../logger';
 
 const brevo = new BrevoClient({ apiKey: BREVO_API_KEY });
 
+/** Escapes the five HTML-significant characters so user-controlled values (name,
+ *  user agent, …) can't inject markup into a transactional email body. */
+function escapeHtml(value: string): string {
+	return value
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
+}
+
 export async function sendVerificationEmail(to: string, name: string, verificationUrl: string) {
 	// This is intentionally info-level: production suppresses debug logs, and
 	// this event distinguishes an untriggered auth flow from a provider failure.
@@ -115,4 +126,79 @@ export async function sendPasswordResetEmail(to: string, name: string, resetUrl:
 	}
 
 	logger.info('Password reset email sent', { to, brevoMessageId: result.messageId });
+}
+
+type PasswordChangedEmailPayload = {
+	to: string;
+	name: string;
+	changedAt: Date;
+	ipAddress?: string;
+	userAgent?: string;
+	source?: string;
+};
+
+/**
+ * Security-notice email sent after a password change (currently only the
+ * completed-reset flow — see `onPasswordReset` in src/lib/server/auth/index.ts).
+ * All interpolated values are HTML-escaped since `name` / `userAgent` are
+ * user-controlled.
+ */
+export async function sendPasswordChangedEmail(payload: PasswordChangedEmailPayload) {
+	// Info-level for the same reason as the other sends: it separates an
+	// untriggered flow from a provider failure in production logs.
+	logger.info('Sending password changed email', { to: payload.to });
+
+	const changedAtText = escapeHtml(payload.changedAt.toLocaleString());
+	const ipAddress = escapeHtml(payload.ipAddress || 'Unavailable');
+	const userAgent = escapeHtml(payload.userAgent || 'Unavailable');
+	const source = escapeHtml(payload.source || 'Account settings');
+	const name = escapeHtml(payload.name);
+
+	let result;
+	try {
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Meal Planner', email: BREVO_FROM_ADDRESS },
+			to: [{ email: payload.to, name: payload.name }],
+			subject: '[Meal Planner] Your password was changed',
+			htmlContent: `
+				<!DOCTYPE html>
+				<html>
+				<head>
+					<meta charset="utf-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<title>Password changed</title>
+				</head>
+				<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+					<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+						<h1 style="color: white; margin: 0; font-size: 28px;">Password Updated</h1>
+					</div>
+					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">
+							Your Meal Planner password was successfully changed.
+						</p>
+						<p style="font-size: 14px; margin-bottom: 8px;"><strong>When:</strong> ${changedAtText}</p>
+						<p style="font-size: 14px; margin-bottom: 8px;"><strong>Source:</strong> ${source}</p>
+						<p style="font-size: 14px; margin-bottom: 8px;"><strong>IP:</strong> ${ipAddress}</p>
+						<p style="font-size: 14px; margin-bottom: 20px;"><strong>Device:</strong> ${userAgent}</p>
+						<p style="font-size: 14px; color: #6b7280; margin-top: 20px;">
+							If this wasn't you, reset your password immediately and contact support.
+						</p>
+					</div>
+					<div style="text-align: center; margin-top: 20px; padding: 20px; color: #9ca3af; font-size: 12px;">
+						<p>Meal Planner</p>
+					</div>
+				</body>
+				</html>
+			`
+		});
+	} catch (cause) {
+		logger.error('Failed to send password changed email', cause, { to: payload.to });
+		throw cause instanceof Error ? cause : new Error('Brevo request failed', { cause });
+	}
+
+	logger.info('Password changed email sent', {
+		to: payload.to,
+		brevoMessageId: result.messageId
+	});
 }
