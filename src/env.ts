@@ -63,8 +63,14 @@ export const variables = defineEnvVars({
 		schema: z.string().min(1).default('dummy_key_for_build')
 	},
 	AUTH_ALERTS_URL: {
-		description: 'Ntfy.sh URL for authentication and security alert push notifications',
-		schema: z.url().default('https://notification-service.com/dummy-auth-alerts')
+		description:
+			'Ntfy.sh URL for authentication and security alert push notifications. Defaults to a ' +
+			'non-resolving .invalid host so alerts are disabled (not sent anywhere) until set.',
+		// RFC 6761 reserved TLD — guaranteed not to resolve. sendAuthAlerts() treats
+		// any `.invalid` host as "disabled" and skips the request entirely, so an
+		// unconfigured deployment fails closed instead of POSTing alert text (which
+		// includes a user's name/email) to a live third-party domain.
+		schema: z.url().default('https://auth-alerts.invalid')
 	},
 	NODE_ENV: {
 		description: 'Application runtime environment',

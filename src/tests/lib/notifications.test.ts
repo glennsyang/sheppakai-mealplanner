@@ -2,17 +2,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockState = vi.hoisted(() => ({
 	fetch: vi.fn<(input: string, init?: RequestInit) => Promise<unknown>>(),
-	loggerError: vi.fn<() => void>()
+	loggerError: vi.fn<() => void>(),
+	loggerInfo: vi.fn<() => void>(),
+	authAlertsUrl: 'https://alerts.example.com/auth'
 }));
 
 vi.mock('$app/env/private', () => ({
-	AUTH_ALERTS_URL: 'https://alerts.example.com/auth'
+	// getter so a test can point the module at a different URL mid-suite
+	get AUTH_ALERTS_URL() {
+		return mockState.authAlertsUrl;
+	}
 }));
 
 vi.mock('../../lib/server/logger', () => ({
 	logger: {
 		error: mockState.loggerError,
-		info: vi.fn<() => void>()
+		info: mockState.loggerInfo
 	}
 }));
 
@@ -25,6 +30,8 @@ describe('sendAuthAlerts', () => {
 	beforeEach(() => {
 		mockState.fetch.mockReset();
 		mockState.loggerError.mockReset();
+		mockState.loggerInfo.mockReset();
+		mockState.authAlertsUrl = 'https://alerts.example.com/auth';
 	});
 
 	afterEach(() => {
@@ -73,6 +80,28 @@ describe('sendAuthAlerts', () => {
 	it('returns false and logs when fetch throws', async () => {
 		mockState.fetch.mockRejectedValue(new Error('network error'));
 		await expect(sendAuthAlerts('fail')).resolves.toBe(false);
+		expect(mockState.loggerError).toHaveBeenCalled();
+	});
+
+	it('fails closed for the default .invalid host — never POSTs the alert', async () => {
+		mockState.authAlertsUrl = 'https://auth-alerts.invalid';
+		await expect(sendAuthAlerts('Password reset for a@b.com')).resolves.toBe(false);
+		expect(mockState.fetch).not.toHaveBeenCalled();
+		expect(mockState.loggerInfo).toHaveBeenCalled();
+	});
+
+	it('also skips a bare `invalid` host and any `*.invalid` subdomain', async () => {
+		for (const url of ['https://invalid', 'https://x.y.invalid/path']) {
+			mockState.authAlertsUrl = url;
+			await expect(sendAuthAlerts('msg')).resolves.toBe(false);
+		}
+		expect(mockState.fetch).not.toHaveBeenCalled();
+	});
+
+	it('returns false and logs when AUTH_ALERTS_URL is not a valid URL', async () => {
+		mockState.authAlertsUrl = 'not a url';
+		await expect(sendAuthAlerts('msg')).resolves.toBe(false);
+		expect(mockState.fetch).not.toHaveBeenCalled();
 		expect(mockState.loggerError).toHaveBeenCalled();
 	});
 });
