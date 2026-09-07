@@ -8,11 +8,15 @@ export const user = sqliteTable('user', {
 	email: text('email').notNull().unique(),
 	emailVerified: integer('email_verified', { mode: 'boolean' }).notNull().default(false),
 	image: text('image'),
-	// Present for future admin-plugin parity with sheppakai-budget (tracking:
-	// sheppakai-budget#432). The better-auth `admin` plugin is not wired up in this
-	// app yet; these columns are unused until it is.
+	// Columns for the better-auth `admin` plugin (wired up in src/lib/server/auth/index.ts,
+	// tracking: #75). `role` / `banned` carry NOT NULL defaults so existing rows backfill
+	// cleanly; `ban_reason` / `ban_expires` are written by `auth.api.banUser` and left NULL
+	// otherwise. The plugin registers the same fields on its own model — keep the names and
+	// types here in sync with node_modules/better-auth/dist/plugins/admin/schema.mjs.
 	role: text('role').notNull().default('user'),
 	banned: integer('banned', { mode: 'boolean' }).notNull().default(false),
+	banReason: text('ban_reason'),
+	banExpires: integer('ban_expires', { mode: 'timestamp' }),
 	createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 	updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
 });

@@ -21,11 +21,16 @@
 	}
 
 	const navLinks = [
-		{ href: '/', label: 'Dashboard' },
-		{ href: '/pantry', label: 'Pantry' },
-		{ href: '/suggest', label: 'Suggest' },
-		{ href: '/planner', label: 'Planner' }
+		{ href: '/', label: 'Dashboard', adminOnly: false },
+		{ href: '/pantry', label: 'Pantry', adminOnly: false },
+		{ href: '/suggest', label: 'Suggest', adminOnly: false },
+		{ href: '/planner', label: 'Planner', adminOnly: false },
+		{ href: '/admin', label: 'Admin', adminOnly: true }
 	];
+
+	const visibleLinks = $derived(
+		navLinks.filter((link) => !link.adminOnly || user?.role === 'admin')
+	);
 
 	function isActive(href: string): boolean {
 		if (href === '/') return page.url.pathname === '/';
@@ -52,7 +57,7 @@
 
 			<!-- Primary nav -->
 			<nav class="ml-4 flex items-center gap-6" aria-label="Main navigation">
-				{#each navLinks as link}
+				{#each visibleLinks as link}
 					<a
 						href={link.href}
 						class="relative py-0.5 text-sm transition-colors duration-150"

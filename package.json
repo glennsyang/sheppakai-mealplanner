@@ -34,6 +34,8 @@
 		"@getbrevo/brevo": "^6.0.3",
 		"@google/genai": "^2.21.0",
 		"@sentry/sveltekit": "^10.73.0",
+		"@tanstack/svelte-table": "^9.2.4",
+		"@tanstack/table-core": "^9.2.4",
 		"better-auth": "^1.7.2",
 		"better-sqlite3": "^12.10.0",
 		"drizzle-orm": "^0.45.2"

@@ -30,18 +30,19 @@ describe('rateLimit table (better-auth rate limiting)', () => {
 	});
 });
 
-// Parity columns for the better-auth `admin` plugin (tracking: sheppakai-budget#432).
-// The plugin isn't wired up here yet, but the columns must exist with the right
-// names/defaults so enabling it later is a config-only change and existing rows
-// backfill correctly.
-describe('user table role/banned parity columns', () => {
-	it('exposes `role` and `banned` by property name', () => {
+// Columns for the better-auth `admin` plugin (wired up in src/lib/server/auth/index.ts,
+// tracking: #75). The plugin reads/writes `role`, `banned`, `ban_reason` and `ban_expires`
+// on the `user` model by name — if any drift, ban/role actions from /admin break.
+describe('user table admin-plugin columns', () => {
+	it('exposes `role`, `banned`, `banReason` and `banExpires` by property name', () => {
 		const keys = Object.keys(getTableColumns(user));
 		expect(keys).toContain('role');
 		expect(keys).toContain('banned');
+		expect(keys).toContain('banReason');
+		expect(keys).toContain('banExpires');
 	});
 
-	it('maps them to snake_case NOT NULL columns with user/false defaults', () => {
+	it('maps role/banned to snake_case NOT NULL columns with user/false defaults', () => {
 		const { columns } = getTableConfig(user);
 		const role = columns.find((c) => c.name === 'role');
 		const banned = columns.find((c) => c.name === 'banned');
@@ -50,5 +51,16 @@ describe('user table role/banned parity columns', () => {
 		expect(role?.default).toBe('user');
 		expect(banned?.notNull).toBe(true);
 		expect(banned?.default).toBe(false);
+	});
+
+	it('maps ban_reason / ban_expires to nullable snake_case columns', () => {
+		const { columns } = getTableConfig(user);
+		const banReason = columns.find((c) => c.name === 'ban_reason');
+		const banExpires = columns.find((c) => c.name === 'ban_expires');
+
+		expect(banReason).toBeDefined();
+		expect(banReason?.notNull).toBe(false);
+		expect(banExpires).toBeDefined();
+		expect(banExpires?.notNull).toBe(false);
 	});
 });
