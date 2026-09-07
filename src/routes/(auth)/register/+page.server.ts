@@ -1,5 +1,6 @@
 import { registerSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
+import { getBetterAuthErrorMessage } from '$lib/server/auth/errors';
 import { logger } from '$lib/server/logger';
 import { isRedirect, redirect } from '@sveltejs/kit';
 import { superValidate, message } from 'sveltekit-superforms';
@@ -42,9 +43,11 @@ export const actions: Actions = {
 			}
 
 			logger.warn('Registration failed', { email: form.data.email, error });
-			return message(form, 'Registration failed. That email may already be in use.', {
-				status: 400
-			});
+			return message(
+				form,
+				getBetterAuthErrorMessage(error, 'Registration failed. That email may already be in use.'),
+				{ status: 400 }
+			);
 		}
 
 		throw redirect(302, `/verify-email?email=${encodeURIComponent(form.data.email)}`);
