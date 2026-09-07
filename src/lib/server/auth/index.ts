@@ -2,6 +2,7 @@ import { BETTER_AUTH_BASE_URL, BETTER_AUTH_SECRET, NODE_ENV } from '$app/env/pri
 import { getRequestEvent } from '$app/server';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { admin } from 'better-auth/plugins';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 
 import { getDb } from '../db';
@@ -138,5 +139,19 @@ export const auth = betterAuth({
 		max: 5, // max 5 requests per window per IP
 		storage: NODE_ENV === 'production' ? 'database' : 'memory'
 	},
-	plugins: [sveltekitCookies(getRequestEvent)] // make sure this is the last plugin in the array
+	plugins: [
+		// User administration: adds `role` / `banned` / `banReason` / `banExpires` to the `user`
+		// model and the `auth.api.listUsers` / `banUser` / `unbanUser` / `setRole` / `removeUser`
+		// server endpoints that /admin drives. `defaultRole` / `adminRoles` are the plugin
+		// defaults, spelled out here so the policy is visible. The first admin is promoted by a
+		// one-off SQL UPDATE (there is no self-service path) — see the #75 PR description.
+		admin({ defaultRole: 'user', adminRoles: ['admin'] }),
+		sveltekitCookies(getRequestEvent) // make sure this is the last plugin in the array
+	]
 });
+
+// Session shapes with every plugin's additional fields folded in (the `admin` plugin adds
+// `role` / `banned` / … to `user`). Used for `App.Locals` and component props so the app has
+// one source of truth for the authenticated-user type.
+export type SessionUser = typeof auth.$Infer.Session.user;
+export type SessionData = typeof auth.$Infer.Session.session;
