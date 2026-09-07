@@ -1,5 +1,6 @@
 import { resetPasswordSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
+import { getBetterAuthErrorMessage } from '$lib/server/auth/errors';
 import { logger } from '$lib/server/logger';
 import { isRedirect, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
@@ -49,9 +50,14 @@ export const actions: Actions = {
 				throw error;
 			}
 			logger.warn('Password reset failed', { error });
-			return message(form, 'This reset link is invalid or has expired. Request a new one.', {
-				status: 400
-			});
+			return message(
+				form,
+				getBetterAuthErrorMessage(
+					error,
+					'This reset link is invalid or has expired. Request a new one.'
+				),
+				{ status: 400 }
+			);
 		}
 
 		throw redirect(302, '/login?reset=success');

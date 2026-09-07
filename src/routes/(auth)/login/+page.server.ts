@@ -1,5 +1,6 @@
 import { loginSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
+import { getBetterAuthErrorMessage } from '$lib/server/auth/errors';
 import { logger } from '$lib/server/logger';
 import { isRedirect, redirect } from '@sveltejs/kit';
 import { APIError } from 'better-auth';
@@ -47,7 +48,9 @@ export const actions: Actions = {
 				throw redirect(302, `/verify-email?email=${encodeURIComponent(form.data.email)}`);
 			}
 			logger.warn('Login failed', { email: form.data.email, error });
-			return message(form, 'Invalid email or password', { status: 400 });
+			return message(form, getBetterAuthErrorMessage(error, 'Invalid email or password'), {
+				status: 400
+			});
 		}
 
 		throw redirect(302, '/');
