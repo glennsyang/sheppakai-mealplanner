@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import {
+	changePasswordSchema,
 	forgotPasswordSchema,
 	loginSchema,
 	registerSchema,
@@ -29,8 +30,8 @@ describe('registerSchema', () => {
 	const valid = {
 		name: 'Alice',
 		email: 'alice@example.com',
-		password: 'password123',
-		confirmPassword: 'password123'
+		password: 'correct-horse-battery',
+		confirmPassword: 'correct-horse-battery'
 	};
 
 	it('accepts valid registration data', () => {
@@ -48,13 +49,16 @@ describe('registerSchema', () => {
 		expect(result.success).toBe(false);
 	});
 
-	it('rejects password shorter than 8 characters', () => {
+	it('rejects a password shorter than 12 characters (matches server minPasswordLength)', () => {
+		// 11 chars — one short of the server floor.
 		const result = registerSchema.safeParse({
 			...valid,
-			password: 'short',
-			confirmPassword: 'short'
+			password: 'password123',
+			confirmPassword: 'password123'
 		});
 		expect(result.success).toBe(false);
+		const messages = result.error?.issues.map((i) => i.message) ?? [];
+		expect(messages).toContain('Password must be at least 12 characters');
 	});
 });
 
@@ -105,6 +109,38 @@ describe('resetPasswordSchema', () => {
 		expect(
 			resetPasswordSchema.safeParse({ ...valid, password: 'short', confirmPassword: 'short' })
 				.success
+		).toBe(false);
+	});
+});
+
+describe('changePasswordSchema', () => {
+	const valid = {
+		currentPassword: 'old-password-1',
+		newPassword: 'brand-new-secret',
+		confirmPassword: 'brand-new-secret'
+	};
+
+	it('accepts a valid change with a matching 12+ char new password', () => {
+		expect(changePasswordSchema.safeParse(valid).success).toBe(true);
+	});
+
+	it('rejects an empty current password', () => {
+		expect(changePasswordSchema.safeParse({ ...valid, currentPassword: '' }).success).toBe(false);
+	});
+
+	it('rejects a new password shorter than 12 characters', () => {
+		expect(
+			changePasswordSchema.safeParse({
+				...valid,
+				newPassword: 'short',
+				confirmPassword: 'short'
+			}).success
+		).toBe(false);
+	});
+
+	it('rejects a mismatched confirmation', () => {
+		expect(
+			changePasswordSchema.safeParse({ ...valid, confirmPassword: 'something-else' }).success
 		).toBe(false);
 	});
 });

@@ -23,7 +23,11 @@ vi.mock('@getbrevo/brevo', () => ({
 
 vi.mock('../../lib/server/logger', () => ({ logger: loggerMock }));
 
-import { sendPasswordResetEmail, sendVerificationEmail } from '../../lib/server/email';
+import {
+	sendPasswordChangedEmail,
+	sendPasswordResetEmail,
+	sendVerificationEmail
+} from '../../lib/server/email';
 
 describe('sendVerificationEmail', () => {
 	beforeEach(() => {
@@ -121,6 +125,69 @@ describe('sendPasswordResetEmail', () => {
 
 		expect(loggerMock.error).toHaveBeenCalledWith(
 			'Failed to send password reset email',
+			expect.any(Error),
+			{ to: 'user@example.com' }
+		);
+	});
+});
+
+describe('sendPasswordChangedEmail', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	const payload = {
+		to: 'user@example.com',
+		name: 'User',
+		changedAt: new Date('2026-09-06T12:00:00Z'),
+		source: 'Password reset flow'
+	};
+
+	it('resolves and logs the Brevo message id on a successful send', async () => {
+		sendMock.mockResolvedValueOnce({ messageId: '<changed-789@brevo>' });
+
+		await expect(sendPasswordChangedEmail(payload)).resolves.toBeUndefined();
+
+		expect(loggerMock.error).not.toHaveBeenCalled();
+		expect(loggerMock.info).toHaveBeenCalledWith('Sending password changed email', {
+			to: 'user@example.com'
+		});
+		expect(loggerMock.info).toHaveBeenCalledWith('Password changed email sent', {
+			to: 'user@example.com',
+			brevoMessageId: '<changed-789@brevo>'
+		});
+	});
+
+	it('sends under the Meal Planner "password was changed" subject', async () => {
+		sendMock.mockResolvedValueOnce({ messageId: '<changed-789@brevo>' });
+
+		await sendPasswordChangedEmail(payload);
+
+		const sent = (sendMock.mock.calls[0] as unknown[])[0] as {
+			subject: string;
+			htmlContent: string;
+		};
+		expect(sent.subject).toBe('[Meal Planner] Your password was changed');
+		expect(sent.htmlContent).toContain('Password reset flow');
+	});
+
+	it('HTML-escapes a user-controlled name', async () => {
+		sendMock.mockResolvedValueOnce({ messageId: '<changed-789@brevo>' });
+
+		await sendPasswordChangedEmail({ ...payload, name: '<script>&"evil"' });
+
+		const sent = (sendMock.mock.calls[0] as unknown[])[0] as { htmlContent: string };
+		expect(sent.htmlContent).toContain('&lt;script&gt;&amp;&quot;evil&quot;');
+		expect(sent.htmlContent).not.toContain('<script>&"evil"');
+	});
+
+	it('throws and logs when the Brevo SDK rejects', async () => {
+		sendMock.mockRejectedValueOnce(new Error('network down'));
+
+		await expect(sendPasswordChangedEmail(payload)).rejects.toThrow('network down');
+
+		expect(loggerMock.error).toHaveBeenCalledWith(
+			'Failed to send password changed email',
 			expect.any(Error),
 			{ to: 'user@example.com' }
 		);
