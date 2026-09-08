@@ -1,4 +1,9 @@
-import { BETTER_AUTH_BASE_URL, BETTER_AUTH_SECRET, NODE_ENV } from '$app/env/private';
+import {
+	ADMIN_USER_IDS,
+	BETTER_AUTH_BASE_URL,
+	BETTER_AUTH_SECRET,
+	NODE_ENV
+} from '$app/env/private';
 import { getRequestEvent } from '$app/server';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
@@ -143,9 +148,14 @@ export const auth = betterAuth({
 		// User administration: adds `role` / `banned` / `banReason` / `banExpires` to the `user`
 		// model and the `auth.api.listUsers` / `banUser` / `unbanUser` / `setRole` / `removeUser`
 		// server endpoints that /admin drives. `defaultRole` / `adminRoles` are the plugin
-		// defaults, spelled out here so the policy is visible. The first admin is promoted by a
-		// one-off SQL UPDATE (there is no self-service path) — see the #75 PR description.
-		admin({ defaultRole: 'user', adminRoles: ['admin'] }),
+		// defaults, spelled out here so the policy is visible. `adminUserIds` bootstraps admins
+		// by id from the `ADMIN_USER_IDS` env var (no DB write needed) — parity with the sibling
+		// repos (sheppakai-budget#437); the one-off SQL UPDATE promotion path still works too.
+		admin({
+			adminUserIds: ADMIN_USER_IDS.split(','),
+			defaultRole: 'user',
+			adminRoles: ['admin']
+		}),
 		sveltekitCookies(getRequestEvent) // make sure this is the last plugin in the array
 	]
 });
