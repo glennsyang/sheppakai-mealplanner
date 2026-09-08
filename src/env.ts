@@ -54,6 +54,10 @@ export const variables = defineEnvVars({
 					message: 'BREVO_FROM_ADDRESS cannot be the dummy value outside of build'
 				})
 	},
+	ADMIN_USER_IDS: {
+		description: 'Comma-separated user IDs bootstrapped as admins by the better-auth admin plugin',
+		schema: z.string().default('dummy_admin_id')
+	},
 	ANTHROPIC_API_KEY: {
 		description: 'Anthropic API key',
 		schema: z.string().min(1).default('dummy_key_for_build')
