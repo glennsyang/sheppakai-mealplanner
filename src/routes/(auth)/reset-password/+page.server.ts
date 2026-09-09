@@ -1,3 +1,4 @@
+import { POST_LOGIN_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
 import { resetPasswordSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import { getBetterAuthErrorMessage } from '$lib/server/auth/errors';
@@ -10,7 +11,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ request, url }) => {
 	const session = await auth.api.getSession({ headers: request.headers });
-	if (session) throw redirect(302, '/');
+	if (session) throw redirect(302, POST_LOGIN_ROUTE);
 
 	const token = url.searchParams.get('token');
 	// Better Auth's link verifier redirects here with `?error=INVALID_TOKEN` when
@@ -60,6 +61,6 @@ export const actions: Actions = {
 			);
 		}
 
-		throw redirect(302, '/login?reset=success');
+		throw redirect(302, `${SIGN_IN_ROUTE}?reset=success`);
 	}
 };

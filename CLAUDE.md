@@ -99,7 +99,7 @@ src/
 │           ├── mealPlan.ts      # includes getMondayOfCurrentWeek()
 │           └── recipes.ts
 ├── routes/
-│   ├── (auth)/                  # Unauthenticated: login, register, logout
+│   ├── (auth)/                  # Unauthenticated: sign-in, register, sign-out
 │   ├── (app)/                   # Protected: auth guard in +layout.server.ts
 │   │   ├── pantry/
 │   │   ├── suggest/
@@ -119,8 +119,8 @@ src/
 - **better-auth v1** with email+password only (no OAuth).
 - Minimum password length: **12 characters**.
 - `src/hooks.server.ts` runs the session middleware on every request, populating `event.locals.user` and `event.locals.session` via `svelteKitHandler`.
-- `(app)/+layout.server.ts` enforces the auth guard — redirects to `/login` if no session.
-- **Logout** is a form POST to `/logout` (handled by `(auth)/logout/+page.server.ts`). The layout submits a hidden form via `requestSubmit()`.
+- `(app)/+layout.server.ts` enforces the auth guard — redirects to `/sign-in` if no session. Auth route paths are centralised in `src/lib/auth-routes.ts` (`SIGN_IN_ROUTE`, etc.) — no inline route literals.
+- **Sign-out** is a form POST to `/sign-out` (handled by `(auth)/sign-out/+page.server.ts`). The layout submits a hidden form via `requestSubmit()`.
 - `auth.advanced.useSecureCookies` is `true` — cookies require HTTPS. In dev, ensure `http://localhost:5173` is in `trustedOrigins`.
 - Rate limiting: 5 requests/minute/IP, `database` storage in production, `memory` in dev.
 - Cookie prefix: `mealplanner_auth_`.

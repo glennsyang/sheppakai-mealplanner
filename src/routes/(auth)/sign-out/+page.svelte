@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { POST_LOGIN_ROUTE } from '$lib/auth-routes';
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-gray-100">
@@ -11,6 +12,6 @@
 
 		<form method="POST" use:enhance><button type="submit" class="w-full">Sign Out</button></form>
 
-		<div class="text-center"><a href="/dashboard" class="text-sm"> Cancel </a></div>
+		<div class="text-center"><a href={POST_LOGIN_ROUTE} class="text-sm"> Cancel </a></div>
 	</div>
 </div>

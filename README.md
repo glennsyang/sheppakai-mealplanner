@@ -119,7 +119,7 @@ src/
 │           ├── recipes.ts
 │           └── mealPlan.ts
 ├── routes/
-│   ├── (auth)/                  # login, register, logout
+│   ├── (auth)/                  # sign-in, register, sign-out
 │   ├── (app)/                   # Protected: auth guard in +layout.server.ts
 │   │   ├── pantry/
 │   │   ├── suggest/

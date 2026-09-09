@@ -1,3 +1,4 @@
+import { POST_LOGIN_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
 import { resendVerificationSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import { logger } from '$lib/server/logger';
@@ -9,11 +10,11 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ request, url }) => {
 	const session = await auth.api.getSession({ headers: request.headers });
-	if (session) throw redirect(302, '/');
+	if (session) throw redirect(302, POST_LOGIN_ROUTE);
 
 	const email = url.searchParams.get('email');
 	if (!email) {
-		throw redirect(302, '/login');
+		throw redirect(302, SIGN_IN_ROUTE);
 	}
 
 	const verificationForm = await superValidate({ email }, zod4(resendVerificationSchema), {

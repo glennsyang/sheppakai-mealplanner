@@ -1,3 +1,4 @@
+import { POST_LOGIN_ROUTE, VERIFY_EMAIL_ROUTE } from '$lib/auth-routes';
 import { loginSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import { getBetterAuthErrorMessage } from '$lib/server/auth/errors';
@@ -11,7 +12,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ request, url }) => {
 	const session = await auth.api.getSession({ headers: request.headers });
-	if (session) throw redirect(302, '/');
+	if (session) throw redirect(302, POST_LOGIN_ROUTE);
 
 	const form = await superValidate(zod4(loginSchema));
 	// Whitelisted flag only — the reset-password action redirects here with
@@ -45,7 +46,7 @@ export const actions: Actions = {
 				throw error;
 			}
 			if (error instanceof APIError && error.body?.code === 'EMAIL_NOT_VERIFIED') {
-				throw redirect(302, `/verify-email?email=${encodeURIComponent(form.data.email)}`);
+				throw redirect(302, `${VERIFY_EMAIL_ROUTE}?email=${encodeURIComponent(form.data.email)}`);
 			}
 			logger.warn('Login failed', { email: form.data.email, error });
 			return message(form, getBetterAuthErrorMessage(error, 'Invalid email or password'), {
@@ -53,6 +54,6 @@ export const actions: Actions = {
 			});
 		}
 
-		throw redirect(302, '/');
+		throw redirect(302, POST_LOGIN_ROUTE);
 	}
 };

@@ -77,7 +77,7 @@ describe('getUser', () => {
 		expect(getUser(makeLocals({ user: mockUser }))).toBe(mockUser);
 	});
 
-	it('throws a redirect to /login when the user is missing', () => {
+	it('throws a redirect to /sign-in when the user is missing', () => {
 		let caught: unknown;
 		try {
 			getUser(makeLocals({ user: null }));
@@ -86,6 +86,6 @@ describe('getUser', () => {
 		}
 
 		expect(isRedirect(caught)).toBe(true);
-		expect((caught as { location: string }).location).toBe('/login');
+		expect((caught as { location: string }).location).toBe('/sign-in');
 	});
 });

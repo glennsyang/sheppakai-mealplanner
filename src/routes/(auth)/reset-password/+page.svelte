@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FORGOT_PASSWORD_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
 	import { resetPasswordSchema } from '$lib/schemas/auth';
 	import { expoOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
@@ -78,10 +79,10 @@
 						This password reset link is no longer valid. Request a new one and we'll email it right
 						over.
 					</p>
-					<a href="/forgot-password" class="btn preset-filled-primary-500 w-full"
+					<a href={FORGOT_PASSWORD_ROUTE} class="btn preset-filled-primary-500 w-full"
 						>Request a new link</a
 					>
-					<a href="/login" class="btn preset-outlined-surface-500 w-full">Back to sign in</a>
+					<a href={SIGN_IN_ROUTE} class="btn preset-outlined-surface-500 w-full">Back to sign in</a>
 				</div>
 			{:else}
 				<div class="space-y-1">
@@ -141,7 +142,9 @@
 				</form>
 
 				<p class="text-surface-500 text-center text-sm">
-					<a href="/login" class="text-primary-600 font-medium underline-offset-2 hover:underline"
+					<a
+						href={SIGN_IN_ROUTE}
+						class="text-primary-600 font-medium underline-offset-2 hover:underline"
 						>Back to sign in</a
 					>
 				</p>
