@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
+	import { SIGN_OUT_ROUTE } from '$lib/auth-routes';
 	import { expoOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 
@@ -126,7 +127,7 @@
 				</div>
 
 				<!-- Sign out -->
-				<form method="POST" action="/logout" use:enhance id="logout-form"></form>
+				<form method="POST" action={SIGN_OUT_ROUTE} use:enhance id="logout-form"></form>
 				<button
 					type="button"
 					onclick={() => {

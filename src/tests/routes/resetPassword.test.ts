@@ -51,7 +51,7 @@ describe('reset-password default action', () => {
 				body: { token: 'reset-token-123', newPassword: 'brand-new-secret' }
 			})
 		);
-		expect(redirectError).toMatchObject({ status: 302, location: '/login?reset=success' });
+		expect(redirectError).toMatchObject({ status: 302, location: '/sign-in?reset=success' });
 	});
 
 	it('rejects a submission with no token', async () => {

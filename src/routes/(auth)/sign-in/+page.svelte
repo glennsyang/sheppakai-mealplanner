@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FORGOT_PASSWORD_ROUTE, REGISTER_ROUTE } from '$lib/auth-routes';
 	import { loginSchema } from '$lib/schemas/auth';
 	import { expoOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
@@ -103,7 +104,7 @@
 
 				<div class="-mt-2 text-right">
 					<a
-						href="/forgot-password"
+						href={FORGOT_PASSWORD_ROUTE}
 						class="text-primary-600 text-xs underline-offset-2 hover:underline">Forgot password?</a
 					>
 				</div>
@@ -119,7 +120,7 @@
 
 			<p class="text-surface-500 text-center text-sm">
 				No account yet?&ensp;<a
-					href="/register"
+					href={REGISTER_ROUTE}
 					class="text-primary-600 font-medium underline-offset-2 hover:underline">Create one</a
 				>
 			</p>

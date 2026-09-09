@@ -1,3 +1,4 @@
+import { POST_LOGIN_ROUTE, RESET_PASSWORD_ROUTE } from '$lib/auth-routes';
 import { forgotPasswordSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import { logger } from '$lib/server/logger';
@@ -12,7 +13,7 @@ const GENERIC_RESULT = 'If an account exists for that email, a password reset li
 
 export const load: PageServerLoad = async ({ request }) => {
 	const session = await auth.api.getSession({ headers: request.headers });
-	if (session) throw redirect(302, '/');
+	if (session) throw redirect(302, POST_LOGIN_ROUTE);
 
 	const form = await superValidate(zod4(forgotPasswordSchema));
 	return { form };
@@ -41,7 +42,7 @@ export const actions: Actions = {
 				new Request(new URL('/api/auth/request-password-reset', request.url), {
 					method: 'POST',
 					headers,
-					body: JSON.stringify({ email: form.data.email, redirectTo: '/reset-password' })
+					body: JSON.stringify({ email: form.data.email, redirectTo: RESET_PASSWORD_ROUTE })
 				})
 			);
 			if (!response.ok) {

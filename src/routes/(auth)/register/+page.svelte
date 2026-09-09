@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SIGN_IN_ROUTE } from '$lib/auth-routes';
 	import { registerSchema } from '$lib/schemas/auth';
 	import { expoOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
@@ -143,7 +144,7 @@
 
 			<p class="text-surface-500 text-center text-sm">
 				Already have an account?&ensp;<a
-					href="/login"
+					href={SIGN_IN_ROUTE}
 					class="text-primary-600 font-medium underline-offset-2 hover:underline">Sign in</a
 				>
 			</p>

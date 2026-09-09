@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { REGISTER_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
 	import { resendVerificationSchema } from '$lib/schemas/auth';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
@@ -117,12 +118,12 @@
 
 			<p class="text-surface-500 text-center text-sm">
 				Wrong email address?
-				<a href="/register" class="text-primary-600 font-medium hover:underline">
+				<a href={REGISTER_ROUTE} class="text-primary-600 font-medium hover:underline">
 					Register again
 				</a>
 			</p>
 
-			<a href="/login" class="btn preset-outlined-surface-500 w-full">Back to sign in</a>
+			<a href={SIGN_IN_ROUTE} class="btn preset-outlined-surface-500 w-full">Back to sign in</a>
 		</div>
 	</div>
 </div>
