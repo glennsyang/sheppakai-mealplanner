@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { REGISTER_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
+	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import { resendVerificationSchema } from '$lib/schemas/auth';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
@@ -75,9 +76,7 @@
 				<p class="mt-1 text-sm font-medium">{data.email}</p>
 			</div>
 
-			{#if $message}
-				<div class="alert preset-tonal-surface text-sm" role="status">{$message}</div>
-			{/if}
+			<AuthFormMessage message={$message} />
 
 			<div class="card preset-outlined-surface-300-700 space-y-4 p-6">
 				<div>

@@ -1,19 +1,17 @@
-import { POST_LOGIN_ROUTE, VERIFY_EMAIL_ROUTE } from '$lib/auth-routes';
+import { VERIFY_EMAIL_ROUTE } from '$lib/auth-routes';
 import { registerSchema } from '$lib/schemas/auth';
+import { handleAuthFormAction, invalidAuthForm } from '$lib/server/actions/auth-form-handler';
 import { auth } from '$lib/server/auth';
-import { getBetterAuthErrorMessage } from '$lib/server/auth/errors';
-import { logger } from '$lib/server/logger';
-import { isRedirect, redirect } from '@sveltejs/kit';
-import { superValidate, message } from 'sveltekit-superforms';
+import { createAuthLoadForm, redirectIfAuthenticated } from '$lib/server/auth/form-helpers';
+import { redirect } from '@sveltejs/kit';
+import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ request }) => {
-	const session = await auth.api.getSession({ headers: request.headers });
-	if (session) throw redirect(302, POST_LOGIN_ROUTE);
-
-	const form = await superValidate(zod4(registerSchema));
+export const load: PageServerLoad = async ({ locals, url }) => {
+	redirectIfAuthenticated(locals.user);
+	const form = await createAuthLoadForm(registerSchema, url);
 	return { form };
 };
 
@@ -21,36 +19,27 @@ export const actions: Actions = {
 	default: async ({ request }) => {
 		const form = await superValidate(request, zod4(registerSchema));
 		if (!form.valid) {
-			return message(
-				form,
-				{ type: 'error', text: 'Please correct the errors in the form.' },
-				{ status: 400 }
-			);
+			return invalidAuthForm(form);
 		}
 
-		try {
-			await auth.api.signUpEmail({
-				body: {
-					name: form.data.name,
-					email: form.data.email,
-					password: form.data.password
-				},
-				headers: request.headers
-			});
-		} catch (error) {
-			// Don't catch redirects as errors - re-throw them
-			if (isRedirect(error)) {
-				throw error;
+		return handleAuthFormAction(
+			form,
+			async () => {
+				await auth.api.signUpEmail({
+					body: {
+						name: form.data.name,
+						email: form.data.email,
+						password: form.data.password
+					},
+					headers: request.headers
+				});
+
+				throw redirect(302, `${VERIFY_EMAIL_ROUTE}?email=${encodeURIComponent(form.data.email)}`);
+			},
+			{
+				loggerContext: 'Registration failed',
+				fallbackMessage: 'Registration failed. That email may already be in use.'
 			}
-
-			logger.warn('Registration failed', { email: form.data.email, error });
-			return message(
-				form,
-				getBetterAuthErrorMessage(error, 'Registration failed. That email may already be in use.'),
-				{ status: 400 }
-			);
-		}
-
-		throw redirect(302, `${VERIFY_EMAIL_ROUTE}?email=${encodeURIComponent(form.data.email)}`);
+		);
 	}
 };

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 const { resetPasswordMock, loggerMock } = vi.hoisted(() => ({
 	resetPasswordMock: vi.fn<() => Promise<unknown>>(),
-	loggerMock: { warn: vi.fn<() => void>() }
+	loggerMock: { error: vi.fn<() => void>() }
 }));
 
 vi.mock('$lib/server/auth', () => ({
@@ -36,7 +36,7 @@ describe('reset-password default action', () => {
 		vi.clearAllMocks();
 	});
 
-	it('resets the password and redirects to login on success', async () => {
+	it('resets the password and redirects to sign-in on success', async () => {
 		resetPasswordMock.mockResolvedValueOnce({ status: true });
 
 		let redirectError: unknown;
@@ -78,10 +78,17 @@ describe('reset-password default action', () => {
 
 		const result = await actions.default({ request: resetRequest(validFields) } as never);
 
-		expect(loggerMock.warn).toHaveBeenCalledWith('Password reset failed', expect.any(Object));
+		expect(loggerMock.error).toHaveBeenCalledWith('Password reset failed', expect.any(Error));
 		expect(result).toMatchObject({
 			status: 400,
-			data: { form: { message: 'This reset link is invalid or has expired. Request a new one.' } }
+			data: {
+				form: {
+					message: {
+						type: 'error',
+						text: 'This reset link is invalid or has expired. Request a new one.'
+					}
+				}
+			}
 		});
 	});
 });

@@ -45,7 +45,9 @@ describe('forgot-password default action', () => {
 			email: 'user@example.com',
 			redirectTo: '/reset-password'
 		});
-		expect(result).toMatchObject({ form: { message: GENERIC_RESULT } });
+		expect(result).toMatchObject({
+			form: { message: { type: 'success', text: GENERIC_RESULT } }
+		});
 	});
 
 	it('does not call Better Auth for an invalid email', async () => {
@@ -55,17 +57,18 @@ describe('forgot-password default action', () => {
 		expect(result).toMatchObject({ status: 400 });
 	});
 
-	it('returns the same generic message (not an error) when Better Auth fails', async () => {
+	it('returns the same generic message (styled as success, not error) when Better Auth fails', async () => {
 		handlerMock.mockResolvedValueOnce(new Response(null, { status: 503 }));
 
 		const result = await actions.default({ request: forgotRequest('user@example.com') } as never);
 
 		expect(loggerMock.error).toHaveBeenCalledWith(
 			'Failed to send password reset email',
-			expect.objectContaining({ message: 'Password reset request failed with status 503' }),
-			{ email: 'user@example.com' }
+			expect.objectContaining({ message: 'Password reset request failed with status 503' })
 		);
-		expect(result).toMatchObject({ status: 500 });
-		expect(result).toMatchObject({ data: { form: { message: GENERIC_RESULT } } });
+		expect(result).toMatchObject({
+			status: 400,
+			data: { form: { message: { type: 'success', text: GENERIC_RESULT } } }
+		});
 	});
 });

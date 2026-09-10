@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { SIGN_IN_ROUTE } from '$lib/auth-routes';
+	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import { forgotPasswordSchema } from '$lib/schemas/auth';
 	import { expoOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
@@ -57,9 +58,7 @@
 				<p class="text-surface-500 text-sm font-light">We'll email you a link to reset it</p>
 			</div>
 
-			{#if $message}
-				<div class="alert preset-tonal-surface text-sm" role="status">{$message}</div>
-			{/if}
+			<AuthFormMessage message={$message} />
 
 			<form method="POST" use:enhance class="space-y-5">
 				<label class="label">

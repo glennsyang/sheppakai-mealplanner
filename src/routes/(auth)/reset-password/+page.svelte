@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { FORGOT_PASSWORD_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
+	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import { resetPasswordSchema } from '$lib/schemas/auth';
 	import { expoOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
@@ -90,9 +91,7 @@
 					<p class="text-surface-500 text-sm font-light">Pick something you haven't used before</p>
 				</div>
 
-				{#if $message}
-					<div class="alert preset-tonal-error text-sm">{$message}</div>
-				{/if}
+				<AuthFormMessage message={$message} />
 
 				<form method="POST" use:enhance class="space-y-5">
 					<input type="hidden" name="token" bind:value={data.token} />
