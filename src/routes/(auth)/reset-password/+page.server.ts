@@ -1,26 +1,25 @@
-import { POST_LOGIN_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
+import { SIGN_IN_ROUTE } from '$lib/auth-routes';
 import { resetPasswordSchema } from '$lib/schemas/auth';
+import { handleAuthFormAction, invalidAuthForm } from '$lib/server/actions/auth-form-handler';
 import { auth } from '$lib/server/auth';
-import { getBetterAuthErrorMessage } from '$lib/server/auth/errors';
-import { logger } from '$lib/server/logger';
-import { isRedirect, redirect } from '@sveltejs/kit';
-import { message, superValidate } from 'sveltekit-superforms';
+import { createAuthLoadForm, redirectIfAuthenticated } from '$lib/server/auth/form-helpers';
+import { redirect } from '@sveltejs/kit';
+import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ request, url }) => {
-	const session = await auth.api.getSession({ headers: request.headers });
-	if (session) throw redirect(302, POST_LOGIN_ROUTE);
+const INVALID_LINK_MESSAGE = 'This reset link is invalid or has expired. Request a new one.';
+
+export const load: PageServerLoad = async ({ locals, url }) => {
+	redirectIfAuthenticated(locals.user);
 
 	const token = url.searchParams.get('token');
 	// Better Auth's link verifier redirects here with `?error=INVALID_TOKEN` when
 	// the emailed link is expired or malformed, and with `?token=...` when it's good.
 	const invalid = !token || url.searchParams.has('error');
 
-	const form = await superValidate({ token: token ?? undefined }, zod4(resetPasswordSchema), {
-		errors: false
-	});
+	const form = await createAuthLoadForm(resetPasswordSchema, url, { includeQueryMessage: false });
 
 	return { token, invalid, form };
 };
@@ -29,38 +28,28 @@ export const actions: Actions = {
 	default: async ({ request }) => {
 		const form = await superValidate(request, zod4(resetPasswordSchema));
 		if (!form.data.token) {
-			return message(form, 'This reset link is invalid or has expired. Request a new one.', {
-				status: 400
-			});
+			return invalidAuthForm(form, INVALID_LINK_MESSAGE);
 		}
 		if (!form.valid) {
-			return message(form, 'Please correct the errors in the form.', { status: 400 });
+			return invalidAuthForm(form);
 		}
 
-		try {
-			await auth.api.resetPassword({
-				body: {
-					token: form.data.token,
-					newPassword: form.data.password
-				},
-				headers: request.headers
-			});
-		} catch (error) {
-			// Don't catch redirects as errors - re-throw them
-			if (isRedirect(error)) {
-				throw error;
+		return handleAuthFormAction(
+			form,
+			async () => {
+				await auth.api.resetPassword({
+					body: {
+						token: form.data.token,
+						newPassword: form.data.password
+					}
+				});
+
+				throw redirect(302, `${SIGN_IN_ROUTE}?reset=success`);
+			},
+			{
+				loggerContext: 'Password reset failed',
+				fallbackMessage: INVALID_LINK_MESSAGE
 			}
-			logger.warn('Password reset failed', { error });
-			return message(
-				form,
-				getBetterAuthErrorMessage(
-					error,
-					'This reset link is invalid or has expired. Request a new one.'
-				),
-				{ status: 400 }
-			);
-		}
-
-		throw redirect(302, `${SIGN_IN_ROUTE}?reset=success`);
+		);
 	}
 };

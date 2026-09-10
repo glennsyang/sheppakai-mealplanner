@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { SIGN_IN_ROUTE } from '$lib/auth-routes';
+	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import { registerSchema } from '$lib/schemas/auth';
 	import { expoOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
@@ -57,9 +58,7 @@
 				<p class="text-surface-500 text-sm font-light">Start planning your weekly dinners</p>
 			</div>
 
-			{#if $message}
-				<div class="alert preset-tonal-error text-sm">{$message}</div>
-			{/if}
+			<AuthFormMessage message={$message} />
 
 			<form method="POST" use:enhance class="space-y-5">
 				<label class="label">

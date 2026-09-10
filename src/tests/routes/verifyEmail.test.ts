@@ -18,6 +18,8 @@ vi.mock('$lib/server/logger', () => ({ logger: loggerMock }));
 
 import { actions } from '../../routes/(auth)/verify-email/+page.server';
 
+const GENERIC_RESULT = 'If an unverified account exists, a fresh verification link is on its way.';
+
 function resendRequest(email: string) {
 	return new Request('https://example.com/verify-email?/resend', {
 		method: 'POST',
@@ -41,7 +43,7 @@ describe('verify-email resend action', () => {
 		expect(new URL(request.url).pathname).toBe('/api/auth/send-verification-email');
 		expect(await request.json()).toEqual({ email: 'user@example.com' });
 		expect(result).toMatchObject({
-			form: { message: 'If an unverified account exists, a fresh verification link is on its way.' }
+			form: { message: { type: 'success', text: GENERIC_RESULT } }
 		});
 	});
 
@@ -59,9 +61,18 @@ describe('verify-email resend action', () => {
 
 		expect(loggerMock.error).toHaveBeenCalledWith(
 			'Failed to resend verification email',
-			expect.objectContaining({ message: 'Verification email request failed with status 503' }),
-			{ email: 'user@example.com' }
+			expect.objectContaining({ message: 'Verification email request failed with status 503' })
 		);
-		expect(result).toMatchObject({ status: 500 });
+		expect(result).toMatchObject({
+			status: 400,
+			data: {
+				form: {
+					message: {
+						type: 'error',
+						text: 'We could not send a verification email. Please try again shortly.'
+					}
+				}
+			}
+		});
 	});
 });
