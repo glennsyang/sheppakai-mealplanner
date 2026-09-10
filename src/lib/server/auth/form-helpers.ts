@@ -44,9 +44,14 @@ export async function createAuthLoadForm<TSchema extends AuthSchema>(
 		const MAX_MSG_LEN = 200;
 		const queryMessage = url.searchParams.get(messageParam);
 		if (queryMessage) {
+			// Plain-text banner only. Strip anything tag-shaped — including an
+			// unterminated `<script` (the trailing `>` is optional) so a later
+			// truncation can't leave a dangling `<` — then clamp the length last so
+			// the slice can never re-introduce a partial tag. The render path
+			// (AuthFormMessage) also escapes this; the strip is defence in depth.
 			form.message = {
 				type: 'error',
-				text: queryMessage.slice(0, MAX_MSG_LEN).replace(/<[^>]*>/g, '')
+				text: queryMessage.replace(/<[^>]*>?/g, '').slice(0, MAX_MSG_LEN)
 			};
 		}
 	}
