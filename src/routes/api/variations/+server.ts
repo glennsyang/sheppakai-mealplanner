@@ -1,6 +1,5 @@
 import { suggestVariationsSchema } from '$lib/schemas/mealPlan';
 import { suggestVariations } from '$lib/server/ai/claude';
-import { auth } from '$lib/server/auth';
 import { logger } from '$lib/server/logger';
 import { checkRateLimit } from '$lib/server/rateLimit';
 import { json, error } from '@sveltejs/kit';
@@ -9,11 +8,10 @@ import type { RequestHandler } from './$types';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 10 };
 
-export const POST: RequestHandler = async ({ request }) => {
-	const session = await auth.api.getSession({ headers: request.headers });
-	if (!session) error(401, 'Unauthorized');
+export const POST: RequestHandler = async ({ request, locals }) => {
+	if (!locals.user) error(401, 'Unauthorized');
 
-	if (!checkRateLimit(`variations:${session.user.id}`, RATE_LIMIT)) {
+	if (!checkRateLimit(`variations:${locals.user.id}`, RATE_LIMIT)) {
 		error(429, 'Too many requests. Please try again later.');
 	}
 
