@@ -291,7 +291,7 @@ npm run db:studio    # Drizzle visual browser
   ```bash
   fly secrets set BETTER_AUTH_SECRET=... ANTHROPIC_API_KEY=... BETTER_AUTH_BASE_URL=https://sheppakai-mealplanner.fly.dev
   ```
-- The `trustedOrigins` in `auth/index.ts` includes `https://sheppakai-mealplanner.fly.dev` — update this to match the actual fly.io app URL.
+- The `trustedOrigins` in `auth/index.ts` is derived from `BETTER_AUTH_BASE_URL` — no manual update needed when the fly.io app URL changes.
 
 ---
 
