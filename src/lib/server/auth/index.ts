@@ -135,7 +135,7 @@ export const auth = betterAuth({
 		}
 	},
 	trustedOrigins: [
-		'https://sheppakai-mealplanner.fly.dev',
+		new URL(BETTER_AUTH_BASE_URL).origin,
 		...(NODE_ENV === 'development' ? ['http://localhost:5173'] : [])
 	],
 	rateLimit: {
