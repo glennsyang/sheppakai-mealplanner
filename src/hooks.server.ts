@@ -4,6 +4,7 @@ import { auth } from '$lib/server/auth';
 import { logger } from '$lib/server/logger';
 import * as Sentry from '@sentry/sveltekit';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 
 Sentry.init({
@@ -18,7 +19,7 @@ Sentry.init({
 	// status) via the structured logger, so Sentry's own PII capture isn't needed here.
 });
 
-export const handle: Handle = async ({ event, resolve }) => {
+export const handle: Handle = sequence(Sentry.sentryHandle(), async ({ event, resolve }) => {
 	if (dev && event.url.pathname === '/.well-known/appspecific/com.chrome.devtools.json') {
 		return new Response(undefined, { status: 404 });
 	}
@@ -79,8 +80,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// the nonce-bearing header that SvelteKit emits.
 
 	return response;
-};
+});
 
+// Note: logger.error() already forwards to Sentry (captureException) internally in
+// production, so this is intentionally NOT wrapped in Sentry.handleErrorWithSentry() —
+// doing so would double-report every unhandled error.
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
 	const requestId = event.locals.requestId ?? 'unknown';
 	const userId = event.locals.user?.id ?? 'anonymous';

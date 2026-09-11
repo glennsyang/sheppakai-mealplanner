@@ -248,6 +248,10 @@ All configured in `src/hooks.server.ts`:
 - `Strict-Transport-Security` (production only)
 - Content Security Policy — `unsafe-inline` required for SvelteKit CSS injection
 
+`hooks.server.ts` wires `Sentry.sentryHandle()` into the `handle` sequence and intentionally
+leaves `handleError` unwrapped (the structured logger already forwards to Sentry) — see
+`sheppakai-budget`'s `docs/SENTRY.md` for the cross-repo strategy.
+
 ---
 
 ## Shared Tooling & Review
