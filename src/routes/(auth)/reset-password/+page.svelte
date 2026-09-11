@@ -106,7 +106,7 @@
 							class:input-error={$errors.password}
 							minlength={$constraints.password?.minlength}
 							required={$constraints.password?.required}
-							placeholder="At least 12 characters"
+							placeholder="12+ characters, incl. upper/lower/number/symbol"
 							autocomplete="new-password"
 						/>
 						{#if $errors.password}
