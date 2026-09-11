@@ -27,8 +27,8 @@ function resetRequest(fields: Record<string, string>) {
 
 const validFields = {
 	token: 'reset-token-123',
-	password: 'brand-new-secret',
-	confirmPassword: 'brand-new-secret'
+	password: 'Brand-New-Secret1!',
+	confirmPassword: 'Brand-New-Secret1!'
 };
 
 describe('reset-password default action', () => {
@@ -48,7 +48,7 @@ describe('reset-password default action', () => {
 
 		expect(resetPasswordMock).toHaveBeenCalledWith(
 			expect.objectContaining({
-				body: { token: 'reset-token-123', newPassword: 'brand-new-secret' }
+				body: { token: 'reset-token-123', newPassword: 'Brand-New-Secret1!' }
 			})
 		);
 		expect(redirectError).toMatchObject({ status: 302, location: '/sign-in?reset=success' });

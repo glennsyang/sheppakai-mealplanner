@@ -30,8 +30,8 @@ describe('registerSchema', () => {
 	const valid = {
 		name: 'Alice',
 		email: 'alice@example.com',
-		password: 'correct-horse-battery',
-		confirmPassword: 'correct-horse-battery'
+		password: 'Correct-Horse1!',
+		confirmPassword: 'Correct-Horse1!'
 	};
 
 	it('accepts valid registration data', () => {
@@ -53,12 +53,21 @@ describe('registerSchema', () => {
 		// 11 chars — one short of the server floor.
 		const result = registerSchema.safeParse({
 			...valid,
-			password: 'password123',
-			confirmPassword: 'password123'
+			password: 'Password1!1',
+			confirmPassword: 'Password1!1'
 		});
 		expect(result.success).toBe(false);
 		const messages = result.error?.issues.map((i) => i.message) ?? [];
 		expect(messages).toContain('Password must be at least 12 characters');
+	});
+
+	it('rejects a password missing complexity requirements', () => {
+		const result = registerSchema.safeParse({
+			...valid,
+			password: 'alllowercase',
+			confirmPassword: 'alllowercase'
+		});
+		expect(result.success).toBe(false);
 	});
 });
 
@@ -84,8 +93,8 @@ describe('forgotPasswordSchema', () => {
 
 describe('resetPasswordSchema', () => {
 	const valid = {
-		password: 'brand-new-secret',
-		confirmPassword: 'brand-new-secret',
+		password: 'Brand-New-Secret1!',
+		confirmPassword: 'Brand-New-Secret1!',
 		token: 'reset-token-123'
 	};
 
@@ -109,6 +118,16 @@ describe('resetPasswordSchema', () => {
 		expect(
 			resetPasswordSchema.safeParse({ ...valid, password: 'short', confirmPassword: 'short' })
 				.success
+		).toBe(false);
+	});
+
+	it('rejects a password missing complexity requirements', () => {
+		expect(
+			resetPasswordSchema.safeParse({
+				...valid,
+				password: 'alllowercase',
+				confirmPassword: 'alllowercase'
+			}).success
 		).toBe(false);
 	});
 });
