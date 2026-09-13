@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { rateLimit, user } from '../../lib/server/db/schema';
 
-// Regression guard for #59: better-auth's DB-backed rate limiter (used in
+// Regression guard: better-auth's DB-backed rate limiter (used in
 // production, see src/lib/server/auth/index.ts) reads/writes a `rateLimit`
 // model. That model is passed to drizzleAdapter via an explicit schema map, so
 // if this table (or any of the columns better-auth references by name) goes
@@ -30,8 +30,8 @@ describe('rateLimit table (better-auth rate limiting)', () => {
 	});
 });
 
-// Columns for the better-auth `admin` plugin (wired up in src/lib/server/auth/index.ts,
-// tracking: #75). The plugin reads/writes `role`, `banned`, `ban_reason` and `ban_expires`
+// Columns for the better-auth `admin` plugin (wired up in src/lib/server/auth/index.ts).
+// The plugin reads/writes `role`, `banned`, `ban_reason` and `ban_expires`
 // on the `user` model by name — if any drift, ban/role actions from /admin break.
 describe('user table admin-plugin columns', () => {
 	it('exposes `role`, `banned`, `banReason` and `banExpires` by property name', () => {

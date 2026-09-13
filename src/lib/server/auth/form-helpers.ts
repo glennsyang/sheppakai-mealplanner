@@ -1,6 +1,5 @@
 // Shared auth-page `load` helpers. Canonical cross-repo module surface
-// (auth-audit.md §2N, glennsyang/sheppakai-budget#438) — kept byte-identical with
-// synapse and sheppakai-budget.
+// (auth-audit.md §2N) — kept byte-identical with synapse and sheppakai-budget.
 
 import { POST_LOGIN_ROUTE } from '$lib/auth-routes';
 import { redirect } from '@sveltejs/kit';
