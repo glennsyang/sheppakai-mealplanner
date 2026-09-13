@@ -60,8 +60,7 @@ export function getUser(locals: App.Locals): AuthenticatedUser {
  * authenticated but not an admin.
  *
  * This is the canonical cross-repo admin guard — identical shape in synapse,
- * sheppakai-budget and sheppakai-mealplanner (sheppakai-budget#437). It checks
- * the DB `role` only.
+ * sheppakai-budget and sheppakai-mealplanner. It checks the DB `role` only.
  *
  * @example
  * export const actions = {

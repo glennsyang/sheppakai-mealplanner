@@ -59,8 +59,7 @@ export const auth = betterAuth({
 		// Runs after a reset completes and every session has been revoked
 		// (revokeSessionsOnPasswordReset above). Fire-and-forget: the reset itself
 		// has already succeeded, so a failing confirmation email or push alert must
-		// not break the response. Parity with sheppakai-budget (tracking:
-		// sheppakai-budget#432).
+		// not break the response. Parity with sheppakai-budget.
 		onPasswordReset: async ({ user }) => {
 			logger.info('Security event: password reset completed and sessions revoked', {
 				userId: user.id,
@@ -108,7 +107,7 @@ export const auth = betterAuth({
 			// Server-side defense-in-depth: the register Zod schema (src/lib/schemas/auth.ts)
 			// already enforces this complexity rule, but that only covers requests that went
 			// through the app's form action. Enforcing it here too covers any direct caller of
-			// auth.api.signUpEmail (sheppakai-budget#445). Better Auth's internal endpoint for
+			// auth.api.signUpEmail. Better Auth's internal endpoint for
 			// this is `/sign-up/email` — the app's own `/register` route is just the SvelteKit
 			// page that calls it, never the value ctx.path takes here.
 			if (!ctx.path.includes('/sign-up/email') || !ctx.body?.password) {
@@ -174,7 +173,7 @@ export const auth = betterAuth({
 		// server endpoints that /admin drives. `defaultRole` / `adminRoles` are the plugin
 		// defaults, spelled out here so the policy is visible. `adminUserIds` bootstraps admins
 		// by id from the `ADMIN_USER_IDS` env var (no DB write needed) — parity with the sibling
-		// repos (sheppakai-budget#437); the one-off SQL UPDATE promotion path still works too.
+		// repos; the one-off SQL UPDATE promotion path still works too.
 		admin({
 			adminUserIds: ADMIN_USER_IDS.split(','),
 			defaultRole: 'user',

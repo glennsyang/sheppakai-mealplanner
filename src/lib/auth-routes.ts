@@ -4,7 +4,7 @@
  * Single source of truth for every auth-related URL in the app — imported by both
  * client (`.svelte`) and server code. No inline route literals anywhere else.
  *
- * Convention (see `auth-audit.md` §2A, issue #435): a `(auth)` route group with
+ * Convention (see `auth-audit.md` §2A): a `(auth)` route group with
  * unprefixed URLs and the `sign-in` / `sign-out` verb set.
  */
 

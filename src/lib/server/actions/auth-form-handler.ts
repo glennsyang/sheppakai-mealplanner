@@ -1,9 +1,8 @@
-// Shared auth-action wrapper. Canonical cross-repo module surface (auth-audit.md §2N,
-// glennsyang/sheppakai-budget#438) — kept byte-identical with synapse and
-// sheppakai-budget apart from the `getBetterAuthErrorMessage` import specifier
-// (this repo: `$lib/server/auth/errors`; budget: `$lib/utils`; synapse:
-// `$lib/utils/auth`). Consolidating that module's location is tracked by
-// glennsyang/sheppakai-budget#439.
+// Shared auth-action wrapper. Canonical cross-repo module surface (auth-audit.md §2N)
+// — kept byte-identical with synapse and sheppakai-budget apart from the
+// `getBetterAuthErrorMessage` import specifier (this repo: `$lib/server/auth/errors`;
+// budget: `$lib/utils`; synapse: `$lib/utils/auth`). Consolidating that module's
+// location is tracked separately.
 
 import { getBetterAuthErrorMessage } from '$lib/server/auth/errors';
 import { logger } from '$lib/server/logger';

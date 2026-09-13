@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-// Canonical password rule for register/reset (sheppakai-budget#444), shared across the
-// sibling apps: min 12 chars + upper/lower/number/special-character complexity. 12 also
+// Canonical password rule for register/reset, shared across the sibling apps: min 12
+// chars + upper/lower/number/special-character complexity. 12 also
 // matches emailAndPassword.minPasswordLength in src/lib/server/auth/index.ts; better-auth
 // rejects anything shorter server-side regardless.
 const passwordSchema = z
@@ -36,8 +36,7 @@ export const registerSchema = z
 		path: ['confirmPassword']
 	});
 
-// Added for cross-app parity with sheppakai-budget (tracking: sheppakai-budget#432).
-// No route consumes it yet — mealplanner has no in-app "change password" flow — but
+// Added for cross-app parity with sheppakai-budget. No route consumes it yet — mealplanner has no in-app "change password" flow — but
 // the shape is kept identical to the other apps for when one is added.
 export const changePasswordSchema = z
 	.object({
