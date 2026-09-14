@@ -202,3 +202,47 @@ export async function sendPasswordChangedEmail(payload: PasswordChangedEmailPayl
 		brevoMessageId: result.messageId
 	});
 }
+
+export async function sendNewUserEmail(to: string, name: string) {
+	// Info-level for the same reason as the other sends: it separates an
+	// untriggered flow from a provider failure in production logs.
+	logger.info('Sending new user welcome email', { to });
+
+	let result;
+	try {
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Meal Planner', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
+			subject: '[Meal Planner] Welcome to Meal Planner!',
+			htmlContent: `
+				<!DOCTYPE html>
+				<html>
+				<head>
+					<meta charset="utf-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<title>Welcome to Meal Planner</title>
+				</head>
+				<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+					<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+						<h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Meal Planner</h1>
+					</div>
+					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${escapeHtml(name || to)},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">
+							Thanks for signing up! We're excited to have you on board.
+						</p>
+					</div>
+					<div style="text-align: center; margin-top: 20px; padding: 20px; color: #9ca3af; font-size: 12px;">
+						<p>Meal Planner</p>
+					</div>
+				</body>
+				</html>
+			`
+		});
+	} catch (cause) {
+		logger.error('Failed to send new user welcome email', cause, { to });
+		throw cause instanceof Error ? cause : new Error('Brevo request failed', { cause });
+	}
+
+	logger.info('New user welcome email sent', { to, brevoMessageId: result.messageId });
+}

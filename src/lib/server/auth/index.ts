@@ -15,7 +15,7 @@ import { getDb } from '../db';
 import * as schema from '../db/schema';
 import { sendPasswordChangedEmail, sendPasswordResetEmail, sendVerificationEmail } from '../email';
 import { logger } from '../logger';
-import { sendAuthAlerts } from '../notifications';
+import { createAuthAfterHooks, logPasswordResetAudit } from './audit-hooks';
 
 export const auth = betterAuth({
 	appName: 'Meal Planner',
@@ -61,22 +61,13 @@ export const auth = betterAuth({
 		// has already succeeded, so a failing confirmation email or push alert must
 		// not break the response. Parity with sheppakai-budget.
 		onPasswordReset: async ({ user }) => {
-			logger.info('Security event: password reset completed and sessions revoked', {
-				userId: user.id,
-				email: user.email,
-				timestamp: new Date().toISOString()
-			});
+			logPasswordResetAudit(user, 'Meal Planner');
 			void sendPasswordChangedEmail({
 				to: user.email,
 				name: user.name || user.email,
 				changedAt: new Date(),
 				source: 'Password reset flow'
 			}).catch((err) => logger.error('Password changed email failed', err));
-			void sendAuthAlerts(
-				`⚠️ Password reset for ${user.name || user.email} ${user.email} at ${new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}. All sessions revoked.`,
-				'Meal Planner - Security Alert',
-				4
-			);
 		}
 	},
 	emailVerification: {
@@ -123,7 +114,8 @@ export const auth = betterAuth({
 					message: 'Password must contain uppercase, lowercase, numbers, and special characters'
 				});
 			}
-		})
+		}),
+		after: createAuthAfterHooks('Meal Planner')
 	},
 	advanced: {
 		cookiePrefix: 'mealplanner_auth_',
