@@ -24,6 +24,7 @@ vi.mock('@getbrevo/brevo', () => ({
 vi.mock('../../lib/server/logger', () => ({ logger: loggerMock }));
 
 import {
+	sendNewUserEmail,
 	sendPasswordChangedEmail,
 	sendPasswordResetEmail,
 	sendVerificationEmail
@@ -188,6 +189,49 @@ describe('sendPasswordChangedEmail', () => {
 
 		expect(loggerMock.error).toHaveBeenCalledWith(
 			'Failed to send password changed email',
+			expect.any(Error),
+			{ to: 'user@example.com' }
+		);
+	});
+});
+
+describe('sendNewUserEmail', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('resolves and logs on a successful send', async () => {
+		sendMock.mockResolvedValueOnce({ messageId: '<welcome-123@brevo>' });
+
+		await expect(sendNewUserEmail('user@example.com', 'User')).resolves.toBeUndefined();
+
+		expect(loggerMock.error).not.toHaveBeenCalled();
+		expect(loggerMock.info).toHaveBeenCalledWith('Sending new user welcome email', {
+			to: 'user@example.com'
+		});
+		expect(loggerMock.info).toHaveBeenCalledWith('New user welcome email sent', {
+			to: 'user@example.com',
+			brevoMessageId: '<welcome-123@brevo>'
+		});
+	});
+
+	it('escapes HTML in a malicious display name', async () => {
+		sendMock.mockResolvedValueOnce({ messageId: '<welcome-123@brevo>' });
+
+		await sendNewUserEmail('user@example.com', '<script>alert(1)</script>');
+
+		const sent = (sendMock.mock.calls[0] as unknown[])[0] as { htmlContent: string };
+		expect(sent.htmlContent).not.toContain('<script>alert(1)</script>');
+		expect(sent.htmlContent).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+	});
+
+	it('throws and logs when the Brevo SDK rejects', async () => {
+		sendMock.mockRejectedValueOnce(new Error('network down'));
+
+		await expect(sendNewUserEmail('user@example.com', 'User')).rejects.toThrow('network down');
+
+		expect(loggerMock.error).toHaveBeenCalledWith(
+			'Failed to send new user welcome email',
 			expect.any(Error),
 			{ to: 'user@example.com' }
 		);
