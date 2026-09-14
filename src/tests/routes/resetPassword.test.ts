@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-const { resetPasswordMock, loggerMock } = vi.hoisted(() => ({
+const { resetPasswordMock, loggerMock, isResetTokenValidMock } = vi.hoisted(() => ({
 	resetPasswordMock: vi.fn<() => Promise<unknown>>(),
-	loggerMock: { error: vi.fn<() => void>() }
+	loggerMock: { error: vi.fn<() => void>() },
+	isResetTokenValidMock: vi.fn<() => Promise<boolean>>()
 }));
 
 vi.mock('$lib/server/auth', () => ({
@@ -16,7 +17,20 @@ vi.mock('$lib/server/auth', () => ({
 
 vi.mock('$lib/server/logger', () => ({ logger: loggerMock }));
 
-import { actions } from '../../routes/(auth)/reset-password/+page.server';
+vi.mock('$lib/server/auth-reset-url', () => ({
+	isResetTokenValid: isResetTokenValidMock
+}));
+
+import { actions, load } from '../../routes/(auth)/reset-password/+page.server';
+
+function loadEvent(url: string) {
+	return {
+		locals: { user: null },
+		url: new URL(url),
+		request: new Request(url),
+		route: { id: '/(auth)/reset-password' }
+	} as never;
+}
 
 function resetRequest(fields: Record<string, string>) {
 	return new Request('https://example.com/reset-password', {
@@ -90,5 +104,35 @@ describe('reset-password default action', () => {
 				}
 			}
 		});
+	});
+});
+
+describe('reset-password load', () => {
+	beforeEach(() => {
+		isResetTokenValidMock.mockReset();
+	});
+
+	it('marks the token invalid when the token param is missing', async () => {
+		const result = await load(loadEvent('https://example.com/reset-password'));
+
+		expect(isResetTokenValidMock).not.toHaveBeenCalled();
+		expect(result).toMatchObject({ token: null, invalid: true });
+	});
+
+	it('marks the token invalid when the verification row is expired or missing', async () => {
+		isResetTokenValidMock.mockResolvedValue(false);
+
+		const result = await load(loadEvent('https://example.com/reset-password?token=bad'));
+
+		expect(isResetTokenValidMock).toHaveBeenCalledWith('bad');
+		expect(result).toMatchObject({ token: 'bad', invalid: true });
+	});
+
+	it('marks the token valid when a live verification row exists', async () => {
+		isResetTokenValidMock.mockResolvedValue(true);
+
+		const result = await load(loadEvent('https://example.com/reset-password?token=good'));
+
+		expect(result).toMatchObject({ token: 'good', invalid: false });
 	});
 });

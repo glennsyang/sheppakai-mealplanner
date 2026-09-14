@@ -11,6 +11,7 @@ import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { admin } from 'better-auth/plugins';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 
+import { buildResetUrl } from '../auth-reset-url';
 import { getDb } from '../db';
 import * as schema from '../db/schema';
 import { sendPasswordChangedEmail, sendPasswordResetEmail, sendVerificationEmail } from '../email';
@@ -42,19 +43,23 @@ export const auth = betterAuth({
 		// the recovery path for a suspected-compromised account, so any session an
 		// attacker may hold must not survive it.
 		revokeSessionsOnPasswordReset: true,
-		sendResetPassword: async ({ user, url }) => {
-			// `url` is better-auth's complete reset link. It points at the GET verifier
-			// (/api/auth/reset-password/<token>?callbackURL=/reset-password), which
-			// checks the token then 302s to /reset-password?token=<token> (or
-			// ?error=INVALID_TOKEN). Pass it straight through — same as
-			// sendVerificationEmail — don't append `?token=` again.
-			//
+		sendResetPassword: async ({ user, url, token }) => {
+			// Build the reset link via the shared origin-allowlist helper (same
+			// pattern as sheppakai-budget/synapse) instead of passing Better
+			// Auth's own GET-verifier `url` straight through — see
+			// auth-reset-url.ts for why.
+			const callbackURL = new URL(url).searchParams.get('callbackURL');
+			if (!callbackURL) {
+				throw new Error('Missing callbackURL parameter');
+			}
+			const resetUrl = buildResetUrl(callbackURL, token);
+
 			// Await the send (don't fire-and-forget): sendPasswordResetEmail throws on
 			// failure, and letting that propagate keeps the send tied to the request
 			// lifecycle (Fly can suspend the machine as soon as the response returns)
 			// and surfaces delivery failures in the logs / Sentry instead of a silent
 			// "link sent" with no email.
-			await sendPasswordResetEmail(user.email, user.name || user.email, url);
+			await sendPasswordResetEmail(user.email, user.name || user.email, resetUrl);
 		},
 		// Runs after a reset completes and every session has been revoked
 		// (revokeSessionsOnPasswordReset above). Fire-and-forget: the reset itself

@@ -2,6 +2,7 @@ import { SIGN_IN_ROUTE } from '$lib/auth-routes';
 import { resetPasswordSchema } from '$lib/schemas/auth';
 import { handleAuthFormAction, invalidAuthForm } from '$lib/server/actions/auth-form-handler';
 import { auth } from '$lib/server/auth';
+import { isResetTokenValid } from '$lib/server/auth-reset-url';
 import { createAuthLoadForm, redirectIfAuthenticated } from '$lib/server/auth/form-helpers';
 import { redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
@@ -15,9 +16,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	redirectIfAuthenticated(locals.user);
 
 	const token = url.searchParams.get('token');
-	// Better Auth's link verifier redirects here with `?error=INVALID_TOKEN` when
-	// the emailed link is expired or malformed, and with `?token=...` when it's good.
-	const invalid = !token || url.searchParams.has('error');
+	const invalid = !token || !(await isResetTokenValid(token));
 
 	const form = await createAuthLoadForm(resetPasswordSchema, url, { includeQueryMessage: false });
 
