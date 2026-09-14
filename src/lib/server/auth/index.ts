@@ -7,7 +7,6 @@ import {
 import { getRequestEvent } from '$app/server';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { admin } from 'better-auth/plugins';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 
@@ -99,27 +98,6 @@ export const auth = betterAuth({
 		}
 	},
 	hooks: {
-		before: createAuthMiddleware(async (ctx) => {
-			// Server-side defense-in-depth: the register Zod schema (src/lib/schemas/auth.ts)
-			// already enforces this complexity rule, but that only covers requests that went
-			// through the app's form action. Enforcing it here too covers any direct caller of
-			// auth.api.signUpEmail. Better Auth's internal endpoint for
-			// this is `/sign-up/email` — the app's own `/register` route is just the SvelteKit
-			// page that calls it, never the value ctx.path takes here.
-			if (!ctx.path.includes('/sign-up/email') || !ctx.body?.password) {
-				return;
-			}
-			const password = ctx.body.password;
-			const hasUpperCase = /[A-Z]/.test(password);
-			const hasLowerCase = /[a-z]/.test(password);
-			const hasNumbers = /\d/.test(password);
-			const hasSpecialChar = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
-			if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
-				throw new APIError('BAD_REQUEST', {
-					message: 'Password must contain uppercase, lowercase, numbers, and special characters'
-				});
-			}
-		}),
 		after: createAuthAfterHooks('Meal Planner')
 	},
 	advanced: {

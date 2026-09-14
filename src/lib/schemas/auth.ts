@@ -1,19 +1,9 @@
 import { z } from 'zod';
 
-// Canonical password rule for register/reset, shared across the sibling apps: min 12
-// chars + upper/lower/number/special-character complexity. 12 also
-// matches emailAndPassword.minPasswordLength in src/lib/server/auth/index.ts; better-auth
-// rejects anything shorter server-side regardless.
-const passwordSchema = z
-	.string()
-	.min(12, 'Password must be at least 12 characters')
-	.regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-	.regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-	.regex(/\d/, 'Password must contain at least one number')
-	.regex(
-		/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/,
-		'Password must contain at least one special character'
-	);
+// Canonical password rule for register/reset: length-only, per NIST SP 800-63B §5.1.1.2
+// (composition rules deliberately omitted). Matches minPasswordLength in
+// src/lib/server/auth/index.ts.
+const passwordSchema = z.string().min(12, 'Password must be at least 12 characters');
 
 export const loginSchema = z.object({
 	email: z.string().email('Please enter a valid email address'),
