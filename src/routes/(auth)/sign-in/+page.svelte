@@ -64,6 +64,12 @@
 				</div>
 			{/if}
 
+			{#if data.invalidVerificationLink}
+				<div class="alert preset-tonal-error text-sm" role="alert">
+					That verification link is invalid or has expired. Please sign in or request a new one.
+				</div>
+			{/if}
+
 			<AuthFormMessage message={$message} />
 
 			<form method="POST" use:enhance class="space-y-5">
