@@ -16,9 +16,11 @@ vi.mock('$lib/server/auth', () => ({
 
 vi.mock('$lib/server/logger', () => ({ logger: loggerMock }));
 
+import { FORGOT_PASSWORD_RESPONSE } from '$lib/server/auth/forgot-password-response';
+
 import { actions } from '../../routes/(auth)/forgot-password/+page.server';
 
-const GENERIC_RESULT = 'If an account exists for that email, a password reset link is on its way.';
+const GENERIC_RESULT = FORGOT_PASSWORD_RESPONSE.text;
 
 function forgotRequest(email: string) {
 	return new Request('https://example.com/forgot-password', {
