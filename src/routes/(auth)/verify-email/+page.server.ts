@@ -16,8 +16,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	redirectIfAuthenticated(locals.user);
 
 	const email = url.searchParams.get('email');
+	// Whitelisted flag only — the sign-in page renders a fixed banner for
+	// ?verify=invalid; no message text is reflected through the URL.
 	if (!email) {
-		throw redirect(302, SIGN_IN_ROUTE);
+		throw redirect(302, `${SIGN_IN_ROUTE}?verify=invalid`);
 	}
 
 	const verificationForm = await superValidate({ email }, zod4(resendVerificationSchema), {
