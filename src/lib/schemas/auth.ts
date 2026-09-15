@@ -26,8 +26,10 @@ export const registerSchema = z
 		path: ['confirmPassword']
 	});
 
-// Added for cross-app parity with sheppakai-budget. No route consumes it yet — mealplanner has no in-app "change password" flow — but
-// the shape is kept identical to the other apps for when one is added.
+export const updateNameSchema = z.object({
+	name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long')
+});
+
 export const changePasswordSchema = z
 	.object({
 		currentPassword: z.string().min(1, 'Current password is required'),

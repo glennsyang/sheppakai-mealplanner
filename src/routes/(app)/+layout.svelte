@@ -118,13 +118,14 @@
 				</button>
 
 				<!-- User avatar -->
-				<div
+				<a
+					href="/profile"
 					class="bg-primary-500 flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white select-none"
 					title={user?.name ?? ''}
-					aria-label={user?.name ?? 'User'}
+					aria-label="Profile settings for {user?.name ?? 'User'}"
 				>
 					{userInitial}
-				</div>
+				</a>
 
 				<!-- Sign out -->
 				<form method="POST" action={SIGN_OUT_ROUTE} use:enhance id="logout-form"></form>
