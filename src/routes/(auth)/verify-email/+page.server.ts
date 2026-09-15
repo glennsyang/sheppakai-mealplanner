@@ -39,24 +39,10 @@ export const actions: Actions = {
 		return handleAuthFormAction(
 			form,
 			async () => {
-				// Route through Better Auth's HTTP handler, rather than calling its API
-				// method directly, so the configured per-IP rate limit protects this
-				// public resend action too. The endpoint itself returns a generic response
-				// for unknown and already-verified addresses to prevent account enumeration.
-				const headers = new Headers(request.headers);
-				headers.set('content-type', 'application/json');
-				headers.delete('content-length');
-
-				const response = await auth.handler(
-					new Request(new URL('/api/auth/send-verification-email', request.url), {
-						method: 'POST',
-						headers,
-						body: JSON.stringify({ email: form.data.email })
-					})
-				);
-				if (!response.ok) {
-					throw new Error(`Verification email request failed with status ${response.status}`);
-				}
+				await auth.api.sendVerificationEmail({
+					body: { email: form.data.email },
+					headers: request.headers
+				});
 
 				return message(form, { type: 'success', text: GENERIC_RESEND_RESULT });
 			},

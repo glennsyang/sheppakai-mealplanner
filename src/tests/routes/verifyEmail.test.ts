@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-const { handlerMock, loggerMock } = vi.hoisted(() => ({
-	handlerMock: vi.fn<(request: Request) => Promise<Response>>(),
+const { sendVerificationEmailMock, loggerMock } = vi.hoisted(() => ({
+	sendVerificationEmailMock: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
 	loggerMock: { error: vi.fn<() => void>() }
 }));
 
 vi.mock('$lib/server/auth', () => ({
 	auth: {
-		handler: handlerMock,
 		api: {
+			sendVerificationEmail: sendVerificationEmailMock,
 			getSession: vi.fn<() => Promise<null>>()
 		}
 	}
@@ -33,15 +33,16 @@ describe('verify-email resend action', () => {
 	});
 
 	it('asks Better Auth to send a new link for a valid email', async () => {
-		handlerMock.mockResolvedValueOnce(new Response(JSON.stringify({ status: true })));
+		sendVerificationEmailMock.mockResolvedValueOnce({ status: true });
 
-		const result = await actions.resend({ request: resendRequest('user@example.com') } as never);
+		const request = resendRequest('user@example.com');
+		const result = await actions.resend({ request } as never);
 
-		expect(handlerMock).toHaveBeenCalledOnce();
-		const [request] = handlerMock.mock.calls[0];
-		expect(request.method).toBe('POST');
-		expect(new URL(request.url).pathname).toBe('/api/auth/send-verification-email');
-		expect(await request.json()).toEqual({ email: 'user@example.com' });
+		expect(sendVerificationEmailMock).toHaveBeenCalledOnce();
+		expect(sendVerificationEmailMock).toHaveBeenCalledWith({
+			body: { email: 'user@example.com' },
+			headers: request.headers
+		});
 		expect(result).toMatchObject({
 			form: { message: { type: 'success', text: GENERIC_RESULT } }
 		});
@@ -50,18 +51,18 @@ describe('verify-email resend action', () => {
 	it('does not call Better Auth for an invalid email', async () => {
 		const result = await actions.resend({ request: resendRequest('not-an-email') } as never);
 
-		expect(handlerMock).not.toHaveBeenCalled();
+		expect(sendVerificationEmailMock).not.toHaveBeenCalled();
 		expect(result).toMatchObject({ status: 400 });
 	});
 
 	it('returns a generic error when Better Auth cannot send the email', async () => {
-		handlerMock.mockResolvedValueOnce(new Response(null, { status: 503 }));
+		sendVerificationEmailMock.mockRejectedValueOnce(new Error('Verification email request failed'));
 
 		const result = await actions.resend({ request: resendRequest('user@example.com') } as never);
 
 		expect(loggerMock.error).toHaveBeenCalledWith(
 			'Failed to resend verification email',
-			expect.objectContaining({ message: 'Verification email request failed with status 503' })
+			expect.objectContaining({ message: 'Verification email request failed' })
 		);
 		expect(result).toMatchObject({
 			status: 400,

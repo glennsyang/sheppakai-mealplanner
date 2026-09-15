@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-const { handlerMock, loggerMock } = vi.hoisted(() => ({
-	handlerMock: vi.fn<(request: Request) => Promise<Response>>(),
+const { requestPasswordResetMock, loggerMock } = vi.hoisted(() => ({
+	requestPasswordResetMock: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
 	loggerMock: { error: vi.fn<() => void>() }
 }));
 
 vi.mock('$lib/server/auth', () => ({
 	auth: {
-		handler: handlerMock,
 		api: {
+			requestPasswordReset: requestPasswordResetMock,
 			getSession: vi.fn<() => Promise<null>>()
 		}
 	}
@@ -35,17 +35,15 @@ describe('forgot-password default action', () => {
 	});
 
 	it('asks Better Auth to send a reset link for a valid email', async () => {
-		handlerMock.mockResolvedValueOnce(new Response(JSON.stringify({ status: true })));
+		requestPasswordResetMock.mockResolvedValueOnce({ status: true });
 
-		const result = await actions.default({ request: forgotRequest('user@example.com') } as never);
+		const request = forgotRequest('user@example.com');
+		const result = await actions.default({ request } as never);
 
-		expect(handlerMock).toHaveBeenCalledOnce();
-		const [request] = handlerMock.mock.calls[0];
-		expect(request.method).toBe('POST');
-		expect(new URL(request.url).pathname).toBe('/api/auth/request-password-reset');
-		expect(await request.json()).toEqual({
-			email: 'user@example.com',
-			redirectTo: '/reset-password'
+		expect(requestPasswordResetMock).toHaveBeenCalledOnce();
+		expect(requestPasswordResetMock).toHaveBeenCalledWith({
+			body: { email: 'user@example.com', redirectTo: '/reset-password' },
+			headers: request.headers
 		});
 		expect(result).toMatchObject({
 			form: { message: { type: 'success', text: GENERIC_RESULT } }
@@ -55,18 +53,18 @@ describe('forgot-password default action', () => {
 	it('does not call Better Auth for an invalid email', async () => {
 		const result = await actions.default({ request: forgotRequest('not-an-email') } as never);
 
-		expect(handlerMock).not.toHaveBeenCalled();
+		expect(requestPasswordResetMock).not.toHaveBeenCalled();
 		expect(result).toMatchObject({ status: 400 });
 	});
 
 	it('returns the same generic message (styled as success, not error) when Better Auth fails', async () => {
-		handlerMock.mockResolvedValueOnce(new Response(null, { status: 503 }));
+		requestPasswordResetMock.mockRejectedValueOnce(new Error('Password reset request failed'));
 
 		const result = await actions.default({ request: forgotRequest('user@example.com') } as never);
 
 		expect(loggerMock.error).toHaveBeenCalledWith(
 			'Failed to send password reset email',
-			expect.objectContaining({ message: 'Password reset request failed with status 503' })
+			expect.objectContaining({ message: 'Password reset request failed' })
 		);
 		expect(result).toMatchObject({
 			status: 400,
