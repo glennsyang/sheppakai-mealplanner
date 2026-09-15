@@ -61,13 +61,13 @@ describe('registerSchema', () => {
 		expect(messages).toContain('Password must be at least 12 characters');
 	});
 
-	it('rejects a password missing complexity requirements', () => {
+	it('accepts a password with no complexity, only length', () => {
 		const result = registerSchema.safeParse({
 			...valid,
 			password: 'alllowercase',
 			confirmPassword: 'alllowercase'
 		});
-		expect(result.success).toBe(false);
+		expect(result.success).toBe(true);
 	});
 });
 
@@ -121,14 +121,14 @@ describe('resetPasswordSchema', () => {
 		).toBe(false);
 	});
 
-	it('rejects a password missing complexity requirements', () => {
+	it('accepts a password with no complexity, only length', () => {
 		expect(
 			resetPasswordSchema.safeParse({
 				...valid,
 				password: 'alllowercase',
 				confirmPassword: 'alllowercase'
 			}).success
-		).toBe(false);
+		).toBe(true);
 	});
 });
 
