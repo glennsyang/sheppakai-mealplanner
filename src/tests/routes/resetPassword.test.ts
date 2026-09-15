@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-const { resetPasswordMock, loggerMock } = vi.hoisted(() => ({
+const { resetPasswordMock, loggerMock, rateLimitCheckMock } = vi.hoisted(() => ({
 	resetPasswordMock: vi.fn<() => Promise<unknown>>(),
-	loggerMock: { error: vi.fn<() => void>() }
+	loggerMock: { error: vi.fn<() => void>() },
+	rateLimitCheckMock: vi.fn<() => Promise<{ limited: boolean; retryAfter: number }>>()
 }));
 
 vi.mock('$lib/server/auth', () => ({
@@ -15,6 +16,14 @@ vi.mock('$lib/server/auth', () => ({
 }));
 
 vi.mock('$lib/server/logger', () => ({ logger: loggerMock }));
+
+vi.mock('$lib/server/rate-limiter', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('$lib/server/rate-limiter')>();
+	return {
+		...actual,
+		createAuthRateLimiter: () => ({ check: rateLimitCheckMock })
+	};
+});
 
 import { actions, load } from '../../routes/(auth)/reset-password/+page.server';
 
@@ -43,6 +52,7 @@ const validFields = {
 describe('reset-password default action', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		rateLimitCheckMock.mockResolvedValue({ limited: false, retryAfter: 0 });
 	});
 
 	it('resets the password and redirects to sign-in on success', async () => {
@@ -96,6 +106,22 @@ describe('reset-password default action', () => {
 						type: 'error',
 						text: 'This reset link is invalid or has expired. Request a new one.'
 					}
+				}
+			}
+		});
+	});
+
+	it('returns a 429 with a retry-after message and skips Better Auth when rate limited', async () => {
+		rateLimitCheckMock.mockResolvedValueOnce({ limited: true, retryAfter: 17 });
+
+		const result = await actions.default({ request: resetRequest(validFields) } as never);
+
+		expect(resetPasswordMock).not.toHaveBeenCalled();
+		expect(result).toMatchObject({
+			status: 429,
+			data: {
+				form: {
+					message: { type: 'error', text: 'Too many attempts. Please try again in 17 seconds.' }
 				}
 			}
 		});
