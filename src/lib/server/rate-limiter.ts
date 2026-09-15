@@ -1,10 +1,12 @@
+import type { RequestEvent } from '@sveltejs/kit';
 import { RetryAfterRateLimiter } from 'sveltekit-rate-limiter/server';
+import type { Rate, RateLimiterPlugin } from 'sveltekit-rate-limiter/server';
 import { message } from 'sveltekit-superforms';
 import type { SuperValidated } from 'sveltekit-superforms';
 
-// Distinct from `./rateLimit.ts` (the hand-rolled fixed-window limiter used by
-// the AI suggest/variations endpoints) — this one is specifically for the
-// auth form actions below, via the `sveltekit-rate-limiter` package.
+// Single shared module for both flavors of rate limiting: IP/IPUA-keyed for the
+// auth form actions below, and user-id-keyed (via `createUserRateLimiter`) for
+// the per-user AI-quota endpoints.
 
 type MessageOptions = NonNullable<Parameters<typeof message>[2]>;
 
@@ -35,4 +37,28 @@ export function rateLimitedMessage<TForm extends Record<string, unknown>>(
 		},
 		{ status: 429 as MessageOptions['status'] }
 	);
+}
+
+class UserIdRateLimiter implements RateLimiterPlugin<{ userId: string }> {
+	readonly rate: Rate | Rate[];
+
+	constructor(rate: Rate | Rate[]) {
+		this.rate = rate;
+	}
+
+	hash(_: RequestEvent, extraData: { userId: string }) {
+		return extraData.userId;
+	}
+}
+
+/**
+ * One limiter per API route (call this once per route, at module scope), keyed by
+ * `user.id` for per-user AI-quota throttling.
+ */
+export function createUserRateLimiter(
+	rate: Rate | Rate[]
+): RetryAfterRateLimiter<{ userId: string }> {
+	return new RetryAfterRateLimiter<{ userId: string }>({
+		plugins: [new UserIdRateLimiter(rate)]
+	});
 }

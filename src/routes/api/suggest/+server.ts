@@ -1,20 +1,23 @@
 import { suggestFromPantrySchema } from '$lib/schemas/pantry';
 import { suggestMeals } from '$lib/server/ai/gemini';
 import { logger } from '$lib/server/logger';
-import { checkRateLimit } from '$lib/server/rateLimit';
+import { createUserRateLimiter } from '$lib/server/rate-limiter';
 import { json, error } from '@sveltejs/kit';
 
 import type { RequestHandler } from './$types';
 
-const RATE_LIMIT = { windowMs: 60_000, max: 10 };
+const limiter = createUserRateLimiter([10, 'm']);
 
-export const POST: RequestHandler = async ({ request, locals }) => {
+export const POST: RequestHandler = async (event) => {
+	const { request, locals } = event;
+
 	if (!locals.user) {
 		error(401, 'Unauthorized');
 	}
 
-	if (!checkRateLimit(`suggest:${locals.user.id}`, RATE_LIMIT)) {
-		error(429, 'Too many requests. Please try again later.');
+	const rateLimitStatus = await limiter.check(event, { userId: locals.user.id });
+	if (rateLimitStatus.limited) {
+		error(429, `Too many requests. Please try again in ${rateLimitStatus.retryAfter} seconds.`);
 	}
 
 	const body = await request.json().catch(() => null);
