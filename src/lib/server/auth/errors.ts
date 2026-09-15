@@ -45,6 +45,8 @@ export function getBetterAuthErrorMessage(
 		INVALID_EMAIL_OR_PASSWORD: 'Invalid email or password. Please try again.',
 		PASSWORD_TOO_SHORT: 'Your password is too short. Please use at least 8 characters.',
 		PASSWORD_TOO_LONG: 'Your password is too long. Please use fewer characters.',
+		PASSWORD_COMPROMISED:
+			'This password has appeared in a data breach. Please choose a different password.',
 		EMAIL_NOT_VERIFIED: 'Please verify your email address before signing in.',
 		EMAIL_ALREADY_VERIFIED: 'Your email is already verified.',
 		USER_EMAIL_NOT_FOUND: 'No email address found for this account.',
