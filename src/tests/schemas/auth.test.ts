@@ -6,7 +6,8 @@ import {
 	loginSchema,
 	registerSchema,
 	resendVerificationSchema,
-	resetPasswordSchema
+	resetPasswordSchema,
+	updateNameSchema
 } from '../../lib/schemas/auth';
 
 describe('loginSchema', () => {
@@ -161,5 +162,19 @@ describe('changePasswordSchema', () => {
 		expect(
 			changePasswordSchema.safeParse({ ...valid, confirmPassword: 'something-else' }).success
 		).toBe(false);
+	});
+});
+
+describe('updateNameSchema', () => {
+	it('accepts a valid name', () => {
+		expect(updateNameSchema.safeParse({ name: 'Alice' }).success).toBe(true);
+	});
+
+	it('rejects a name shorter than 2 characters', () => {
+		expect(updateNameSchema.safeParse({ name: 'A' }).success).toBe(false);
+	});
+
+	it('rejects a name longer than 100 characters', () => {
+		expect(updateNameSchema.safeParse({ name: 'A'.repeat(101) }).success).toBe(false);
 	});
 });
