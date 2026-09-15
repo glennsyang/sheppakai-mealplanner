@@ -3,6 +3,7 @@ import { resendVerificationSchema } from '$lib/schemas/auth';
 import { handleAuthFormAction, invalidAuthForm } from '$lib/server/actions/auth-form-handler';
 import { auth } from '$lib/server/auth';
 import { redirectIfAuthenticated } from '$lib/server/auth/form-helpers';
+import { createAuthRateLimiter, rateLimitedMessage } from '$lib/server/rate-limiter';
 import { redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -11,6 +12,8 @@ import type { Actions, PageServerLoad } from './$types';
 
 const GENERIC_RESEND_RESULT =
 	'If an unverified account exists, a fresh verification link is on its way.';
+
+const limiter = createAuthRateLimiter();
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	redirectIfAuthenticated(locals.user);
@@ -30,10 +33,16 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-	resend: async ({ request }) => {
+	resend: async (event) => {
+		const { request } = event;
 		const form = await superValidate(request, zod4(resendVerificationSchema));
 		if (!form.valid) {
 			return invalidAuthForm(form, 'Please enter a valid email address.');
+		}
+
+		const rateLimitStatus = await limiter.check(event);
+		if (rateLimitStatus.limited) {
+			return rateLimitedMessage(form, rateLimitStatus.retryAfter);
 		}
 
 		return handleAuthFormAction(

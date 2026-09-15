@@ -38,7 +38,8 @@
 		"@tanstack/table-core": "^9.2.4",
 		"better-auth": "^1.7.4",
 		"better-sqlite3": "^12.10.0",
-		"drizzle-orm": "^0.45.2"
+		"drizzle-orm": "^0.45.2",
+		"sveltekit-rate-limiter": "^0.8.0"
 	},
 	"devDependencies": {
 		"@skeletonlabs/skeleton": "^5.0.1",

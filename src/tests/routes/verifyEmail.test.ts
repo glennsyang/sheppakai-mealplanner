@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-const { sendVerificationEmailMock, loggerMock } = vi.hoisted(() => ({
+const { sendVerificationEmailMock, loggerMock, rateLimitCheckMock } = vi.hoisted(() => ({
 	sendVerificationEmailMock: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
-	loggerMock: { error: vi.fn<() => void>() }
+	loggerMock: { error: vi.fn<() => void>() },
+	rateLimitCheckMock: vi.fn<() => Promise<{ limited: boolean; retryAfter: number }>>()
 }));
 
 vi.mock('$lib/server/auth', () => ({
@@ -15,6 +16,14 @@ vi.mock('$lib/server/auth', () => ({
 }));
 
 vi.mock('$lib/server/logger', () => ({ logger: loggerMock }));
+
+vi.mock('$lib/server/rate-limiter', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('$lib/server/rate-limiter')>();
+	return {
+		...actual,
+		createAuthRateLimiter: () => ({ check: rateLimitCheckMock })
+	};
+});
 
 import { actions } from '../../routes/(auth)/verify-email/+page.server';
 
@@ -30,6 +39,7 @@ function resendRequest(email: string) {
 describe('verify-email resend action', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		rateLimitCheckMock.mockResolvedValue({ limited: false, retryAfter: 0 });
 	});
 
 	it('asks Better Auth to send a new link for a valid email', async () => {
@@ -72,6 +82,22 @@ describe('verify-email resend action', () => {
 						type: 'error',
 						text: 'We could not send a verification email. Please try again shortly.'
 					}
+				}
+			}
+		});
+	});
+
+	it('returns a 429 with a retry-after message and skips Better Auth when rate limited', async () => {
+		rateLimitCheckMock.mockResolvedValueOnce({ limited: true, retryAfter: 42 });
+
+		const result = await actions.resend({ request: resendRequest('user@example.com') } as never);
+
+		expect(sendVerificationEmailMock).not.toHaveBeenCalled();
+		expect(result).toMatchObject({
+			status: 429,
+			data: {
+				form: {
+					message: { type: 'error', text: 'Too many attempts. Please try again in 42 seconds.' }
 				}
 			}
 		});
