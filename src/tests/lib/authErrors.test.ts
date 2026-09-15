@@ -46,4 +46,11 @@ describe('getBetterAuthErrorMessage', () => {
 			'This link has expired. Please request a new one.'
 		);
 	});
+
+	it('maps PASSWORD_COMPROMISED', () => {
+		const error = { body: { code: 'PASSWORD_COMPROMISED' } };
+		expect(getBetterAuthErrorMessage(error)).toBe(
+			'This password has appeared in a data breach. Please choose a different password.'
+		);
+	});
 });
