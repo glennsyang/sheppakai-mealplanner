@@ -10,9 +10,18 @@
 	const user = $derived(data.user);
 
 	let isDark = $state(false);
+	let mobileMenuOpen = $state(false);
+	let previousPath = $state(page.url.pathname);
 
 	$effect(() => {
 		isDark = document.documentElement.classList.contains('dark');
+	});
+
+	$effect(() => {
+		if (page.url.pathname !== previousPath) {
+			previousPath = page.url.pathname;
+			mobileMenuOpen = false;
+		}
 	});
 
 	function toggleDark() {
@@ -38,6 +47,11 @@
 		return page.url.pathname.startsWith(href);
 	}
 
+	function signOut() {
+		const form = document.getElementById('logout-form') as HTMLFormElement;
+		form?.requestSubmit();
+	}
+
 	const userInitial = $derived(user?.name?.[0]?.toUpperCase() ?? '?');
 </script>
 
@@ -46,7 +60,7 @@
 	<header
 		class="border-surface-200-800 bg-surface-50-950/95 sticky top-0 z-30 border-b backdrop-blur-sm"
 	>
-		<div class="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
+		<div class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-4 sm:gap-6 sm:px-6">
 			<!-- Wordmark -->
 			<a href="/" class="flex shrink-0 items-center gap-0" aria-label="Meal Planner home">
 				<span class="text-surface-950-50 font-serif text-xl font-semibold tracking-tight">Meal</span
@@ -56,8 +70,8 @@
 				>
 			</a>
 
-			<!-- Primary nav -->
-			<nav class="ml-4 flex items-center gap-6" aria-label="Main navigation">
+			<!-- Primary nav (desktop) -->
+			<nav class="ml-4 hidden items-center gap-6 md:flex" aria-label="Main navigation">
 				{#each visibleLinks as link}
 					<a
 						href={link.href}
@@ -127,20 +141,84 @@
 					{userInitial}
 				</a>
 
-				<!-- Sign out -->
+				<!-- Sign out (desktop) -->
 				<form method="POST" action={SIGN_OUT_ROUTE} use:enhance id="logout-form"></form>
 				<button
 					type="button"
-					onclick={() => {
-						const form = document.getElementById('logout-form') as HTMLFormElement;
-						form?.requestSubmit();
-					}}
-					class="text-surface-500 hover:text-surface-950-50 text-sm transition-colors"
+					onclick={signOut}
+					class="text-surface-500 hover:text-surface-950-50 hidden text-sm transition-colors md:inline"
 				>
 					Sign out
 				</button>
+
+				<!-- Mobile menu toggle -->
+				<button
+					type="button"
+					onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
+					aria-label="Toggle menu"
+					aria-expanded={mobileMenuOpen}
+					class="text-surface-500 hover:bg-surface-100-900 hover:text-surface-950-50 flex size-8 items-center justify-center rounded-full transition-colors md:hidden"
+				>
+					{#if mobileMenuOpen}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+						>
+							<path d="M18 6 6 18M6 6l12 12" />
+						</svg>
+					{:else}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+						>
+							<path d="M3 6h18M3 12h18M3 18h18" />
+						</svg>
+					{/if}
+				</button>
 			</div>
 		</div>
+
+		<!-- Mobile menu panel -->
+		{#if mobileMenuOpen}
+			<div class="border-surface-200-800 bg-surface-50-950 border-t md:hidden">
+				<nav class="mx-auto flex max-w-6xl flex-col px-4 py-2" aria-label="Mobile navigation">
+					{#each visibleLinks as link}
+						<a
+							href={link.href}
+							class="border-surface-200-800 border-b py-3 text-sm transition-colors duration-150 last:border-b-0"
+							class:text-surface-950-50={isActive(link.href)}
+							class:font-semibold={isActive(link.href)}
+							class:text-surface-500={!isActive(link.href)}
+						>
+							{link.label}
+						</a>
+					{/each}
+					<button
+						type="button"
+						onclick={signOut}
+						class="text-surface-500 hover:text-surface-950-50 py-3 text-left text-sm transition-colors"
+					>
+						Sign out
+					</button>
+				</nav>
+			</div>
+		{/if}
 	</header>
 
 	<!-- Main content -->
