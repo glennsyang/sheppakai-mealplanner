@@ -256,7 +256,7 @@ leaves `handleError` unwrapped (the structured logger already forwards to Sentry
 
 ## Shared Tooling & Review
 
-This repo shares skills/agents/commands with `sheppakai-budget` and `synapse` via the `sveltekit-toolkit` Claude Code plugin (see `../claude-sveltekit-toolkit`), enabled in `.claude/settings.json`. It provides `svelte-code-writer`, `svelte5-best-practices`, `better-auth-best-practices`, `shadcn-svelte-components`, `frontend-design`, `tailwind-patterns`, `web-design-reviewer`, a `/propagate` command for replicating a shared-dependency fix across the sibling repos, and a `/scaffold-form` command for scaffolding a new form/CRUD feature — this repo's flavor is the full-page form pattern (schema + `+page.server.ts` with superValidate + `+page.svelte` with superForm).
+This repo shares skills/agents/commands with `sheppakai-budget` and `synapse` via the `sveltekit-toolkit` Claude Code plugin (see `../claude-sveltekit-toolkit`), enabled in `.claude/settings.json`. It provides `svelte-code-writer`, `svelte5-best-practices`, `better-auth-best-practices`, `shadcn-svelte-components`, `frontend-design`, `tailwind-patterns`, `web-design-reviewer`, `brevo-email-log` (checks Brevo's transactional email event log to verify whether a specific email actually sent/delivered/bounced — all three repos send through the same Brevo account), a `/propagate` command for replicating a shared-dependency fix across the sibling repos, and a `/scaffold-form` command for scaffolding a new form/CRUD feature — this repo's flavor is the full-page form pattern (schema + `+page.server.ts` with superValidate + `+page.svelte` with superForm).
 
 Note: this repo uses Skeleton UI v4, not shadcn-svelte/bits-ui — the `shadcn-svelte-components` skill won't be relevant here.
 
