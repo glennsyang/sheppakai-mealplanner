@@ -104,6 +104,6 @@ export const actions: Actions = {
 			return fail(500, { form });
 		}
 
-		return {};
+		return { form };
 	}
 };
