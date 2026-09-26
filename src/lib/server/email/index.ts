@@ -246,3 +246,92 @@ export async function sendNewUserEmail(to: string, name: string) {
 
 	logger.info('New user welcome email sent', { to, brevoMessageId: result.messageId });
 }
+
+type AccountCreatedEmailLinks = {
+	appUrl: string;
+	forgotPasswordUrl: string;
+	profileUrl: string;
+};
+
+/**
+ * Welcome email for an account an admin created from /admin (#138). The account's
+ * password is a random one nobody knows, so the email walks the user through setting
+ * their own via Forgot password. It links to the forgot-password page rather than
+ * embedding a reset token: tokens expire after 10 minutes, which a welcome email
+ * would routinely outlive.
+ */
+export async function sendAccountCreatedEmail(
+	to: string,
+	name: string,
+	links: AccountCreatedEmailLinks
+) {
+	// Info-level for the same reason as the other sends: it separates an
+	// untriggered flow from a provider failure in production logs.
+	logger.info('Sending account created email', { to });
+
+	const safeName = escapeHtml(name || to);
+	const appUrl = escapeHtml(links.appUrl);
+	const forgotPasswordUrl = escapeHtml(links.forgotPasswordUrl);
+	const profileUrl = escapeHtml(links.profileUrl);
+	const safeEmail = escapeHtml(to);
+
+	let result;
+	try {
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Meal Planner', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
+			subject: '[Meal Planner] Your account is ready',
+			htmlContent: `
+				<!DOCTYPE html>
+				<html>
+				<head>
+					<meta charset="utf-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<title>Your Meal Planner account</title>
+				</head>
+				<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+					<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+						<h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Meal Planner</h1>
+					</div>
+					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${safeName},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">
+							An account has been created for you on Meal Planner (<a href="${appUrl}">${appUrl}</a>)
+							with the email <strong>${safeEmail}</strong>.
+						</p>
+						<p style="font-size: 16px; margin-bottom: 8px;"><strong>To sign in for the first time:</strong></p>
+						<ol style="font-size: 16px; margin-bottom: 20px; padding-left: 20px;">
+							<li>Open the <a href="${forgotPasswordUrl}">Forgot password</a> page and enter your email.</li>
+							<li>Click the link in the reset email and choose your own password (at least 12 characters). No password has been shared with anyone.</li>
+							<li>Sign in. The first time, you'll get a verification email — click the link in it to finish signing in.</li>
+						</ol>
+						<div style="text-align: center; margin: 30px 0;">
+							<a href="${forgotPasswordUrl}"
+							   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; font-size: 16px;">
+								Set your password
+							</a>
+						</div>
+						<p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
+							You can change your password any time from your <a href="${profileUrl}">profile page</a>.
+						</p>
+						<p style="font-size: 14px; color: #6b7280; margin-top: 10px;">
+							If you weren't expecting this, you can safely ignore this email.
+						</p>
+					</div>
+					<div style="text-align: center; margin-top: 20px; padding: 20px; color: #9ca3af; font-size: 12px;">
+						<p>Meal Planner</p>
+					</div>
+				</body>
+				</html>
+			`
+		});
+	} catch (cause) {
+		logger.error('Failed to send account created email', cause, { to });
+		throw cause instanceof Error ? cause : new Error('Brevo request failed', { cause });
+	}
+
+	logger.info('Account created email sent', {
+		to,
+		brevoMessageId: result.messageId
+	});
+}

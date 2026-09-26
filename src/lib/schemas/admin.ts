@@ -21,3 +21,21 @@ export const unbanUserSchema = z.object({
 export const removeUserSchema = z.object({
 	userId: z.string().min(1, 'User ID is required')
 });
+
+// Admin "Add user" form. No password field: the server generates a random one the
+// admin never sees, and the new user sets their own via the forgot-password flow.
+export const createUserSchema = z.object({
+	name: z.string().trim().min(1, 'Name is required').max(100, 'Name too long'),
+	email: z
+		.string()
+		.trim()
+		.toLowerCase()
+		.email('Please enter a valid email address')
+		.max(254, 'Email too long'),
+	role: z.enum(USER_ROLES).default('user')
+});
+export type CreateUserSchema = typeof createUserSchema;
+
+export const sendWelcomeSchema = z.object({
+	userId: z.string().min(1, 'User ID is required')
+});

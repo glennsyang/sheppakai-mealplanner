@@ -18,7 +18,7 @@ declare global {
 		// Without this declaration superforms falls back to `any`, which let
 		// object payloads reach pages that treated the message as a string.
 		namespace Superforms {
-			type Message = { type: 'error' | 'success'; text: string };
+			type Message = { type: 'error' | 'success' | 'warning'; text: string };
 		}
 	}
 }

@@ -1,4 +1,9 @@
-import { banUserSchema, removeUserSchema, setRoleSchema } from '$lib/schemas/admin';
+import {
+	banUserSchema,
+	createUserSchema,
+	removeUserSchema,
+	setRoleSchema
+} from '$lib/schemas/admin';
 import { describe, expect, it } from 'vitest';
 
 describe('setRoleSchema', () => {
@@ -32,5 +37,43 @@ describe('removeUserSchema', () => {
 	it('requires a non-empty userId', () => {
 		expect(removeUserSchema.safeParse({ userId: '' }).success).toBe(false);
 		expect(removeUserSchema.safeParse({ userId: 'u1' }).success).toBe(true);
+	});
+});
+
+describe('createUserSchema', () => {
+	it('accepts name + email and defaults the role to user', () => {
+		const result = createUserSchema.safeParse({
+			name: 'New',
+			email: 'new@example.com'
+		});
+		expect(result.success && result.data.role).toBe('user');
+	});
+
+	it('trims and lowercases the email', () => {
+		const result = createUserSchema.safeParse({
+			name: 'New',
+			email: '  New@Example.COM '
+		});
+		expect(result.success && result.data.email).toBe('new@example.com');
+	});
+
+	it('rejects an invalid email', () => {
+		expect(createUserSchema.safeParse({ name: 'New', email: 'not-an-email' }).success).toBe(false);
+	});
+
+	it('rejects an empty or whitespace-only name', () => {
+		expect(createUserSchema.safeParse({ name: '   ', email: 'new@example.com' }).success).toBe(
+			false
+		);
+	});
+
+	it('rejects an unknown role', () => {
+		expect(
+			createUserSchema.safeParse({
+				name: 'New',
+				email: 'new@example.com',
+				role: 'superuser'
+			}).success
+		).toBe(false);
 	});
 });

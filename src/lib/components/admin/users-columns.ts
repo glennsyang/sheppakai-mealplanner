@@ -7,7 +7,10 @@ import RoleBadge from './RoleBadge.svelte';
 import StatusBadge from './StatusBadge.svelte';
 import type { AdminUser } from './types';
 
-export function makeColumns(currentUserId: string): ColumnDef<Features, AdminUser>[] {
+export function makeColumns(
+	currentUserId: string,
+	allowlistedIds: ReadonlySet<string>
+): ColumnDef<Features, AdminUser>[] {
 	return [
 		{
 			accessorKey: 'email',
@@ -45,7 +48,12 @@ export function makeColumns(currentUserId: string): ColumnDef<Features, AdminUse
 			id: 'actions',
 			header: 'Actions',
 			enableSorting: false,
-			cell: ({ row }) => renderComponent(AdminUserActions, { user: row.original, currentUserId })
+			cell: ({ row }) =>
+				renderComponent(AdminUserActions, {
+					user: row.original,
+					currentUserId,
+					allowlisted: allowlistedIds.has(row.original.id)
+				})
 		}
 	];
 }

@@ -4,7 +4,11 @@
 
 	import type { AdminUser } from './types';
 
-	let { user, currentUserId }: { user: AdminUser; currentUserId: string } = $props();
+	let {
+		user,
+		currentUserId,
+		allowlisted
+	}: { user: AdminUser; currentUserId: string; allowlisted: boolean } = $props();
 
 	const isSelf = $derived(user.id === currentUserId);
 	const banned = $derived(Boolean(user.banned));
@@ -41,6 +45,15 @@
 				{/each}
 			</select>
 		</form>
+
+		{#if allowlisted && !user.emailVerified}
+			<form method="POST" action="?/sendWelcomeEmail" use:enhance={submit}>
+				<input type="hidden" name="userId" value={user.id} />
+				<button type="submit" class="btn btn-sm preset-tonal-primary" disabled={busy}>
+					Send welcome email
+				</button>
+			</form>
+		{/if}
 
 		<form method="POST" action={banned ? '?/unbanUser' : '?/banUser'} use:enhance={submit}>
 			<input type="hidden" name="userId" value={user.id} />

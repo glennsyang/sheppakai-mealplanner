@@ -4,9 +4,13 @@
 	import type { AdminUser } from './types';
 	import { makeColumns } from './users-columns';
 
-	let { users, currentUserId }: { users: AdminUser[]; currentUserId: string } = $props();
+	let {
+		users,
+		currentUserId,
+		allowlistedIds
+	}: { users: AdminUser[]; currentUserId: string; allowlistedIds: string[] } = $props();
 
-	const columns = $derived(makeColumns(currentUserId));
+	const columns = $derived(makeColumns(currentUserId, new Set(allowlistedIds)));
 </script>
 
 <DataTable
