@@ -32,6 +32,11 @@ export const auth = betterAuth({
 	}),
 	emailAndPassword: {
 		enabled: true,
+		// Public sign-up is closed: the shared-data model (CLAUDE.md) relies on the app
+		// having exactly two household users, so an open /sign-up/email would hand any
+		// verified stranger full access to the shared tables (#124). New accounts are
+		// created by an admin only, via the admin plugin's `createUser`.
+		disableSignUp: true,
 		autoSignIn: false,
 		requireEmailVerification: true,
 		minPasswordLength: 12,
@@ -152,8 +157,9 @@ export const auth = betterAuth({
 		// NIST SP 800-63B §5.1.1.2: reject passwords found in a known-breach corpus.
 		// Checked via the HIBP k-anonymity range API on the plugin's default paths
 		// (/sign-up/email, /change-password, /reset-password, /admin/set-user-password —
-		// only /sign-up/email and /reset-password are actually reachable in this app,
-		// which has no self-service or admin password-change feature). Only the first
+		// only /change-password (profile page) and /reset-password are actually reachable
+		// in this app: sign-up is disabled above and there is no admin password-change
+		// feature). Only the first
 		// 5 hex chars of the password's SHA-1 hash ever leave the server. Fails closed:
 		// an HIBP outage blocks the password change rather than silently skipping the check.
 		haveIBeenPwned(),

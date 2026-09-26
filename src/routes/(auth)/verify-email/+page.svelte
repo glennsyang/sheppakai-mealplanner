@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { REGISTER_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
+	import { SIGN_IN_ROUTE } from '$lib/auth-routes';
 	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import { resendVerificationSchema } from '$lib/schemas/auth';
 	import { superForm } from 'sveltekit-superforms';
@@ -114,13 +114,6 @@
 					<p class="text-error-500 text-center text-xs">{$errors.email}</p>
 				{/if}
 			</form>
-
-			<p class="text-surface-500 text-center text-sm">
-				Wrong email address?
-				<a href={REGISTER_ROUTE} class="text-primary-600 font-medium hover:underline">
-					Register again
-				</a>
-			</p>
 
 			<a href={SIGN_IN_ROUTE} class="btn preset-outlined-surface-500 w-full">Back to sign in</a>
 		</div>

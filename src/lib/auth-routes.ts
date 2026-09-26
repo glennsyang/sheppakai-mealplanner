@@ -14,9 +14,6 @@ export const SIGN_IN_ROUTE = '/sign-in';
 /** Sign-out form action target. */
 export const SIGN_OUT_ROUTE = '/sign-out';
 
-/** New-account registration page. */
-export const REGISTER_ROUTE = '/register';
-
 /** Request a password-reset link. */
 export const FORGOT_PASSWORD_ROUTE = '/forgot-password';
 

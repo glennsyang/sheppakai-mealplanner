@@ -4,7 +4,6 @@ import {
 	changePasswordSchema,
 	forgotPasswordSchema,
 	loginSchema,
-	registerSchema,
 	resendVerificationSchema,
 	resetPasswordSchema,
 	updateNameSchema
@@ -24,51 +23,6 @@ describe('loginSchema', () => {
 	it('rejects empty password', () => {
 		const result = loginSchema.safeParse({ email: 'user@example.com', password: '' });
 		expect(result.success).toBe(false);
-	});
-});
-
-describe('registerSchema', () => {
-	const valid = {
-		name: 'Alice',
-		email: 'alice@example.com',
-		password: 'Correct-Horse1!',
-		confirmPassword: 'Correct-Horse1!'
-	};
-
-	it('accepts valid registration data', () => {
-		const result = registerSchema.safeParse(valid);
-		expect(result.success).toBe(true);
-	});
-
-	it('rejects mismatched passwords', () => {
-		const result = registerSchema.safeParse({ ...valid, confirmPassword: 'different' });
-		expect(result.success).toBe(false);
-	});
-
-	it('rejects short name', () => {
-		const result = registerSchema.safeParse({ ...valid, name: 'A' });
-		expect(result.success).toBe(false);
-	});
-
-	it('rejects a password shorter than 12 characters (matches server minPasswordLength)', () => {
-		// 11 chars — one short of the server floor.
-		const result = registerSchema.safeParse({
-			...valid,
-			password: 'Password1!1',
-			confirmPassword: 'Password1!1'
-		});
-		expect(result.success).toBe(false);
-		const messages = result.error?.issues.map((i) => i.message) ?? [];
-		expect(messages).toContain('Password must be at least 12 characters');
-	});
-
-	it('accepts a password with no complexity, only length', () => {
-		const result = registerSchema.safeParse({
-			...valid,
-			password: 'alllowercase',
-			confirmPassword: 'alllowercase'
-		});
-		expect(result.success).toBe(true);
 	});
 });
 

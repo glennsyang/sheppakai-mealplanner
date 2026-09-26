@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { FORGOT_PASSWORD_ROUTE, REGISTER_ROUTE } from '$lib/auth-routes';
+	import { FORGOT_PASSWORD_ROUTE } from '$lib/auth-routes';
 	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import { loginSchema } from '$lib/schemas/auth';
 	import { expoOut } from 'svelte/easing';
@@ -122,13 +122,6 @@
 					{$submitting ? 'Signing in…' : 'Sign in'}
 				</button>
 			</form>
-
-			<p class="text-surface-500 text-center text-sm">
-				No account yet?&ensp;<a
-					href={REGISTER_ROUTE}
-					class="text-primary-600 font-medium underline-offset-2 hover:underline">Create one</a
-				>
-			</p>
 		</div>
 	</div>
 </div>

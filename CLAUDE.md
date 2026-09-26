@@ -99,7 +99,7 @@ src/
 │           ├── mealPlan.ts      # includes getMondayOfCurrentWeek()
 │           └── recipes.ts
 ├── routes/
-│   ├── (auth)/                  # Unauthenticated: sign-in, register, sign-out
+│   ├── (auth)/                  # Unauthenticated: sign-in, sign-out, password reset, email verification
 │   ├── (app)/                   # Protected: auth guard in +layout.server.ts
 │   │   ├── pantry/
 │   │   ├── suggest/
@@ -117,6 +117,7 @@ src/
 ## Authentication
 
 - **better-auth v1** with email+password only (no OAuth).
+- **Public sign-up is disabled** (`emailAndPassword.disableSignUp: true`, no `/register` route) — the shared-data model depends on exactly two users (#124). Create new accounts as an admin via the admin plugin's `createUser`.
 - Minimum password length: **12 characters**.
 - `src/hooks.server.ts` runs the session middleware on every request, populating `event.locals.user` and `event.locals.session` via `svelteKitHandler`.
 - `(app)/+layout.server.ts` enforces the auth guard — redirects to `/sign-in` if no session. Auth route paths are centralised in `src/lib/auth-routes.ts` (`SIGN_IN_ROUTE`, etc.) — no inline route literals.
