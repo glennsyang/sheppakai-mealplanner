@@ -1,6 +1,7 @@
 import { PUBLIC_SENTRY_DSN } from '$app/env/public';
 import { building, dev } from '$app/environment';
-import { auth } from '$lib/server/auth';
+import { allowedEmails, auth } from '$lib/server/auth';
+import { isUserAccessAllowed } from '$lib/server/auth/allowlist-hook';
 import { logger } from '$lib/server/logger';
 import * as Sentry from '@sentry/sveltekit';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
@@ -42,8 +43,26 @@ export const handle: Handle = sequence(Sentry.sentryHandle(), async ({ event, re
 		headers: event.request.headers
 	});
 
-	// Make session and user available on server
-	if (session) {
+	// Make session and user available on server.
+	// The allowlist and ban are otherwise only checked when a session is created, so a
+	// user removed from ALLOWED_EMAILS (or banned) would keep a self-extending session.
+	// Re-check on every request — this also covers the 5-minute cookie cache window.
+	if (session && !isUserAccessAllowed(session.user, allowedEmails)) {
+		requestLogger.warn('Session rejected', {
+			userId: session.user.id,
+			reason: 'owner_not_allowed'
+		});
+		try {
+			await auth.api.revokeSession({
+				body: { token: session.session.token },
+				headers: event.request.headers
+			});
+		} catch (err) {
+			requestLogger.error('Failed to revoke disallowed session', err, {
+				userId: session.user.id
+			});
+		}
+	} else if (session) {
 		event.locals.session = session.session;
 		event.locals.user = session.user;
 		requestLogger = requestLogger.child({ userId: session.user.id });

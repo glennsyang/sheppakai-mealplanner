@@ -1,5 +1,6 @@
 import {
 	ADMIN_USER_IDS,
+	ALLOWED_EMAILS,
 	BETTER_AUTH_BASE_URL,
 	BETTER_AUTH_SECRET,
 	NODE_ENV
@@ -9,12 +10,20 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { admin, haveIBeenPwned } from 'better-auth/plugins';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
+import { eq } from 'drizzle-orm';
 
 import { getDb } from '../db';
 import * as schema from '../db/schema';
 import { sendPasswordChangedEmail, sendPasswordResetEmail, sendVerificationEmail } from '../email';
 import { logger } from '../logger';
+import {
+	createAllowlistBeforeHook,
+	createAllowlistSessionGuard,
+	parseAllowedEmails
+} from './allowlist-hook';
 import { createAuthAfterHooks, logPasswordResetAudit } from './audit-hooks';
+
+export const allowedEmails = parseAllowedEmails(ALLOWED_EMAILS);
 
 export const auth = betterAuth({
 	appName: 'Meal Planner',
@@ -98,7 +107,26 @@ export const auth = betterAuth({
 		}
 	},
 	hooks: {
+		// Public sign-up is off (disableSignUp above); this also restricts sign-in to
+		// the exact ALLOWED_EMAILS list.
+		before: createAllowlistBeforeHook('Meal Planner', allowedEmails),
 		after: createAuthAfterHooks('Meal Planner')
+	},
+	databaseHooks: {
+		session: {
+			create: {
+				// Backstop for every session-creating flow (sign-in, verify-email auto sign-in,
+				// impersonation, …), not just the paths hooks.before sees.
+				before: createAllowlistSessionGuard(allowedEmails, async (userId) => {
+					const [row] = await getDb()
+						.select({ email: schema.user.email })
+						.from(schema.user)
+						.where(eq(schema.user.id, userId))
+						.limit(1);
+					return row?.email;
+				})
+			}
+		}
 	},
 	advanced: {
 		cookiePrefix: 'mealplanner_auth_',

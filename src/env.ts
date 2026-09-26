@@ -58,6 +58,11 @@ export const variables = defineEnvVars({
 		description: 'Comma-separated user IDs bootstrapped as admins by the better-auth admin plugin',
 		schema: z.string().default('dummy_admin_id')
 	},
+	ALLOWED_EMAILS: {
+		description:
+			'Comma-separated list of the only emails allowed to sign in (exact, case-insensitive match)',
+		schema: building ? z.string().catch('') : z.string().min(1)
+	},
 	ANTHROPIC_API_KEY: {
 		description: 'Anthropic API key',
 		schema: z.string().min(1).default('dummy_key_for_build')
