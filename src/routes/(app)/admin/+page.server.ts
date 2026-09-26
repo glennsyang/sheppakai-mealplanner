@@ -53,15 +53,16 @@ function sendWelcome(email: string, name: string) {
 
 export const load: PageServerLoad = async ({ request }) => {
 	const createForm = await superValidate(zod4(createUserSchema));
-	// Admin-only page: the current allowlist is shown so the "not allowlisted"
-	// warning can print the exact `fly secrets set` command to run.
-	const allowlist = [...allowedEmails];
 	try {
 		const { users } = await auth.api.listUsers({
 			query: { limit: 500, sortBy: 'createdAt', sortDirection: 'desc' },
 			headers: request.headers
 		});
 		const allowlistedIds = users.filter((u) => isAllowlisted(u.email)).map((u) => u.id);
+		// The current allowlist lets the "not allowlisted" warning print the exact
+		// `fly secrets set` command. Only read after better-auth's own admin check
+		// (listUsers) passes, so it never rides along on a non-admin's data response.
+		const allowlist = [...allowedEmails];
 		return { users, allowlistedIds, allowlist, createForm };
 	} catch (err) {
 		// The session's cookie cache can briefly keep `role: 'admin'` after a demotion,
@@ -70,7 +71,7 @@ export const load: PageServerLoad = async ({ request }) => {
 			error(403, 'Forbidden');
 		}
 		logger.error('Failed to load admin user list', err);
-		return { users: [], allowlistedIds: [], allowlist, createForm };
+		return { users: [], allowlistedIds: [], allowlist: [] as string[], createForm };
 	}
 };
 
