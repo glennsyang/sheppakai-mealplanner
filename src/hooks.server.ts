@@ -12,7 +12,7 @@ Sentry.init({
 	dsn: PUBLIC_SENTRY_DSN,
 	tracesSampleRate: 1.0,
 	enableLogs: true
-	// sendDefaultPii intentionally left at its default (false) here, unlike hooks.client.ts.
+	// sendDefaultPii intentionally left at its default (false) here, matching hooks.client.ts.
 	// Enabling it server-side would let Sentry capture full request headers and cookies —
 	// including the auth session cookie — which client-side sendDefaultPii can't reach since
 	// browser JS has no access to HttpOnly cookies or server-internal headers. Server-side

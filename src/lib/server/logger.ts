@@ -20,7 +20,9 @@ const PII_FIELDS = new Set([
 	'password',
 	'token',
 	'createdBy',
-	'updatedBy'
+	'updatedBy',
+	'ip',
+	'ipAddress'
 ]);
 
 function sanitize(value: unknown): unknown {
