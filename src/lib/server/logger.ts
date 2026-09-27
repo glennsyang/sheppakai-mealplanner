@@ -25,9 +25,20 @@ const PII_FIELDS = new Set([
 	'ipAddress'
 ]);
 
+// Best-effort defense-in-depth for PII embedded in free-text strings (e.g. error
+// messages), which the key-based PII_FIELDS check above can't catch.
+const EMAIL_PATTERN = /[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}/g;
+const JWT_PATTERN = /\b[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g;
+
+function redactString(value: string): string {
+	if (IS_DEV) return value;
+	return value.replaceAll(EMAIL_PATTERN, '[redacted]').replaceAll(JWT_PATTERN, '[redacted]');
+}
+
 function sanitize(value: unknown): unknown {
 	if (IS_DEV || value === undefined || value === null) return value;
-	if (value instanceof Error) return { name: value.name, message: value.message };
+	if (value instanceof Error) return { name: value.name, message: redactString(value.message) };
+	if (typeof value === 'string') return redactString(value);
 	if (typeof value !== 'object') return value;
 	if (Array.isArray(value)) return value.map(sanitize);
 
@@ -43,20 +54,31 @@ function serializeError(error: unknown): unknown {
 	if (error instanceof Error) {
 		return {
 			name: error.name,
-			message: error.message,
+			message: redactString(error.message),
 			...(IS_DEV && error.stack ? { stack: error.stack } : {})
 		};
 	}
-	if (typeof error === 'string' || error === undefined) return error;
+	if (typeof error === 'string') return redactString(error);
+	if (error === undefined) return error;
 	try {
 		return JSON.parse(
 			JSON.stringify(error, (_key, val) =>
-				val instanceof Error ? { name: val.name, message: val.message } : val
+				val instanceof Error ? { name: val.name, message: redactString(val.message) } : val
 			)
 		);
 	} catch {
 		return String(error);
 	}
+}
+
+// Sentry's captureException reads message/stack directly off the Error object, so the
+// `extra` sanitization above doesn't cover it — build a redacted copy to pass instead.
+function redactErrorForSentry(error: Error): Error {
+	if (IS_DEV) return error;
+	const redacted = new Error(redactString(error.message));
+	redacted.name = error.name;
+	redacted.stack = error.stack;
+	return redacted;
 }
 
 class Logger {
@@ -75,7 +97,7 @@ class Logger {
 		const entry = {
 			timestamp: new Date().toISOString(),
 			level,
-			message,
+			message: redactString(message),
 			...(sanitize(this.context) as Record<string, unknown>),
 			...(extra !== undefined ? (sanitize(extra) as Record<string, unknown>) : {})
 		};
@@ -104,7 +126,7 @@ class Logger {
 	warn(message: string, meta?: Record<string, unknown>) {
 		this.write('warn', message, meta);
 		if (!IS_DEV) {
-			Sentry.captureMessage(message, {
+			Sentry.captureMessage(redactString(message), {
 				level: 'warning',
 				tags: { source: 'logger' },
 				extra: this.sentryExtra(meta)
@@ -119,12 +141,12 @@ class Logger {
 		});
 		if (!IS_DEV) {
 			if (error instanceof Error) {
-				Sentry.captureException(error, {
+				Sentry.captureException(redactErrorForSentry(error), {
 					tags: { source: 'logger' },
-					extra: { message, ...this.sentryExtra(meta) }
+					extra: { message: redactString(message), ...this.sentryExtra(meta) }
 				});
 			} else {
-				Sentry.captureMessage(message, {
+				Sentry.captureMessage(redactString(message), {
 					level: 'error',
 					tags: { source: 'logger' },
 					extra: { error, ...this.sentryExtra(meta) }
