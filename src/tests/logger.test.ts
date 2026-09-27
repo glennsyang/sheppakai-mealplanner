@@ -96,6 +96,8 @@ describe('logger', () => {
 				token: 'tok',
 				createdBy: 'u1',
 				updatedBy: 'u1',
+				ip: '203.0.113.7',
+				ipAddress: '198.51.100.9',
 				safeField: 'keep-me'
 			});
 			const entry = lastEntry(infoSpy);
@@ -106,6 +108,8 @@ describe('logger', () => {
 			expect(entry.token).toBeUndefined();
 			expect(entry.createdBy).toBeUndefined();
 			expect(entry.updatedBy).toBeUndefined();
+			expect(entry.ip).toBeUndefined();
+			expect(entry.ipAddress).toBeUndefined();
 			expect(entry.safeField).toBe('keep-me');
 		});
 
