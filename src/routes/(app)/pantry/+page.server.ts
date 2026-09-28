@@ -1,4 +1,5 @@
 import { addPantryItemSchema, removePantryItemSchema } from '$lib/schemas/pantry';
+import { requireAuth } from '$lib/server/actions/auth-guard';
 import { logger } from '$lib/server/logger';
 import { listPantryItems, addPantryItem, removePantryItem } from '$lib/server/services/pantry';
 import { fail } from '@sveltejs/kit';
@@ -16,8 +17,8 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	add: async ({ request, locals }) => {
-		const userId = locals.user!.id;
+	add: requireAuth(async ({ request }, user) => {
+		const userId = user.id;
 		const form = await superValidate(request, zod4(addPantryItemSchema));
 		if (!form.valid) return fail(400, { addForm: form });
 
@@ -29,10 +30,10 @@ export const actions: Actions = {
 		}
 
 		return { addForm: form };
-	},
+	}),
 
-	remove: async ({ request, locals }) => {
-		const userId = locals.user!.id;
+	remove: requireAuth(async ({ request }, user) => {
+		const userId = user.id;
 		const form = await superValidate(request, zod4(removePantryItemSchema));
 		if (!form.valid) return fail(400, { removeForm: form });
 
@@ -44,5 +45,5 @@ export const actions: Actions = {
 		}
 
 		return {};
-	}
+	})
 };

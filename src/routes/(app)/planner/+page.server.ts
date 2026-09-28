@@ -4,6 +4,7 @@ import {
 	saveRecipeSchema,
 	addCustomMealSchema
 } from '$lib/schemas/mealPlan';
+import { requireAuth } from '$lib/server/actions/auth-guard';
 import { logger } from '$lib/server/logger';
 import {
 	getMealPlanWithEntries,
@@ -31,8 +32,8 @@ export const load: PageServerLoad = async ({ url }) => {
 };
 
 export const actions: Actions = {
-	saveAndAdd: async ({ request, locals }) => {
-		const userId = locals.user!.id;
+	saveAndAdd: requireAuth(async ({ request }, user) => {
+		const userId = user.id;
 		const formData = await request.formData();
 
 		// Validate the recipe data
@@ -65,10 +66,10 @@ export const actions: Actions = {
 		}
 
 		return {};
-	},
+	}),
 
-	remove: async ({ request, locals }) => {
-		const userId = locals.user!.id;
+	remove: requireAuth(async ({ request }, user) => {
+		const userId = user.id;
 		const form = await superValidate(request, zod4(removeMealPlanEntrySchema));
 		if (!form.valid) return fail(400, { form });
 
@@ -80,10 +81,10 @@ export const actions: Actions = {
 		}
 
 		return {};
-	},
+	}),
 
-	addCustom: async ({ request, locals }) => {
-		const userId = locals.user!.id;
+	addCustom: requireAuth(async ({ request }, user) => {
+		const userId = user.id;
 		const form = await superValidate(request, zod4(addCustomMealSchema));
 		if (!form.valid) return fail(400, { form });
 
@@ -105,5 +106,5 @@ export const actions: Actions = {
 		}
 
 		return { form };
-	}
+	})
 };
