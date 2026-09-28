@@ -53,6 +53,16 @@ describe('sendVerificationEmail', () => {
 		});
 	});
 
+	it('HTML-escapes a user-controlled display name', async () => {
+		sendMock.mockResolvedValueOnce({ messageId: '<msg-123@brevo>' });
+
+		await sendVerificationEmail('user@example.com', '<a href=x>', 'https://app/verify?token=abc');
+
+		const sent = (sendMock.mock.calls[0] as unknown[])[0] as { htmlContent: string };
+		expect(sent.htmlContent).toContain('&lt;a href=x&gt;');
+		expect(sent.htmlContent).not.toContain('<a href=x>');
+	});
+
 	it('throws and logs when the Brevo SDK rejects with an API error', async () => {
 		// Brevo throws a BrevoError (extends Error, carries statusCode/body) rather
 		// than resolving with an error object.
@@ -116,6 +126,16 @@ describe('sendPasswordResetEmail', () => {
 		};
 		expect(payload.subject).toBe('[Meal Planner] Reset your password');
 		expect(payload.htmlContent).toContain('https://app/reset?token=xyz');
+	});
+
+	it('HTML-escapes a user-controlled display name', async () => {
+		sendMock.mockResolvedValueOnce({ messageId: '<reset-456@brevo>' });
+
+		await sendPasswordResetEmail('user@example.com', '<a href=x>', 'https://app/reset?token=abc');
+
+		const sent = (sendMock.mock.calls[0] as unknown[])[0] as { htmlContent: string };
+		expect(sent.htmlContent).toContain('&lt;a href=x&gt;');
+		expect(sent.htmlContent).not.toContain('<a href=x>');
 	});
 
 	it('throws and logs when the Brevo SDK rejects', async () => {

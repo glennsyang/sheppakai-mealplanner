@@ -14,8 +14,14 @@ export const resendVerificationSchema = z.object({
 	email: z.string().email('Please enter a valid email address')
 });
 
+// Also enforced server-side for direct /api/auth/* writes (src/lib/server/auth/name-guard.ts).
+export const MAX_NAME_LENGTH = 100;
+
 export const updateNameSchema = z.object({
-	name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long')
+	name: z
+		.string()
+		.min(2, 'Name must be at least 2 characters')
+		.max(MAX_NAME_LENGTH, 'Name is too long')
 });
 
 export const changePasswordSchema = z

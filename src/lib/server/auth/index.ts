@@ -22,6 +22,7 @@ import {
 	parseAllowedEmails
 } from './allowlist-hook';
 import { createAuthAfterHooks, logPasswordResetAudit } from './audit-hooks';
+import { assertNameLength } from './name-guard';
 
 export const allowedEmails = parseAllowedEmails(ALLOWED_EMAILS);
 
@@ -113,6 +114,10 @@ export const auth = betterAuth({
 		after: createAuthAfterHooks('Meal Planner')
 	},
 	databaseHooks: {
+		user: {
+			create: { before: assertNameLength },
+			update: { before: assertNameLength }
+		},
 		session: {
 			create: {
 				// Backstop for every session-creating flow (sign-in, verify-email auto sign-in,

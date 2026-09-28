@@ -40,7 +40,7 @@ export async function sendVerificationEmail(to: string, name: string, verificati
 						<h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Meal Planner</h1>
 					</div>
 					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${escapeHtml(name)},</p>
 						<p style="font-size: 16px; margin-bottom: 20px;">
 							Thanks for signing up! Please verify your email address to get started with Meal Planner.
 						</p>
@@ -96,7 +96,7 @@ export async function sendPasswordResetEmail(to: string, name: string, resetUrl:
 						<h1 style="color: white; margin: 0; font-size: 28px;">Reset your password</h1>
 					</div>
 					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${escapeHtml(name)},</p>
 						<p style="font-size: 16px; margin-bottom: 20px;">
 							We received a request to reset your Meal Planner password. Click the button below to choose a new one.
 						</p>
