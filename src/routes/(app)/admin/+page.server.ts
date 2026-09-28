@@ -65,8 +65,8 @@ export const load: PageServerLoad = async ({ request }) => {
 		const allowlist = [...allowedEmails];
 		return { users, allowlistedIds, allowlist, createForm };
 	} catch (err) {
-		// The session's cookie cache can briefly keep `role: 'admin'` after a demotion,
-		// letting the layout guard pass; the plugin's own DB check here is authoritative.
+		// The plugin's own admin check here is authoritative; map its 401/403 to a plain
+		// 403 in case the layout guard's view of the role is ever out of date.
 		if (err instanceof APIError && (err.statusCode === 401 || err.statusCode === 403)) {
 			error(403, 'Forbidden');
 		}

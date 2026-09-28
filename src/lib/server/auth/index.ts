@@ -160,9 +160,12 @@ export const auth = betterAuth({
 	session: {
 		expiresIn: 60 * 60 * 24 * 7, // 7 days
 		updateAge: 60 * 60 * 24, // Update every 24 hours
+		// No cookie cache: getSession checks the session row on every request, so a
+		// password change/reset, ban, removal or role change takes effect on the next
+		// request instead of after the cache expires. With two users on local SQLite
+		// the extra read is negligible.
 		cookieCache: {
-			enabled: true,
-			maxAge: 60 * 5 // 5 minutes client-side cache
+			enabled: false
 		}
 	},
 	trustedOrigins: [

@@ -46,7 +46,7 @@ export const handle: Handle = sequence(Sentry.sentryHandle(), async ({ event, re
 	// Make session and user available on server.
 	// The allowlist and ban are otherwise only checked when a session is created, so a
 	// user removed from ALLOWED_EMAILS (or banned) would keep a self-extending session.
-	// Re-check on every request — this also covers the 5-minute cookie cache window.
+	// Re-check on every request.
 	if (session && !isUserAccessAllowed(session.user, allowedEmails)) {
 		requestLogger.warn('Session rejected', {
 			userId: session.user.id,
