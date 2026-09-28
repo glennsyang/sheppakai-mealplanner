@@ -69,4 +69,8 @@ RUN chmod +x /app/start.sh
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
 ENV DATABASE_URL="file:///data/db.sqlite"
+# Fly's proxy is the TCP peer for every request, so without this adapter-node's
+# getClientAddress() returns the proxy IP and the auth-form rate limiters share one
+# global bucket. adapter-node throws if the header is missing (fails closed).
+ENV ADDRESS_HEADER="fly-client-ip"
 CMD [ "/app/start.sh" ]

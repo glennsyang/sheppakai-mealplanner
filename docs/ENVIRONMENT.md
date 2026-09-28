@@ -44,6 +44,7 @@ an omission:
 
 - `DATABASE_URL=file:///data/db.sqlite`
 - `NODE_ENV=production`
+- `ADDRESS_HEADER=fly-client-ip` — makes adapter-node's `getClientAddress()` return the real client IP (set by Fly's edge, not spoofable) instead of the Fly proxy's, so the auth-form rate limiters in `src/lib/server/rate-limiter.ts` key per client rather than sharing one global bucket (#125). Fails closed: a request without the header throws.
 
 ## Build-time only
 
