@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Setup Flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@master
+        uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # master (post-1.5, node24)
 
       - name: Get timestamp
         id: timestamp
@@ -73,7 +73,7 @@ jobs:
           echo "backup_size=$BACKUP_SIZE" >> $GITHUB_OUTPUT
 
       - name: Upload backup artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: db-backup-${{ steps.timestamp.outputs.date }}
           path: backup-${{ steps.timestamp.outputs.date }}.sql.gz.gpg
@@ -82,7 +82,7 @@ jobs:
 
       - name: Create issue on failure
         if: failure()
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const title = '[Automated] Database Backup Failure';
@@ -130,7 +130,7 @@ jobs:
 
       - name: Close backup failure issues on success
         if: success()
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             // Find all open issues with backup-failure label
