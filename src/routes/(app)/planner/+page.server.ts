@@ -2,7 +2,9 @@ import {
 	addMealPlanEntrySchema,
 	removeMealPlanEntrySchema,
 	saveRecipeSchema,
-	addCustomMealSchema
+	addCustomMealSchema,
+	ingredientsJsonSchema,
+	instructionsJsonSchema
 } from '$lib/schemas/mealPlan';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { logger } from '$lib/server/logger';
@@ -13,7 +15,6 @@ import {
 	getMondayOfCurrentWeek
 } from '$lib/server/services/mealPlan';
 import { saveRecipe } from '$lib/server/services/recipes';
-import type { Ingredient } from '$lib/types';
 import { fail, isRedirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -48,8 +49,8 @@ export const actions: Actions = {
 			const recipe = await saveRecipe(userId, {
 				name: recipeForm.data.name,
 				description: recipeForm.data.description,
-				ingredientsJson: JSON.parse(recipeForm.data.ingredientsJson) as Ingredient[],
-				instructionsJson: JSON.parse(recipeForm.data.instructionsJson) as string[],
+				ingredientsJson: ingredientsJsonSchema.parse(recipeForm.data.ingredientsJson),
+				instructionsJson: instructionsJsonSchema.parse(recipeForm.data.instructionsJson),
 				prepTimeMinutes: recipeForm.data.prepTimeMinutes,
 				servings: recipeForm.data.servings
 			});

@@ -1,11 +1,12 @@
 import { randomUUID } from 'node:crypto';
 
 import { logger } from '$lib/server/logger';
-import type { MealPlan, MealPlanEntry, Recipe, Ingredient, RecipeSource } from '$lib/types';
+import type { MealPlan, MealPlanEntry, Recipe, RecipeSource } from '$lib/types';
 import { eq, and } from 'drizzle-orm';
 
 import { getDb } from '../db';
 import { mealPlans, mealPlanEntries, recipes } from '../db/schema';
+import { parseStoredRecipeJson } from './recipes';
 
 function rowToMealPlan(row: typeof mealPlans.$inferSelect): MealPlan {
 	return {
@@ -91,8 +92,7 @@ export async function getMealPlanWithEntries(
 					userId: recipe.userId,
 					name: recipe.name,
 					description: recipe.description,
-					ingredientsJson: JSON.parse(recipe.ingredientsJson) as Ingredient[],
-					instructionsJson: JSON.parse(recipe.instructionsJson) as string[],
+					...parseStoredRecipeJson(recipe),
 					prepTimeMinutes: recipe.prepTimeMinutes,
 					servings: recipe.servings,
 					source: recipe.source as RecipeSource,
