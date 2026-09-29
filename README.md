@@ -40,7 +40,7 @@ A dinner-focused meal planning app. Add your pantry ingredients, get AI-generate
 
 ### Prerequisites
 
-- Node.js **22.21.1** (use `.nvmrc` or `nvm use`)
+- Node.js **22.23.3** (use `.nvmrc` or `nvm use`)
 - npm
 
 ### Install
