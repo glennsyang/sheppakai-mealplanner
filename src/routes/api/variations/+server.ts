@@ -28,7 +28,7 @@ export const POST: RequestHandler = async (event) => {
 		const variations = await suggestVariations(parsed.data.meal);
 		return json(variations);
 	} catch (err) {
-		logger.error('Variations API error', { err });
+		logger.error('Variations API error', err);
 		error(500, 'Failed to generate variations');
 	}
 };

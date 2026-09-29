@@ -107,7 +107,9 @@ export async function suggestVariations(mealName: string): Promise<MealSuggestio
 	const input = toolUse.input as SuggestVariationsInput;
 
 	if (!Array.isArray(input.variations)) {
-		logger.error('Claude tool_use input missing variations array', { input });
+		logger.error('Claude tool_use input missing variations array', undefined, {
+			keys: Object.keys(input ?? {})
+		});
 		throw new Error('Invalid response structure from AI');
 	}
 

@@ -25,7 +25,7 @@ export const actions: Actions = {
 		try {
 			await addPantryItem(userId, form.data.name, form.data.quantity, form.data.unit);
 		} catch (err) {
-			logger.error('Failed to add pantry item', { userId, err });
+			logger.error('Failed to add pantry item', err, { userId });
 			return fail(500, { addForm: form });
 		}
 
@@ -40,7 +40,7 @@ export const actions: Actions = {
 		try {
 			await removePantryItem(form.data.id);
 		} catch (err) {
-			logger.error('Failed to remove pantry item', { userId, err });
+			logger.error('Failed to remove pantry item', err, { userId });
 			return fail(500, { removeForm: form });
 		}
 

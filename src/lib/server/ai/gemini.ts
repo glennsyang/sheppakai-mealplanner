@@ -96,8 +96,6 @@ async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
 				await new Promise((resolve) => setTimeout(resolve, delayMs));
 				continue;
 			}
-			const message = (err as { message?: string }).message;
-			logger.error('Gemini API error', { status, message, attempt });
 			throw err;
 		}
 	}
@@ -137,7 +135,9 @@ export async function suggestMeals(pantryItems: string[]): Promise<MealSuggestio
 	const parsed = JSON.parse(text) as SuggestMealsOutput;
 
 	if (!Array.isArray(parsed.suggestions)) {
-		logger.error('Gemini response missing suggestions array', { parsed });
+		logger.error('Gemini response missing suggestions array', undefined, {
+			keys: Object.keys(parsed ?? {})
+		});
 		throw new Error('Invalid response structure from AI');
 	}
 

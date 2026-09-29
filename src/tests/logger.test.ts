@@ -249,6 +249,30 @@ describe('logger', () => {
 			expect(sentryError.message).not.toContain('a@b.com');
 		});
 
+		it('strips PII from a non-Error payload handed to Sentry', async () => {
+			const sentry = await import('@sentry/sveltekit');
+			const { logger } = await import('../lib/server/logger');
+			logger.error('Failed operation', { userId: 'u1', detail: 'x', note: 'Failed for a@b.com' });
+			const [, options] = vi.mocked(sentry.captureMessage).mock.calls[0] as unknown as [
+				string,
+				{ extra: { error: Record<string, unknown> } }
+			];
+			expect(options.extra.error.userId).toBeUndefined();
+			expect(options.extra.error.detail).toBe('x');
+			expect(options.extra.error.note).not.toContain('a@b.com');
+		});
+
+		it('serializes an Error nested in a non-Error payload handed to Sentry', async () => {
+			const sentry = await import('@sentry/sveltekit');
+			const { logger } = await import('../lib/server/logger');
+			logger.error('Failed operation', { err: new Error('bad thing') });
+			const [, options] = vi.mocked(sentry.captureMessage).mock.calls[0] as unknown as [
+				string,
+				{ extra: { error: Record<string, unknown> } }
+			];
+			expect(options.extra.error.err).toEqual({ name: 'Error', message: 'bad thing' });
+		});
+
 		it('does not redact free text in development', async () => {
 			delete process.env.NODE_ENV;
 			const { logger } = await import('../lib/server/logger');

@@ -62,7 +62,7 @@ export const actions: Actions = {
 				recipe.id
 			);
 		} catch (err) {
-			logger.error('Failed to save recipe and add to planner', { userId, err });
+			logger.error('Failed to save recipe and add to planner', err, { userId });
 			return fail(500, {});
 		}
 
@@ -77,7 +77,7 @@ export const actions: Actions = {
 		try {
 			await removeMealPlanEntry(form.data.entryId);
 		} catch (err) {
-			logger.error('Failed to remove meal plan entry', { userId, err });
+			logger.error('Failed to remove meal plan entry', err, { userId });
 			return fail(500, {});
 		}
 
@@ -102,7 +102,7 @@ export const actions: Actions = {
 			await addMealPlanEntry(userId, form.data.weekStartDate, form.data.dayOfWeek, recipe.id);
 		} catch (err) {
 			if (isRedirect(err)) throw err;
-			logger.error('Failed to add custom meal', { userId, err });
+			logger.error('Failed to add custom meal', err, { userId });
 			return fail(500, { form });
 		}
 

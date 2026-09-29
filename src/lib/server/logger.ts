@@ -150,7 +150,7 @@ class Logger {
 				Sentry.captureMessage(redactString(message), {
 					level: 'error',
 					tags: { source: 'logger' },
-					extra: { error, ...this.sentryExtra(meta) }
+					extra: { error: sanitize(serializeError(error)), ...this.sentryExtra(meta) }
 				});
 			}
 		}

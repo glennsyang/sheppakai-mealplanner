@@ -34,7 +34,7 @@ export const POST: RequestHandler = async (event) => {
 		const suggestions = await suggestMeals(items);
 		return json(suggestions);
 	} catch (err) {
-		logger.error('Suggest API error', { err });
+		logger.error('Suggest API error', err);
 		error(500, 'Failed to generate suggestions');
 	}
 };
