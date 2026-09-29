@@ -47,6 +47,7 @@ const loadCtx = (locals: Locals) =>
 	({
 		locals,
 		request: new Request('https://example.com/profile'),
+		url: new URL('https://example.com/profile'),
 		route: { id: '/(app)/profile' }
 	}) as never;
 

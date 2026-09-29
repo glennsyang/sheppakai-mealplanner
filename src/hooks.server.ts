@@ -1,5 +1,6 @@
 import { PUBLIC_SENTRY_DSN } from '$app/env/public';
 import { building, dev } from '$app/environment';
+import { sentryDataCollection } from '$lib/sentry-data-collection';
 import { allowedEmails, auth } from '$lib/server/auth';
 import { isUserAccessAllowed } from '$lib/server/auth/allowlist-hook';
 import { logger } from '$lib/server/logger';
@@ -11,13 +12,16 @@ import { svelteKitHandler } from 'better-auth/svelte-kit';
 Sentry.init({
 	dsn: PUBLIC_SENTRY_DSN,
 	tracesSampleRate: 1.0,
-	enableLogs: true
-	// sendDefaultPii intentionally left at its default (false) here, matching hooks.client.ts.
-	// Enabling it server-side would let Sentry capture full request headers and cookies —
-	// including the auth session cookie — which client-side sendDefaultPii can't reach since
-	// browser JS has no access to HttpOnly cookies or server-internal headers. Server-side
-	// error context is already captured explicitly below (requestId, userId, url, method,
-	// status) via the structured logger, so Sentry's own PII capture isn't needed here.
+	// Same restrictive baseline as hooks.client.ts. Loosening it server-side would let Sentry
+	// capture cookies, bodies and full headers — including the auth session cookie — which the
+	// browser SDK can't reach since client JS has no access to HttpOnly cookies or
+	// server-internal headers. Server-side error context is already captured explicitly below
+	// (requestId, userId, url, method, status) via the structured logger, so Sentry's own PII
+	// capture isn't needed here.
+	dataCollection: sentryDataCollection,
+	// logger.warn()/logger.error() report via captureMessage; without this every call would get
+	// a synthetic call-site stack trace and regroup existing issues.
+	attachStacktrace: false
 });
 
 export const handle: Handle = sequence(Sentry.sentryHandle(), async ({ event, resolve }) => {

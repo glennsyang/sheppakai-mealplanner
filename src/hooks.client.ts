@@ -1,4 +1,5 @@
 import { PUBLIC_SENTRY_DSN } from '$app/env/public';
+import { sentryDataCollection } from '$lib/sentry-data-collection';
 import { handleErrorWithSentry } from '@sentry/sveltekit';
 import * as Sentry from '@sentry/sveltekit';
 
@@ -7,11 +8,8 @@ Sentry.init({
 
 	tracesSampleRate: 0.2,
 
-	// Enable logs to be sent to Sentry
-	enableLogs: true,
-
 	// Keep user IPs, headers and user context out of Sentry; requestId is the only prod correlation key.
-	sendDefaultPii: false
+	dataCollection: sentryDataCollection
 });
 
 // Suppress SvelteKit router warnings from third-party libraries (e.g., LayerChart)
