@@ -13,11 +13,11 @@ const config = {
 			mode: 'nonce',
 			directives: {
 				'default-src': ['self'],
-				// script-src 'self' only: this app has no charts (no layerchart/d3) and ships
-				// no inline scripts of its own — the nonce covers SvelteKit's SSR-injected
-				// scripts. The sveltekit-superforms -> arktype (@ark/util) one-shot
-				// `new Function("return false")()` probe on first import is meant to be
-				// blocked (arktype catches it and runs jitless); do NOT add 'unsafe-eval'.
+				// script-src 'self' only: this app has no charts (no layerchart/d3). The nonce
+				// covers SvelteKit's SSR-injected scripts and the pre-paint dark-mode script in
+				// app.html (nonce="%sveltekit.nonce%"). The sveltekit-superforms -> arktype
+				// (@ark/util) one-shot `new Function("return false")()` probe on first import is
+				// meant to be blocked (arktype catches it and runs jitless); do NOT add 'unsafe-eval'.
 				'script-src': ['self'],
 				// unsafe-inline retained: Svelte injects inline <style> during SSR for scoped CSS.
 				// fonts.googleapis.com: Google Fonts stylesheet loaded in app.html.

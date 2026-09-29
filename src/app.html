@@ -3,12 +3,15 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<script>
-			const stored = localStorage.getItem('color-scheme');
-			const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-			if (stored === 'dark' || (!stored && prefersDark)) {
-				document.documentElement.classList.add('dark');
-			}
+		<!-- Pre-paint dark-mode class, mirroring mode-watcher's setInitialMode. <ModeWatcher>'s own
+		     head script can't carry the CSP nonce, so it's disabled and this nonced copy runs instead. -->
+		<script nonce="%sveltekit.nonce%">
+			const mode = localStorage.getItem('color-scheme') ?? 'system';
+			const dark =
+				mode === 'dark' ||
+				(mode === 'system' && !window.matchMedia('(prefers-color-scheme: light)').matches);
+			document.documentElement.classList.toggle('dark', dark);
+			document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
 		</script>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />

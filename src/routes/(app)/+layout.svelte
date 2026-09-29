@@ -2,20 +2,17 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { SIGN_OUT_ROUTE } from '$lib/auth-routes';
+	import { mode, toggleMode } from 'mode-watcher';
 	import { expoOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 
 	let { children, data } = $props();
 
 	const user = $derived(data.user);
+	const isDark = $derived(mode.current === 'dark');
 
-	let isDark = $state(false);
 	let mobileMenuOpen = $state(false);
 	let previousPath = $state(page.url.pathname);
-
-	$effect(() => {
-		isDark = document.documentElement.classList.contains('dark');
-	});
 
 	$effect(() => {
 		if (page.url.pathname !== previousPath) {
@@ -23,12 +20,6 @@
 			mobileMenuOpen = false;
 		}
 	});
-
-	function toggleDark() {
-		isDark = !isDark;
-		document.documentElement.classList.toggle('dark', isDark);
-		localStorage.setItem('color-scheme', isDark ? 'dark' : 'light');
-	}
 
 	const navLinks = [
 		{ href: '/', label: 'Dashboard', adminOnly: false },
@@ -91,7 +82,7 @@
 				<!-- Dark mode toggle -->
 				<button
 					type="button"
-					onclick={toggleDark}
+					onclick={toggleMode}
 					aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
 					class="text-surface-500 hover:bg-surface-100-900 hover:text-surface-950-50 flex size-8 items-center justify-center rounded-full transition-colors"
 				>
