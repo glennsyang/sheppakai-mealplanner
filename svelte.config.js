@@ -22,13 +22,15 @@ const config = {
 				// unsafe-inline retained: Svelte injects inline <style> during SSR for scoped CSS.
 				// fonts.googleapis.com: Google Fonts stylesheet loaded in app.html.
 				'style-src': ['self', 'unsafe-inline', 'https://fonts.googleapis.com'],
-				'img-src': ['self', 'data:', 'https:'],
+				// No remote images: icons and favicons are served same-origin.
+				'img-src': ['self', 'data:'],
 				// fonts.gstatic.com: Google Fonts files referenced by the app.html stylesheet.
 				'font-src': ['self', 'https://fonts.gstatic.com'],
 				'connect-src': ['self', 'https://*.ingest.us.sentry.io', 'https://*.ingest.sentry.io'],
 				'frame-ancestors': ['none'],
 				'object-src': ['none'],
-				'base-uri': ['self']
+				'base-uri': ['self'],
+				'form-action': ['self']
 			}
 		},
 		experimental: {

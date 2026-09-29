@@ -98,6 +98,7 @@ describe('logger', () => {
 				updatedBy: 'u1',
 				ip: '203.0.113.7',
 				ipAddress: '198.51.100.9',
+				userAgent: 'Mozilla/5.0',
 				safeField: 'keep-me'
 			});
 			const entry = lastEntry(infoSpy);
@@ -110,6 +111,7 @@ describe('logger', () => {
 			expect(entry.updatedBy).toBeUndefined();
 			expect(entry.ip).toBeUndefined();
 			expect(entry.ipAddress).toBeUndefined();
+			expect(entry.userAgent).toBeUndefined();
 			expect(entry.safeField).toBe('keep-me');
 		});
 

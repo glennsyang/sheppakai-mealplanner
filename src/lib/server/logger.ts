@@ -22,7 +22,8 @@ const PII_FIELDS = new Set([
 	'createdBy',
 	'updatedBy',
 	'ip',
-	'ipAddress'
+	'ipAddress',
+	'userAgent'
 ]);
 
 // Best-effort defense-in-depth for PII embedded in free-text strings (e.g. error
