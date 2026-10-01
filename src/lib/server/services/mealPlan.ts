@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { logger } from '$lib/server/logger';
 import type { MealPlan, MealPlanEntry, Recipe, RecipeSource } from '$lib/types';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import { getDb } from '../db';
 import { mealPlans, mealPlanEntries, recipes } from '../db/schema';
@@ -29,29 +29,23 @@ function rowToEntry(row: typeof mealPlanEntries.$inferSelect): MealPlanEntry {
 	};
 }
 
-async function getOrCreateMealPlan(userId: string, weekStartDate: string): Promise<MealPlan> {
-	logger.debug('getOrCreateMealPlan', { userId, weekStartDate });
-	const db = getDb();
-	const [existing] = db
-		.select()
-		.from(mealPlans)
-		.where(eq(mealPlans.weekStartDate, weekStartDate))
-		.all();
+type Db = ReturnType<typeof getDb>;
+type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 
-	if (existing) return rowToMealPlan(existing);
-
+/**
+ * Upsert on the unique `week_start_date` index so concurrent callers converge on one
+ * shared plan per week. Must run inside the caller's transaction.
+ */
+function getOrCreateMealPlan(tx: Tx, userId: string, weekStartDate: string): MealPlan {
 	const now = new Date();
-	const id = randomUUID();
-	await db.insert(mealPlans).values({
-		id,
-		userId,
-		weekStartDate,
-		createdAt: now,
-		updatedAt: now
-	});
+	tx.insert(mealPlans)
+		.values({ id: randomUUID(), userId, weekStartDate, createdAt: now, updatedAt: now })
+		.onConflictDoNothing({ target: mealPlans.weekStartDate })
+		.run();
 
-	const [created] = db.select().from(mealPlans).where(eq(mealPlans.id, id)).all();
-	return rowToMealPlan(created);
+	const plan = tx.select().from(mealPlans).where(eq(mealPlans.weekStartDate, weekStartDate)).get();
+	if (!plan) throw new Error(`Meal plan for ${weekStartDate} missing after upsert`);
+	return rowToMealPlan(plan);
 }
 
 export interface MealPlanEntryWithRecipe {
@@ -114,27 +108,31 @@ export async function addMealPlanEntry(
 ): Promise<MealPlanEntry> {
 	logger.debug('addMealPlanEntry', { userId, weekStartDate, dayOfWeek, recipeId });
 
-	const plan = await getOrCreateMealPlan(userId, weekStartDate);
-
-	// Remove existing entry for this day if present
+	// One synchronous transaction: plan get-or-create and the per-day replace can't
+	// interleave with another request, and the unique (meal_plan_id, day_of_week)
+	// index makes the upsert replace the day's recipe instead of adding a second row.
 	const db = getDb();
-	await db
-		.delete(mealPlanEntries)
-		.where(and(eq(mealPlanEntries.mealPlanId, plan.id), eq(mealPlanEntries.dayOfWeek, dayOfWeek)));
-
-	const now = new Date();
-	const id = randomUUID();
-	await db.insert(mealPlanEntries).values({
-		id,
-		mealPlanId: plan.id,
-		dayOfWeek,
-		recipeId,
-		createdAt: now,
-		updatedAt: now
+	return db.transaction((tx) => {
+		const plan = getOrCreateMealPlan(tx, userId, weekStartDate);
+		const now = new Date();
+		const entry = tx
+			.insert(mealPlanEntries)
+			.values({
+				id: randomUUID(),
+				mealPlanId: plan.id,
+				dayOfWeek,
+				recipeId,
+				createdAt: now,
+				updatedAt: now
+			})
+			.onConflictDoUpdate({
+				target: [mealPlanEntries.mealPlanId, mealPlanEntries.dayOfWeek],
+				set: { recipeId, updatedAt: now }
+			})
+			.returning()
+			.get();
+		return rowToEntry(entry);
 	});
-
-	const [created] = db.select().from(mealPlanEntries).where(eq(mealPlanEntries.id, id)).all();
-	return rowToEntry(created);
 }
 
 export async function removeMealPlanEntry(entryId: string): Promise<void> {
