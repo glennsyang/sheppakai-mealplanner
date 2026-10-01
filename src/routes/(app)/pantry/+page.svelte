@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import { addPantryItemSchema } from '$lib/schemas/pantry';
 	import { autoAnimate } from '@formkit/auto-animate';
 	import { fly } from 'svelte/transition';
@@ -17,17 +18,15 @@
 		form,
 		errors,
 		constraints,
+		message,
 		enhance: sfEnhance,
 		submitting
 	} = superForm(data.addForm, {
 		validators: zod4Client(addPantryItemSchema),
-		resetForm: true,
-		onUpdated({ form: f }) {
-			if (f.valid) {
-				// items are refreshed via invalidation
-			}
-		}
+		resetForm: true
 	});
+
+	let removeError = $state<string | null>(null);
 </script>
 
 <svelte:head>
@@ -47,6 +46,7 @@
 	>
 		<h2 class="h5 font-semibold">Add an ingredient</h2>
 		<form method="POST" action="?/add" use:sfEnhance class="space-y-3">
+			<AuthFormMessage message={$message} />
 			<label class="label">
 				<span class="label-text">Ingredient name *</span>
 				<input
@@ -101,6 +101,10 @@
 			<span class="badge preset-tonal-surface ml-2">{items.length}</span>
 		</h2>
 
+		{#if removeError}
+			<div class="alert preset-tonal-error mb-3 text-sm" role="alert">{removeError}</div>
+		{/if}
+
 		{#if items.length === 0}
 			<div class="card preset-outlined-surface-200-800 text-surface-400 p-8 text-center">
 				<p class="mb-3 text-4xl">🥫</p>
@@ -120,7 +124,18 @@
 								</span>
 							{/if}
 						</div>
-						<form method="POST" action="?/remove" use:enhance>
+						<form
+							method="POST"
+							action="?/remove"
+							use:enhance={() =>
+								async ({ result, update }) => {
+									removeError =
+										result.type === 'success'
+											? null
+											: `Could not remove ${item.name}. Please try again.`;
+									await update();
+								}}
+						>
 							<input type="hidden" name="id" value={item.id} />
 							<button
 								type="submit"

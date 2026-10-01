@@ -3,7 +3,7 @@ import type { z } from 'zod';
 
 export interface PantryItem {
 	id: string;
-	userId: string;
+	userId: string | null;
 	name: string;
 	quantity: number | null;
 	unit: string | null;
@@ -24,7 +24,7 @@ export type RecipeSource = 'ai' | 'custom';
 
 export interface Recipe {
 	id: string;
-	userId: string;
+	userId: string | null;
 	name: string;
 	description: string;
 	ingredientsJson: Ingredient[];
@@ -38,7 +38,7 @@ export interface Recipe {
 
 export interface MealPlan {
 	id: string;
-	userId: string;
+	userId: string | null;
 	weekStartDate: string;
 	createdAt: Date;
 	updatedAt: Date;

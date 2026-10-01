@@ -1,6 +1,6 @@
 import { addPantryItemSchema, removePantryItemSchema } from '$lib/schemas/pantry';
 import { requireAuth } from '$lib/server/actions/auth-guard';
-import { logger } from '$lib/server/logger';
+import { handleDomainAction } from '$lib/server/actions/domain-action';
 import { listPantryItems, addPantryItem, removePantryItem } from '$lib/server/services/pantry';
 import { fail } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
@@ -18,32 +18,28 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
 	add: requireAuth(async ({ request }, user) => {
-		const userId = user.id;
 		const form = await superValidate(request, zod4(addPantryItemSchema));
-		if (!form.valid) return fail(400, { addForm: form });
+		if (!form.valid) return fail(400, { form });
 
-		try {
-			await addPantryItem(userId, form.data.name, form.data.quantity, form.data.unit);
-		} catch (err) {
-			logger.error('Failed to add pantry item', err, { userId });
-			return fail(500, { addForm: form });
-		}
-
-		return { addForm: form };
+		return handleDomainAction(
+			form,
+			() => addPantryItem(user.id, form.data.name, form.data.quantity, form.data.unit),
+			{
+				loggerContext: 'Failed to add pantry item',
+				fallbackMessage: 'Could not add that item. Please try again.',
+				logFields: { userId: user.id }
+			}
+		);
 	}),
 
 	remove: requireAuth(async ({ request }, user) => {
-		const userId = user.id;
 		const form = await superValidate(request, zod4(removePantryItemSchema));
-		if (!form.valid) return fail(400, { removeForm: form });
+		if (!form.valid) return fail(400, { form });
 
-		try {
-			await removePantryItem(form.data.id);
-		} catch (err) {
-			logger.error('Failed to remove pantry item', err, { userId });
-			return fail(500, { removeForm: form });
-		}
-
-		return {};
+		return handleDomainAction(form, () => removePantryItem(form.data.id), {
+			loggerContext: 'Failed to remove pantry item',
+			fallbackMessage: 'Could not remove that item. Please try again.',
+			logFields: { userId: user.id }
+		});
 	})
 };

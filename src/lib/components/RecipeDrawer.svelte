@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { MealSuggestion } from '$lib/types';
-	import { expoOut, linear } from 'svelte/easing';
-	import { fly } from 'svelte/transition';
+
+	import Modal from './Modal.svelte';
 
 	interface Props {
 		suggestion: MealSuggestion | null;
@@ -10,38 +10,15 @@
 	}
 
 	let { suggestion, onClose, onSaveToPlanner }: Props = $props();
-
-	const isOpen = $derived(suggestion !== null);
-
-	function handleBackdropClick(e: MouseEvent) {
-		if (e.target === e.currentTarget) onClose();
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') onClose();
-	}
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
-
-{#if isOpen && suggestion}
-	<!-- Backdrop -->
-	<div
-		role="button"
-		tabindex="-1"
-		class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-		onclick={handleBackdropClick}
-		onkeydown={() => {}}
-		in:fly={{ duration: 250, easing: linear }}
-		out:fly={{ duration: 200, easing: linear }}
-	></div>
-
-	<!-- Drawer panel -->
-	<div
-		class="bg-surface-50-950 fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col shadow-2xl"
-		in:fly={{ x: 420, duration: 380, easing: expoOut }}
-		out:fly={{ x: 420, duration: 250, easing: expoOut }}
-	>
+<Modal
+	open={suggestion !== null}
+	{onClose}
+	ariaLabel={suggestion ? `Recipe: ${suggestion.name}` : 'Recipe'}
+	variant="drawer"
+>
+	{#if suggestion}
 		<!-- Header -->
 		<div class="border-surface-200-800 flex items-start justify-between gap-4 border-b px-6 py-5">
 			<div class="space-y-1.5">
@@ -120,11 +97,11 @@
 		<div class="border-surface-200-800 border-t px-6 py-4">
 			<button
 				type="button"
-				onclick={() => onSaveToPlanner(suggestion!)}
+				onclick={() => onSaveToPlanner(suggestion)}
 				class="btn preset-filled-primary-500 w-full"
 			>
 				Add to weekly planner
 			</button>
 		</div>
-	</div>
-{/if}
+	{/if}
+</Modal>
