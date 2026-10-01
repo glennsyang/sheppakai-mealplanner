@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { deserialize, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { actionFailureText } from '$lib/action-result';
 	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import RecipeDrawer from '$lib/components/RecipeDrawer.svelte';
 	import VariationsPanel from '$lib/components/VariationsPanel.svelte';
@@ -39,6 +38,15 @@
 
 	// Single page-level banner for failed planner actions (#166).
 	let actionError = $state<string | null>(null);
+
+	/** The server's `message(form, …)` text from a failed action, or a fallback. */
+	function failureText(result: ActionResult, fallback: string): string {
+		if (result.type === 'failure') {
+			const form = result.data?.form as { message?: App.Superforms.Message } | undefined;
+			if (form?.message?.text) return form.message.text;
+		}
+		return fallback;
+	}
 
 	$effect(() => {
 		entries = data.entries;
@@ -118,25 +126,9 @@
 		fd.set('prepTimeMinutes', String(suggestion.prepTimeMinutes));
 		fd.set('servings', String(suggestion.servings));
 
-		// Triggered from the variations panel / recipe drawer rather than a form, so call
-		// the action programmatically — with the `x-sveltekit-action` header SvelteKit
-		// answers with a serialized ActionResult instead of re-rendering the page (#167).
-		let result: ActionResult;
-		try {
-			const res = await fetch('?/saveAndAdd', {
-				method: 'POST',
-				headers: { 'x-sveltekit-action': 'true' },
-				body: fd
-			});
-			result = deserialize(await res.text());
-		} catch {
-			result = { type: 'error', error: undefined };
-		}
-		if (result.type !== 'success') {
-			actionError = actionFailureText(
-				result,
-				'Could not add that meal to the planner. Please try again.'
-			);
+		const res = await fetch('?/saveAndAdd', { method: 'POST', body: fd });
+		if (!res.ok) {
+			actionError = 'Could not add that meal to the planner. Please try again.';
 			return;
 		}
 		actionError = null;
@@ -207,7 +199,7 @@
 							pendingSuggestion = null;
 							await update();
 						} else {
-							actionError = actionFailureText(
+							actionError = failureText(
 								result,
 								'Could not add that meal to the planner. Please try again.'
 							);
