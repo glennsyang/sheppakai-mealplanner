@@ -28,7 +28,10 @@ vi.mock('$lib/server/services/recipes', () => recipesMock);
 vi.mock('$lib/server/logger', () => ({ logger: loggerMock }));
 
 import { actions as pantryActions } from '../../routes/(app)/pantry/+page.server';
-import { actions as plannerActions } from '../../routes/(app)/planner/+page.server';
+import {
+	actions as plannerActions,
+	load as plannerLoad
+} from '../../routes/(app)/planner/+page.server';
 
 const USER = { id: 'user_1', name: 'Alice', email: 'alice@example.com', role: 'user' };
 
@@ -190,4 +193,46 @@ describe('pantry/planner actions: consistent { form } results (#166)', () => {
 			plannerActions.remove(ctx({ user: USER } as Locals, { entryId: 'entry_1' }))
 		).rejects.toMatchObject({ status: 303, location: '/sign-in' });
 	});
+});
+
+describe('planner load: ?week= validation (#165)', () => {
+	const loadCtx = (search: string) =>
+		({
+			request: new Request(`https://example.com/planner${search}`),
+			url: new URL(`https://example.com/planner${search}`),
+			route: { id: '/(app)/planner' }
+		}) as never;
+
+	beforeEach(() => {
+		mealPlanMock.getMealPlanWithEntries.mockResolvedValue([]);
+	});
+
+	it('defaults to the current week when ?week= is absent', async () => {
+		const data = (await plannerLoad(loadCtx(''))) as { weekStartDate: string };
+		expect(data.weekStartDate).toBe('2026-09-28');
+		expect(mealPlanMock.getMealPlanWithEntries).toHaveBeenCalledWith('2026-09-28');
+	});
+
+	it('accepts a Monday', async () => {
+		const data = (await plannerLoad(loadCtx('?week=2026-10-05'))) as { weekStartDate: string };
+		expect(data.weekStartDate).toBe('2026-10-05');
+	});
+
+	it('redirects a non-Monday date to that week’s Monday', async () => {
+		await expect(plannerLoad(loadCtx('?week=2026-10-04'))).rejects.toMatchObject({
+			status: 302,
+			location: '/planner?week=2026-09-28'
+		});
+		expect(mealPlanMock.getMealPlanWithEntries).not.toHaveBeenCalled();
+	});
+
+	it.each(['garbage', '2026-02-30', '<script>'])(
+		'redirects an invalid ?week=%s to the current week',
+		async (week) => {
+			await expect(plannerLoad(loadCtx(`?week=${encodeURIComponent(week)}`))).rejects.toMatchObject(
+				{ status: 302, location: '/planner' }
+			);
+			expect(mealPlanMock.getMealPlanWithEntries).not.toHaveBeenCalled();
+		}
+	);
 });

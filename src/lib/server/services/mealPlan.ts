@@ -1,12 +1,13 @@
 import { randomUUID } from 'node:crypto';
 
+import { getMondayOf } from '$lib/dates';
 import { logger } from '$lib/server/logger';
-import type { MealPlan, MealPlanEntry, Recipe, RecipeSource } from '$lib/types';
-import { eq, and } from 'drizzle-orm';
+import type { MealPlan, MealPlanEntry, Recipe } from '$lib/types';
+import { eq } from 'drizzle-orm';
 
 import { getDb } from '../db';
 import { mealPlans, mealPlanEntries, recipes } from '../db/schema';
-import { parseStoredRecipeJson } from './recipes';
+import { rowToRecipe } from './recipes';
 
 function rowToMealPlan(row: typeof mealPlans.$inferSelect): MealPlan {
 	return {
@@ -29,29 +30,23 @@ function rowToEntry(row: typeof mealPlanEntries.$inferSelect): MealPlanEntry {
 	};
 }
 
-async function getOrCreateMealPlan(userId: string, weekStartDate: string): Promise<MealPlan> {
-	logger.debug('getOrCreateMealPlan', { userId, weekStartDate });
-	const db = getDb();
-	const [existing] = db
-		.select()
-		.from(mealPlans)
-		.where(eq(mealPlans.weekStartDate, weekStartDate))
-		.all();
+type Db = ReturnType<typeof getDb>;
+type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 
-	if (existing) return rowToMealPlan(existing);
-
+/**
+ * Upsert on the unique `week_start_date` index so concurrent callers converge on one
+ * shared plan per week. Must run inside the caller's transaction.
+ */
+function getOrCreateMealPlan(tx: Tx, userId: string, weekStartDate: string): MealPlan {
 	const now = new Date();
-	const id = randomUUID();
-	await db.insert(mealPlans).values({
-		id,
-		userId,
-		weekStartDate,
-		createdAt: now,
-		updatedAt: now
-	});
+	tx.insert(mealPlans)
+		.values({ id: randomUUID(), userId, weekStartDate, createdAt: now, updatedAt: now })
+		.onConflictDoNothing({ target: mealPlans.weekStartDate })
+		.run();
 
-	const [created] = db.select().from(mealPlans).where(eq(mealPlans.id, id)).all();
-	return rowToMealPlan(created);
+	const plan = tx.select().from(mealPlans).where(eq(mealPlans.weekStartDate, weekStartDate)).get();
+	if (!plan) throw new Error(`Meal plan for ${weekStartDate} missing after upsert`);
+	return rowToMealPlan(plan);
 }
 
 export interface MealPlanEntryWithRecipe {
@@ -64,46 +59,21 @@ export async function getMealPlanWithEntries(
 ): Promise<MealPlanEntryWithRecipe[]> {
 	logger.debug('getMealPlanWithEntries', { weekStartDate });
 
-	const db = getDb();
-	const [plan] = db
-		.select()
-		.from(mealPlans)
-		.where(eq(mealPlans.weekStartDate, weekStartDate))
-		.all();
-
-	if (!plan) return [];
-
-	const entries = db
-		.select()
+	// One query: plan → entries → recipes. Inner joins drop entries whose recipe is gone,
+	// matching the old per-entry lookup that skipped missing recipes.
+	const rows = getDb()
+		.select({ entry: mealPlanEntries, recipe: recipes })
 		.from(mealPlanEntries)
-		.where(eq(mealPlanEntries.mealPlanId, plan.id))
+		.innerJoin(mealPlans, eq(mealPlanEntries.mealPlanId, mealPlans.id))
+		.innerJoin(recipes, eq(mealPlanEntries.recipeId, recipes.id))
+		.where(eq(mealPlans.weekStartDate, weekStartDate))
+		.orderBy(mealPlanEntries.dayOfWeek)
 		.all();
 
-	const result: MealPlanEntryWithRecipe[] = [];
-
-	for (const entry of entries) {
-		const [recipe] = db.select().from(recipes).where(eq(recipes.id, entry.recipeId)).all();
-
-		if (recipe) {
-			result.push({
-				entry: rowToEntry(entry),
-				recipe: {
-					id: recipe.id,
-					userId: recipe.userId,
-					name: recipe.name,
-					description: recipe.description,
-					...parseStoredRecipeJson(recipe),
-					prepTimeMinutes: recipe.prepTimeMinutes,
-					servings: recipe.servings,
-					source: recipe.source as RecipeSource,
-					createdAt: recipe.createdAt,
-					updatedAt: recipe.updatedAt
-				}
-			});
-		}
-	}
-
-	return result;
+	return rows.map(({ entry, recipe }) => ({
+		entry: rowToEntry(entry),
+		recipe: rowToRecipe(recipe)
+	}));
 }
 
 export async function addMealPlanEntry(
@@ -114,27 +84,31 @@ export async function addMealPlanEntry(
 ): Promise<MealPlanEntry> {
 	logger.debug('addMealPlanEntry', { userId, weekStartDate, dayOfWeek, recipeId });
 
-	const plan = await getOrCreateMealPlan(userId, weekStartDate);
-
-	// Remove existing entry for this day if present
+	// One synchronous transaction: plan get-or-create and the per-day replace can't
+	// interleave with another request, and the unique (meal_plan_id, day_of_week)
+	// index makes the upsert replace the day's recipe instead of adding a second row.
 	const db = getDb();
-	await db
-		.delete(mealPlanEntries)
-		.where(and(eq(mealPlanEntries.mealPlanId, plan.id), eq(mealPlanEntries.dayOfWeek, dayOfWeek)));
-
-	const now = new Date();
-	const id = randomUUID();
-	await db.insert(mealPlanEntries).values({
-		id,
-		mealPlanId: plan.id,
-		dayOfWeek,
-		recipeId,
-		createdAt: now,
-		updatedAt: now
+	return db.transaction((tx) => {
+		const plan = getOrCreateMealPlan(tx, userId, weekStartDate);
+		const now = new Date();
+		const entry = tx
+			.insert(mealPlanEntries)
+			.values({
+				id: randomUUID(),
+				mealPlanId: plan.id,
+				dayOfWeek,
+				recipeId,
+				createdAt: now,
+				updatedAt: now
+			})
+			.onConflictDoUpdate({
+				target: [mealPlanEntries.mealPlanId, mealPlanEntries.dayOfWeek],
+				set: { recipeId, updatedAt: now }
+			})
+			.returning()
+			.get();
+		return rowToEntry(entry);
 	});
-
-	const [created] = db.select().from(mealPlanEntries).where(eq(mealPlanEntries.id, id)).all();
-	return rowToEntry(created);
 }
 
 export async function removeMealPlanEntry(entryId: string): Promise<void> {
@@ -144,14 +118,5 @@ export async function removeMealPlanEntry(entryId: string): Promise<void> {
 }
 
 export function getMondayOfCurrentWeek(): string {
-	const today = new Date();
-	const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, …, 6=Sat
-	const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-	const monday = new Date(today);
-	monday.setDate(today.getDate() + diff);
-	// Use local date components to avoid UTC offset changing the date
-	const year = monday.getFullYear();
-	const month = String(monday.getMonth() + 1).padStart(2, '0');
-	const day = String(monday.getDate()).padStart(2, '0');
-	return `${year}-${month}-${day}`;
+	return getMondayOf(new Date());
 }
