@@ -10,22 +10,29 @@
 
 	let { data }: { data: PageData } = $props();
 
-	let selectedItems = $state<Set<string>>(new Set());
+	// Track what the user switched *off* rather than what's on: every pantry item is
+	// selected by default (including ones added later), and the user's choices survive
+	// load invalidations instead of being reset by an effect (#168).
+	let deselected = $state<Set<string>>(new Set());
+	const selectedItems = $derived(
+		new Set(data.pantryItems.map((i) => i.name).filter((name) => !deselected.has(name)))
+	);
+	const allSelected = $derived(data.pantryItems.every((i) => !deselected.has(i.name)));
 
-	$effect(() => {
-		selectedItems = new Set(data.pantryItems.map((i) => i.name));
-	});
 	let suggestions = $state<MealSuggestion[]>([]);
 	let isLoading = $state(false);
 	let error = $state<string | null>(null);
 	let drawerSuggestion = $state<MealSuggestion | null>(null);
-	let plannerSuggestion = $state<MealSuggestion | null>(null);
 
 	function toggleItem(name: string) {
-		const next = new Set(selectedItems);
+		const next = new Set(deselected);
 		if (next.has(name)) next.delete(name);
 		else next.add(name);
-		selectedItems = next;
+		deselected = next;
+	}
+
+	function toggleAll() {
+		deselected = allSelected ? new Set(data.pantryItems.map((i) => i.name)) : new Set();
 	}
 
 	async function fetchSuggestions() {
@@ -58,17 +65,11 @@
 		drawerSuggestion = suggestion;
 	}
 
+	// The planner page picks the suggestion up from sessionStorage and opens its day picker.
 	function handleSaveToPlanner(suggestion: MealSuggestion) {
-		plannerSuggestion = suggestion;
+		sessionStorage.setItem('pendingSuggestion', JSON.stringify(suggestion));
+		goto('/planner');
 	}
-
-	$effect(() => {
-		if (plannerSuggestion) {
-			// Navigate to planner with the suggestion data in session storage
-			sessionStorage.setItem('pendingSuggestion', JSON.stringify(plannerSuggestion));
-			goto('/planner');
-		}
-	});
 </script>
 
 <svelte:head>
@@ -131,18 +132,8 @@
 					{/if}
 				</button>
 
-				<button
-					type="button"
-					onclick={() => {
-						if (selectedItems.size === data.pantryItems.length) {
-							selectedItems = new Set();
-						} else {
-							selectedItems = new Set(data.pantryItems.map((i) => i.name));
-						}
-					}}
-					class="btn preset-ghost-surface text-sm"
-				>
-					{selectedItems.size === data.pantryItems.length ? 'Deselect all' : 'Select all'}
+				<button type="button" onclick={toggleAll} class="btn preset-ghost-surface text-sm">
+					{allSelected ? 'Deselect all' : 'Select all'}
 				</button>
 			</div>
 		{/if}
