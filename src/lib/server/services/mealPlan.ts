@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { getMondayOf } from '$lib/dates';
 import { logger } from '$lib/server/logger';
 import type { MealPlan, MealPlanEntry, Recipe, RecipeSource } from '$lib/types';
 import { eq, and } from 'drizzle-orm';
@@ -144,14 +145,5 @@ export async function removeMealPlanEntry(entryId: string): Promise<void> {
 }
 
 export function getMondayOfCurrentWeek(): string {
-	const today = new Date();
-	const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, …, 6=Sat
-	const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-	const monday = new Date(today);
-	monday.setDate(today.getDate() + diff);
-	// Use local date components to avoid UTC offset changing the date
-	const year = monday.getFullYear();
-	const month = String(monday.getMonth() + 1).padStart(2, '0');
-	const day = String(monday.getDate()).padStart(2, '0');
-	return `${year}-${month}-${day}`;
+	return getMondayOf(new Date());
 }

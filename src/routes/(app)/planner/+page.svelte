@@ -4,6 +4,7 @@
 	import RecipeDrawer from '$lib/components/RecipeDrawer.svelte';
 	import VariationsPanel from '$lib/components/VariationsPanel.svelte';
 	import WeeklyPlanner from '$lib/components/WeeklyPlanner.svelte';
+	import { addWeeks } from '$lib/dates';
 	import { addCustomMealSchema } from '$lib/schemas/mealPlan';
 	import type { MealPlanEntryWithRecipe } from '$lib/server/services/mealPlan';
 	import { DAY_LABELS } from '$lib/types';
@@ -137,9 +138,7 @@
 	}
 
 	function navigateWeek(offset: number): string {
-		const current = new Date(data.weekStartDate + 'T00:00:00');
-		current.setDate(current.getDate() + offset * 7);
-		return '?week=' + current.toISOString().split('T')[0];
+		return '?week=' + addWeeks(data.weekStartDate, offset);
 	}
 </script>
 
