@@ -40,3 +40,8 @@ export function addWeeks(isoDate: string, weeks: number): string {
 	date.setDate(date.getDate() + weeks * 7);
 	return toLocalIsoDate(date);
 }
+
+/** Day index within a Monday-first week (Mon=0 … Sun=6) for `date`'s local weekday. */
+export function weekdayIndex(date: Date): number {
+	return (date.getDay() + 6) % 7;
+}

@@ -10,7 +10,7 @@
 
 <button
 	type="button"
-	class="hover:text-surface-950-50 inline-flex items-center gap-1.5 font-medium transition-colors"
+	class="inline-flex items-center gap-1.5 font-medium transition-colors hover:underline"
 	{onclick}
 >
 	{columnName}

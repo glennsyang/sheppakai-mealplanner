@@ -2,6 +2,4 @@
 	let { role }: { role: string } = $props();
 </script>
 
-<span class="badge {role === 'admin' ? 'preset-filled-primary-500' : 'preset-tonal-surface'}">
-	{role}
-</span>
+<span class="marker {role === 'admin' ? 'ink-blue' : 'ink-soft'}">{role}</span>

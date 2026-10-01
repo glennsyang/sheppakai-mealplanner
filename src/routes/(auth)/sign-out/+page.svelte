@@ -1,17 +1,22 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { POST_LOGIN_ROUTE } from '$lib/auth-routes';
+	import AuthShell from '$lib/components/AuthShell.svelte';
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-gray-100">
-	<div class="w-full max-w-md space-y-6 rounded-lg bg-white p-8 text-center shadow-lg">
-		<div>
-			<h1 class="text-3xl font-bold">Sign Out</h1>
-			<p class="mt-2 text-gray-600">Are you sure you want to sign out?</p>
-		</div>
+<svelte:head>
+	<title>Sign Out — Meal Planner</title>
+</svelte:head>
 
-		<form method="POST" use:enhance><button type="submit" class="w-full">Sign Out</button></form>
-
-		<div class="text-center"><a href={POST_LOGIN_ROUTE} class="text-sm"> Cancel </a></div>
+<AuthShell>
+	<div>
+		<h1 class="text-[2rem] leading-tight font-bold tracking-tight">Sign out?</h1>
+		<p class="ink-soft mt-1.5 text-lg">The week stays on the board for next time.</p>
 	</div>
-</div>
+
+	<form method="POST" use:enhance>
+		<button type="submit" class="btn act w-full py-3 text-lg">Sign out</button>
+	</form>
+
+	<p><a href={POST_LOGIN_ROUTE} class="act-text ink-blue">Cancel</a></p>
+</AuthShell>

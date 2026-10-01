@@ -1,93 +1,142 @@
 <script lang="ts">
-	import { expoOut } from 'svelte/easing';
-	import { fly } from 'svelte/transition';
+	import Icon from '$lib/components/Icon.svelte';
+	import RecipeDrawer from '$lib/components/RecipeDrawer.svelte';
+	import WeeklyPlanner from '$lib/components/WeeklyPlanner.svelte';
+	import { recipeAsSuggestion } from '$lib/recipes';
+	import { trackToday } from '$lib/today.svelte';
+	import { DAY_LABELS } from '$lib/types';
+	import type { MealPlanEntryWithRecipe, MealSuggestion } from '$lib/types';
 
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
-	const firstName = $derived(data.user?.name?.split(' ')[0] ?? 'there');
+	const today = trackToday(
+		() => data.weekStartDate,
+		() => data.todayIndex
+	);
+
+	const tonight = $derived(
+		today.index === null ? undefined : data.entries.find((e) => e.entry.dayOfWeek === today.index)
+	);
+	const openNights = $derived(DAY_LABELS.length - data.entries.length);
+
+	const todayLabel = $derived.by(() => {
+		if (today.index === null) return '';
+		const date = new Date(data.weekStartDate + 'T00:00:00');
+		date.setDate(date.getDate() + today.index);
+		return `${DAY_LABELS[today.index]}, ${date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`;
+	});
+
+	const weekLabel = $derived.by(() => {
+		const monday = new Date(data.weekStartDate + 'T00:00:00');
+		const sunday = new Date(monday);
+		sunday.setDate(monday.getDate() + 6);
+		const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+		return `${fmt(monday)} – ${fmt(sunday)}`;
+	});
+
+	let drawerSuggestion = $state<MealSuggestion | null>(null);
+
+	function openRecipe(entry: MealPlanEntryWithRecipe) {
+		drawerSuggestion = recipeAsSuggestion(entry.recipe);
+	}
 </script>
 
 <svelte:head>
-	<title>Home — MealPlanner</title>
+	<title>Tonight — Meal Planner</title>
 </svelte:head>
 
-<div class="mx-auto max-w-5xl space-y-12 px-6 py-14">
-	<!-- Greeting -->
-	<section in:fly={{ y: 24, duration: 500, easing: expoOut }}>
-		<p class="text-primary-600 mb-3 text-sm font-medium tracking-widest uppercase">Your kitchen</p>
-		<h1 class="h1 text-4xl leading-tight font-semibold">
-			Hello, {firstName}.
-		</h1>
-		<p class="text-surface-500 mt-3 text-lg leading-relaxed font-light">
-			What are you cooking this week?
-		</p>
-	</section>
+<RecipeDrawer suggestion={drawerSuggestion} onClose={() => (drawerSuggestion = null)} />
 
-	<!-- Editorial card grid: feature (3/5) + secondary stacked (2/5) -->
-	<section class="grid grid-cols-1 gap-4 sm:grid-cols-5">
-		<!-- Feature card: AI suggestions -->
-		<a
-			href="/suggest"
-			class="card preset-filled-primary-500 card-lift flex min-h-55 flex-col justify-between gap-8 p-8 sm:col-span-3"
-			in:fly={{ y: 24, delay: 80, duration: 500, easing: expoOut }}
+<!-- Tonight: the answer to "what's for dinner?" before anything else -->
+<section class="px-5 pt-8 pb-10 sm:px-10 sm:pt-12 sm:pb-14" aria-labelledby="tonight-heading">
+	{#if tonight}
+		<h1
+			id="tonight-heading"
+			class="max-w-[18ch] text-[2.5rem] leading-[1.05] font-bold tracking-[-0.025em] sm:text-[3.75rem]"
 		>
-			<div>
-				<p class="text-primary-100 mb-3 text-xs font-medium tracking-widest uppercase">
-					AI-powered
-				</p>
-				<h2 class="font-serif text-2xl leading-snug font-semibold tracking-tight">
-					Discover tonight's<br />dinner
-				</h2>
-				<p class="text-primary-100 mt-3 text-sm leading-relaxed font-light">
-					Tell us what's in your pantry — MealPlanner suggests dinners and full recipes.
-				</p>
-			</div>
-			<div class="flex items-center gap-2 text-sm font-medium">
-				Get suggestions
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="14"
-					height="14"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg
-				>
-			</div>
-		</a>
-
-		<!-- Secondary cards stacked -->
-		<div class="flex flex-col gap-4 sm:col-span-2">
-			<a
-				href="/pantry"
-				class="card preset-outlined-surface-300-700 card-lift flex flex-1 flex-col gap-2 p-6"
-				in:fly={{ y: 24, delay: 140, duration: 500, easing: expoOut }}
-			>
-				<p class="text-surface-400 text-xs font-medium tracking-widest uppercase">Ingredients</p>
-				<h2 class="font-serif text-xl leading-tight font-semibold tracking-tight">My Pantry</h2>
-				<p class="text-surface-500 mt-1 text-sm leading-relaxed font-light">
-					Manage your ingredients
-				</p>
-			</a>
-
-			<a
-				href="/planner"
-				class="card preset-outlined-surface-300-700 card-lift flex flex-1 flex-col gap-2 p-6"
-				in:fly={{ y: 24, delay: 200, duration: 500, easing: expoOut }}
-			>
-				<p class="text-surface-400 text-xs font-medium tracking-widest uppercase">Schedule</p>
-				<h2 class="font-serif text-xl leading-tight font-semibold tracking-tight">
-					Weekly Planner
-				</h2>
-				<p class="text-surface-500 mt-1 text-sm leading-relaxed font-light">
-					Plan your dinners, Mon–Sun
-				</p>
+			<span class="marker ink-red">Tonight,</span>
+			{tonight.recipe.name}
+		</h1>
+		{#if tonight.recipe.description}
+			<p class="ink-soft mt-4 max-w-[58ch] text-lg leading-relaxed">
+				{tonight.recipe.description}
+			</p>
+		{/if}
+		<div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
+			<button type="button" class="btn act px-6 py-3 text-lg" onclick={() => openRecipe(tonight)}>
+				<Icon name="book" size={20} />
+				Open recipe
+			</button>
+			{#if tonight.recipe.prepTimeMinutes > 0}
+				<span class="ink-soft tabular inline-flex items-center gap-2 font-semibold">
+					<Icon name="clock" />{tonight.recipe.prepTimeMinutes} min
+				</span>
+			{/if}
+		</div>
+	{:else}
+		<h1
+			id="tonight-heading"
+			class="max-w-[20ch] text-[2.25rem] leading-[1.08] font-bold tracking-[-0.02em] sm:text-[3.25rem]"
+		>
+			Nothing's on the board <span class="marker ink-red whitespace-nowrap">tonight.</span>
+		</h1>
+		<p class="ink-soft mt-4 max-w-[52ch] text-lg leading-relaxed">
+			<span class="font-semibold">{todayLabel}.</span>
+			{#if data.pantryCount > 0}
+				{data.pantryCount === 1
+					? "There's 1 ingredient on the fridge."
+					: `There are ${data.pantryCount} ingredients on the fridge.`} Get a few dinner ideas from what's
+				there, or write something in yourself.
+			{:else}
+				Add what's in the kitchen to the pantry and you'll get dinner ideas from it.
+			{/if}
+		</p>
+		<div class="mt-7 flex flex-wrap items-center gap-3">
+			{#if data.pantryCount > 0}
+				<a href="/suggest" class="btn act px-6 py-3 text-lg">
+					<Icon name="sparkles" size={20} />
+					Suggest dinners
+				</a>
+			{:else}
+				<a href="/pantry" class="btn act px-6 py-3 text-lg">
+					<Icon name="basket" size={20} />
+					Fill the pantry
+				</a>
+			{/if}
+			<a href="/planner" class="btn act-quiet px-5 py-3 text-lg">
+				<Icon name="pencil" size={18} />
+				Write one in
 			</a>
 		</div>
-	</section>
-</div>
+	{/if}
+</section>
+
+<!-- The week at a glance -->
+<section class="week-band px-3 pt-6 pb-8 sm:px-8 sm:pb-10" aria-labelledby="week-heading">
+	<div class="mb-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 px-2">
+		<h2 id="week-heading" class="text-xl font-bold tracking-tight">
+			This week
+			<span class="ink-soft tabular ml-2 text-base font-semibold">{weekLabel}</span>
+		</h2>
+		<a href="/planner" class="act-text ink-blue inline-flex items-center gap-1.5">
+			{openNights === 0
+				? 'Edit the week'
+				: `${openNights} night${openNights === 1 ? '' : 's'} open`}
+			<Icon name="arrow" size={16} />
+		</a>
+	</div>
+	<WeeklyPlanner
+		weekStartDate={data.weekStartDate}
+		entries={data.entries}
+		todayIndex={today.index}
+		onOpenRecipe={openRecipe}
+	/>
+</section>
+
+<style>
+	.week-band {
+		border-top: 1px solid var(--rule-strong);
+	}
+</style>

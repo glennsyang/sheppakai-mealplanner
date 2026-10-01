@@ -51,7 +51,7 @@
 		     panel's close button, so it's hidden from assistive tech. -->
 		<div
 			aria-hidden="true"
-			class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+			class="scrim fixed inset-0 z-40"
 			onclick={onClose}
 			in:fly={{ duration: 250, easing: linear }}
 			out:fly={{ duration: 200, easing: linear }}
@@ -63,7 +63,7 @@
 			aria-modal="true"
 			aria-label={ariaLabel}
 			tabindex="-1"
-			class="bg-surface-50-950 fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col shadow-2xl outline-none"
+			class="sheet fixed inset-y-0 right-0 z-50 flex w-full max-w-xl flex-col outline-none"
 			in:fly={{ x: 420, duration: 380, easing: expoOut }}
 			out:fly={{ x: 420, duration: 250, easing: expoOut }}
 		>
@@ -71,22 +71,32 @@
 		</div>
 	{:else}
 		<div class="fixed inset-0 z-50 flex items-center justify-center p-4" in:fly={{ duration: 200 }}>
-			<div
-				aria-hidden="true"
-				class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-				onclick={onClose}
-			></div>
+			<div aria-hidden="true" class="scrim absolute inset-0" onclick={onClose}></div>
 			<div
 				{@attach trapFocus}
 				role="dialog"
 				aria-modal="true"
 				aria-label={ariaLabel}
 				tabindex="-1"
-				class="card preset-filled-surface-50-950 relative w-full max-w-sm space-y-5 p-6 shadow-2xl outline-none"
-				in:fly={{ y: 20, duration: 250 }}
+				class="index-card relative w-full max-w-md space-y-5 px-6 pt-5 pb-6 outline-none"
+				in:fly={{ y: -14, duration: 320, easing: expoOut }}
 			>
+				<span class="magnet" aria-hidden="true"></span>
 				{@render children()}
 			</div>
 		</div>
 	{/if}
 {/if}
+
+<style>
+	.scrim {
+		background: color-mix(in oklch, var(--door) 35%, oklch(10% 0.01 260deg / 0.55));
+	}
+	/* A recipe card pulled off the board, held open at the edge of the screen */
+	.sheet {
+		background: var(--card);
+		box-shadow:
+			-1px 0 0 var(--rule),
+			-24px 0 48px -24px hsl(var(--shadow-ink) / 0.55);
+	}
+</style>

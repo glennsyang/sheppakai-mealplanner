@@ -3,20 +3,22 @@
 	import { invalidateAll } from '$app/navigation';
 	import { actionFailureText } from '$lib/action-result';
 	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import RecipeDrawer from '$lib/components/RecipeDrawer.svelte';
 	import VariationsPanel from '$lib/components/VariationsPanel.svelte';
 	import WeeklyPlanner from '$lib/components/WeeklyPlanner.svelte';
-	import { addWeeks } from '$lib/dates';
+	import { addWeeks, getMondayOf } from '$lib/dates';
+	import { recipeAsSuggestion } from '$lib/recipes';
 	import {
 		addCustomMealSchema,
 		mealSuggestionListSchema,
 		mealSuggestionSchema
 	} from '$lib/schemas/mealPlan';
+	import { trackToday } from '$lib/today.svelte';
 	import { DAY_LABELS } from '$lib/types';
 	import type { MealPlanEntryWithRecipe, MealSuggestion } from '$lib/types';
 	import type { ActionResult } from '@sveltejs/kit';
-	import { fly } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 
@@ -42,6 +44,13 @@
 	let variationsMealName = $state('');
 	let variationsLoading = $state(false);
 	let drawerSuggestion = $state<MealSuggestion | null>(null);
+	// A planned meal opened from the board is already on it, so its drawer has no save action.
+	let plannedRecipe = $state<MealSuggestion | null>(null);
+	let stuckDay = $state<number | null>(null);
+
+	const today = trackToday(() => data.weekStartDate);
+	const isCurrentWeek = $derived(data.weekStartDate === getMondayOf(new Date()));
+	const takenDays = $derived(new Map(entries.map((e) => [e.entry.dayOfWeek, e.recipe.name])));
 
 	// Single page-level banner for failed planner actions (#166).
 	let actionError = $state<string | null>(null);
@@ -73,6 +82,7 @@
 		validators: zod4Client(addCustomMealSchema),
 		onResult({ result }) {
 			if (result.type === 'success') {
+				stuckDay = customModalDay;
 				showCustomModal = false;
 				invalidateAll();
 			}
@@ -154,6 +164,7 @@
 			return;
 		}
 		actionError = null;
+		stuckDay = variationsDay;
 		variationsList = null;
 		variationsDay = null;
 		drawerSuggestion = null;
@@ -174,20 +185,22 @@
 </script>
 
 <svelte:head>
-	<title>Weekly Planner — MealPlanner</title>
+	<title>The Week — Meal Planner</title>
 </svelte:head>
 
-<!-- Day picker modal for pending suggestion -->
+<!-- Day picker for a suggestion brought over from Suggest -->
 <Modal
 	open={showDayPicker && pendingSuggestion !== null}
 	onClose={closeDayPicker}
-	ariaLabel="Add to planner"
+	ariaLabel="Put on the week"
 >
 	{#if pendingSuggestion}
-		<h2 class="h4 font-bold">Add to planner</h2>
-		<p class="text-surface-500 text-sm">
-			Adding <strong>{pendingSuggestion.name}</strong> — choose a day:
-		</p>
+		<div class="card-head -mx-6 px-6 pb-3">
+			<h2 class="text-xl leading-snug font-bold">Which night?</h2>
+			<p class="ink-soft mt-1">
+				<span class="marker ink-blue">{pendingSuggestion.name}</span>
+			</p>
+		</div>
 
 		<form
 			method="POST"
@@ -198,6 +211,7 @@
 					isSubmitting = false;
 					if (result.type === 'success') {
 						actionError = null;
+						stuckDay = selectedDay;
 						showDayPicker = false;
 						pendingSuggestion = null;
 						await update();
@@ -209,7 +223,7 @@
 					}
 				};
 			}}
-			class="space-y-4"
+			class="space-y-5"
 		>
 			<input type="hidden" name="weekStartDate" value={data.weekStartDate} />
 			<input type="hidden" name="name" value={pendingSuggestion.name} />
@@ -227,30 +241,42 @@
 			<input type="hidden" name="prepTimeMinutes" value={pendingSuggestion.prepTimeMinutes} />
 			<input type="hidden" name="servings" value={pendingSuggestion.servings} />
 
-			<div class="grid grid-cols-2 gap-2">
-				{#each DAY_LABELS as day, i}
-					<label class="flex cursor-pointer items-center gap-2">
-						<input type="radio" name="dayOfWeek" value={i} bind:group={selectedDay} class="radio" />
-						<span class="text-sm">{day}</span>
+			<fieldset class="ruled">
+				<legend class="sr-only">Night of the week ({getWeekLabel(data.weekStartDate)})</legend>
+				{#each DAY_LABELS as day, i (day)}
+					<label class="night">
+						<input
+							type="radio"
+							name="dayOfWeek"
+							value={i}
+							bind:group={selectedDay}
+							class="sr-only"
+						/>
+						<span class="marker w-24 shrink-0">{day}</span>
+						<span class="ink-faint min-w-0 truncate text-sm">
+							{takenDays.has(i) ? `replaces ${takenDays.get(i)}` : 'open'}
+						</span>
 					</label>
 				{/each}
-			</div>
+			</fieldset>
 
 			<div class="flex gap-2">
-				<button type="submit" disabled={isSubmitting} class="btn preset-filled-primary-500 flex-1">
-					{isSubmitting ? 'Saving…' : 'Add to planner'}
+				<button type="submit" disabled={isSubmitting} class="btn act flex-1 py-2.5">
+					{isSubmitting ? 'Sticking it on…' : `Put on ${DAY_LABELS[selectedDay]}`}
 				</button>
-				<button type="button" onclick={closeDayPicker} class="btn preset-ghost-surface">
-					Cancel
-				</button>
+				<button type="button" onclick={closeDayPicker} class="btn act-quiet py-2.5">Cancel</button>
 			</div>
 		</form>
 	{/if}
 </Modal>
 
-<!-- Custom meal modal -->
-<Modal open={showCustomModal} onClose={() => (showCustomModal = false)} ariaLabel="Add custom meal">
-	<h2 class="h4 font-bold">Add meal for {DAY_LABELS[customModalDay]}</h2>
+<!-- Write in a meal by hand -->
+<Modal open={showCustomModal} onClose={() => (showCustomModal = false)} ariaLabel="Write in a meal">
+	<div class="card-head -mx-6 px-6 pb-3">
+		<h2 class="text-xl leading-snug font-bold">
+			Write in <span class="marker ink-blue">{DAY_LABELS[customModalDay]}</span>
+		</h2>
+	</div>
 
 	<form method="POST" action="?/addCustom" use:customEnhance class="space-y-4">
 		<input type="hidden" name="weekStartDate" value={data.weekStartDate} />
@@ -258,53 +284,42 @@
 
 		<AuthFormMessage message={$customMessage} />
 
-		<label class="label space-y-1">
-			<span class="text-sm font-medium">Meal name <span class="text-error-500">*</span></span>
+		<label class="label space-y-1.5">
+			<span class="font-semibold">What's for dinner?</span>
 			<input
 				type="text"
 				name="name"
 				bind:value={$customForm.name}
 				class="input"
-				placeholder="e.g. Spaghetti Bolognese"
+				placeholder="Spaghetti bolognese"
 				required
 			/>
 			{#if $customErrors.name}
-				<span class="text-error-500 text-xs">{$customErrors.name}</span>
+				<span class="ink-red text-sm">{$customErrors.name}</span>
 			{/if}
 		</label>
 
-		<label class="label space-y-1">
-			<span class="text-sm font-medium"
-				>Notes <span class="text-surface-400 font-normal">(optional)</span></span
-			>
+		<label class="label space-y-1.5">
+			<span class="font-semibold">Notes <span class="ink-faint font-normal">(optional)</span></span>
 			<textarea
 				name="notes"
 				bind:value={$customForm.notes}
 				class="textarea"
 				rows="3"
-				placeholder="Any notes or description…"></textarea>
+				placeholder="Double batch, freeze half"></textarea>
 		</label>
 
 		<div class="flex gap-2">
-			<button
-				type="submit"
-				disabled={$customSubmitting}
-				class="btn preset-filled-primary-500 flex-1"
-			>
-				{$customSubmitting ? 'Saving…' : 'Add meal'}
+			<button type="submit" disabled={$customSubmitting} class="btn act flex-1 py-2.5">
+				{$customSubmitting ? 'Writing it in…' : 'Write it in'}
 			</button>
-			<button
-				type="button"
-				onclick={() => (showCustomModal = false)}
-				class="btn preset-ghost-surface"
-			>
+			<button type="button" onclick={() => (showCustomModal = false)} class="btn act-quiet py-2.5">
 				Cancel
 			</button>
 		</div>
 	</form>
 </Modal>
 
-<!-- Variations panel -->
 <VariationsPanel
 	variations={variationsList}
 	mealName={variationsMealName}
@@ -318,36 +333,45 @@
 	onAddToPlanner={handleVariationAddToPlanner}
 />
 
-<!-- Recipe drawer (for variations "View recipe") -->
+<!-- Recipe for a variation (can be put on the week) -->
 <RecipeDrawer
 	suggestion={drawerSuggestion}
 	onClose={() => (drawerSuggestion = null)}
 	onSaveToPlanner={handleVariationAddToPlanner}
 />
 
-<div class="mx-auto max-w-6xl space-y-8 px-4 py-10">
-	<div class="flex flex-wrap items-center justify-between gap-4" in:fly={{ y: 20, duration: 300 }}>
+<!-- Recipe for a meal already on the board -->
+<RecipeDrawer suggestion={plannedRecipe} onClose={() => (plannedRecipe = null)} />
+
+<div class="px-5 pt-8 pb-4 sm:px-10 sm:pt-12">
+	<div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
 		<div>
-			<h1 class="h2 font-bold">📅 Weekly Planner</h1>
-			<p class="text-surface-500 mt-1">Plan your dinners for the week</p>
+			<h1 class="text-[2rem] leading-tight font-bold tracking-tight sm:text-[2.5rem]">The week</h1>
+			<p class="ink-soft mt-1 text-lg">One dinner a night, shared by the two of you.</p>
 		</div>
 
-		<div class="flex items-center gap-2">
-			<a href={navigateWeek(-1)} class="btn preset-ghost-surface text-sm">← Prev</a>
-			<span class="px-2 text-sm font-medium">{getWeekLabel(data.weekStartDate)}</span>
-			<a href={navigateWeek(1)} class="btn preset-ghost-surface text-sm">Next →</a>
-		</div>
+		<nav class="flex items-center gap-1" aria-label="Choose week">
+			<a href={navigateWeek(-1)} class="week-step" aria-label="Previous week">
+				<Icon name="left" size={20} />
+			</a>
+			<span class="marker tabular min-w-[9.5rem] text-center text-lg" aria-live="polite">
+				{getWeekLabel(data.weekStartDate)}
+			</span>
+			<a href={navigateWeek(1)} class="week-step" aria-label="Next week">
+				<Icon name="right" size={20} />
+			</a>
+		</nav>
 	</div>
+	{#if !isCurrentWeek}
+		<a href="/planner" class="act-text ink-blue mt-3 inline-block">Back to this week</a>
+	{/if}
 
 	{#if actionError}
-		<div
-			class="alert preset-tonal-error flex items-center justify-between gap-4 text-sm"
-			role="alert"
-		>
+		<div class="alert preset-tonal-error mt-6 flex items-center justify-between gap-4" role="alert">
 			<span>{actionError}</span>
 			<button
 				type="button"
-				class="btn preset-ghost-surface px-2 py-1 text-xs"
+				class="act-text shrink-0 text-sm"
 				onclick={() => (actionError = null)}
 				aria-label="Dismiss error"
 			>
@@ -355,20 +379,75 @@
 			</button>
 		</div>
 	{/if}
-
-	<div in:fly={{ y: 20, delay: 100, duration: 300 }}>
-		<WeeklyPlanner
-			weekStartDate={data.weekStartDate}
-			{entries}
-			onEntryRemoved={handleEntryRemoved}
-			onRemoveFailed={(text) => (actionError = text)}
-			onAddCustom={handleAddCustom}
-			onRequestVariations={handleRequestVariations}
-			loadingVariationsDay={variationsLoading ? variationsDay : null}
-		/>
-	</div>
-
-	<div in:fly={{ y: 10, delay: 200, duration: 250 }}>
-		<a href="/suggest" class="btn preset-filled-primary-500"> ✨ Get more suggestions </a>
-	</div>
 </div>
+
+<div class="px-3 pb-6 sm:px-8">
+	<WeeklyPlanner
+		weekStartDate={data.weekStartDate}
+		{entries}
+		todayIndex={today.index}
+		{stuckDay}
+		onOpenRecipe={(e) => (plannedRecipe = recipeAsSuggestion(e.recipe))}
+		actions={{
+			onEntryRemoved: handleEntryRemoved,
+			onRemoveFailed: (text) => (actionError = text),
+			onAddCustom: handleAddCustom,
+			onRequestVariations: handleRequestVariations,
+			loadingVariationsDay: variationsLoading ? variationsDay : null
+		}}
+	/>
+</div>
+
+<div class="foot flex flex-wrap items-center gap-x-6 gap-y-3 px-5 py-6 sm:px-10">
+	<a href="/suggest" class="btn act px-5 py-2.5">
+		<Icon name="sparkles" />
+		Get dinner ideas
+	</a>
+	<p class="ink-soft text-sm">
+		Ideas come from what's in the pantry. Tap a dinner to read its recipe.
+	</p>
+</div>
+
+<style>
+	.week-step {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.75rem;
+		height: 2.75rem;
+		border-radius: 999px;
+		color: var(--ink-soft);
+		box-shadow: inset 0 0 0 1.5px var(--rule);
+	}
+	.week-step:hover {
+		color: var(--ink);
+		box-shadow: inset 0 0 0 1.5px var(--ink);
+	}
+
+	.night {
+		display: flex;
+		align-items: baseline;
+		gap: 0.75rem;
+		padding: 0.6rem 0.5rem;
+		border-radius: 6px;
+		cursor: pointer;
+	}
+	.night:hover {
+		background: color-mix(in oklch, var(--marker-blue) 6%, transparent);
+	}
+	.night:has(input:checked) {
+		background: color-mix(in oklch, var(--marker-blue) 12%, transparent);
+		box-shadow: inset 0 0 0 1.5px var(--marker-blue);
+	}
+	.night:has(input:checked) .marker {
+		color: var(--marker-blue);
+	}
+	.night:has(input:focus-visible) {
+		outline: 2.5px solid var(--marker-blue);
+		outline-offset: 2px;
+	}
+
+	.foot {
+		border-top: 1px solid var(--rule-strong);
+	}
+</style>

@@ -5,8 +5,8 @@
 	"description": "Family meal planning and management",
 	"start_url": "/",
 	"display": "standalone",
-	"background_color": "#0d111a",
-	"theme_color": "#1e2035",
+	"background_color": "#eceef1",
+	"theme_color": "#eceef1",
 	"orientation": "portrait-primary",
 	"icons": [
 		{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

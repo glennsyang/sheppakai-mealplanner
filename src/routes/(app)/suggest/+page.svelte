@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import Icon from '$lib/components/Icon.svelte';
 	import RecipeDrawer from '$lib/components/RecipeDrawer.svelte';
 	import SuggestionCard from '$lib/components/SuggestionCard.svelte';
 	import { mealSuggestionListSchema } from '$lib/schemas/mealPlan';
+	import { magnetTilt } from '$lib/tilt';
 	import type { MealSuggestion } from '$lib/types';
 	import { autoAnimate } from '@formkit/auto-animate';
-	import { fly } from 'svelte/transition';
 
 	import type { PageData } from './$types';
 
@@ -75,7 +76,7 @@
 </script>
 
 <svelte:head>
-	<title>Suggest Dinners — MealPlanner</title>
+	<title>Suggest Dinners — Meal Planner</title>
 </svelte:head>
 
 <RecipeDrawer
@@ -84,91 +85,105 @@
 	onSaveToPlanner={handleSaveToPlanner}
 />
 
-<div class="mx-auto max-w-5xl space-y-8 px-4 py-10">
-	<div in:fly={{ y: 20, duration: 300 }}>
-		<h1 class="h2 font-bold">✨ Get Dinner Suggestions</h1>
-		<p class="text-surface-500 mt-1">
-			Select the ingredients you have available and we'll suggest some great dinners
+<div class="px-5 pt-8 pb-10 sm:px-10 sm:pt-12">
+	<h1 class="text-[2rem] leading-tight font-bold tracking-tight sm:text-[2.5rem]">
+		What's for dinner?
+	</h1>
+
+	{#if data.pantryItems.length === 0}
+		<p class="ink-soft mt-3 max-w-[52ch] text-lg leading-relaxed">
+			Ideas come from what's in the kitchen, and the pantry is empty.
 		</p>
-	</div>
+		<a href="/pantry" class="btn act mt-6 px-5 py-2.5">
+			<Icon name="basket" />
+			Fill the pantry
+		</a>
+	{:else}
+		<p class="ink-soft mt-2 max-w-[56ch] text-lg leading-relaxed">
+			Every ingredient on the fridge is in. Tap a magnet to leave it out.
+		</p>
 
-	<!-- Ingredient selector -->
-	<div
-		class="card preset-outlined-surface-300-700 space-y-4 p-6"
-		in:fly={{ y: 20, delay: 80, duration: 300 }}
-	>
-		<h2 class="h5 font-semibold">Your pantry items</h2>
-
-		{#if data.pantryItems.length === 0}
-			<p class="text-surface-500">
-				No pantry items found.
-				<a href="/pantry" class="text-primary-500 hover:underline">Add some ingredients</a>
-				first.
-			</p>
-		{:else}
-			<div class="flex flex-wrap gap-2" use:autoAnimate>
-				{#each data.pantryItems as item (item.id)}
+		<ul
+			class="mt-7 flex flex-wrap gap-x-2.5 gap-y-3"
+			use:autoAnimate
+			aria-label="Pantry ingredients"
+		>
+			{#each data.pantryItems as item (item.id)}
+				{@const on = selectedItems.has(item.name)}
+				<li>
 					<button
 						type="button"
 						onclick={() => toggleItem(item.name)}
-						class="chip transition-all"
-						class:preset-filled-primary-500={selectedItems.has(item.name)}
-						class:preset-tonal-surface={!selectedItems.has(item.name)}
+						class="tile px-3 py-1.5 text-[1.05rem] font-semibold"
+						class:tile-off={!on}
+						style="--tilt: {magnetTilt(item.name)}deg"
+						aria-pressed={on}
 					>
-						{item.name}
+						<span class="tile-word">{item.name}</span>
 					</button>
+				</li>
+			{/each}
+		</ul>
+
+		<div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+			<button
+				type="button"
+				onclick={fetchSuggestions}
+				disabled={isLoading || selectedItems.size === 0}
+				class="btn act px-6 py-3 text-lg"
+			>
+				{#if isLoading}
+					<Icon name="loader" size={20} class="animate-spin" />
+					Thinking it over…
+				{:else}
+					<Icon name="sparkles" size={20} />
+					Suggest dinners
+				{/if}
+			</button>
+			<span class="ink-soft tabular text-sm font-semibold">
+				using {selectedItems.size} of {data.pantryItems.length}
+			</span>
+			<button type="button" onclick={toggleAll} class="act-text ink-blue text-sm">
+				{allSelected ? 'Leave them all out' : 'Put them all back'}
+			</button>
+		</div>
+	{/if}
+</div>
+
+{#if error || isLoading || suggestions.length > 0}
+	<section class="results px-5 pt-8 pb-12 sm:px-10" aria-live="polite" aria-busy={isLoading}>
+		{#if error}
+			<div class="alert preset-tonal-error" role="alert">{error}</div>
+		{/if}
+
+		{#if isLoading}
+			<p class="marker ink-soft mb-8 text-xl">Writing up a few ideas…</p>
+			<div class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+				{#each { length: 3 } as _, i (i)}
+					<div class="index-card px-5 pt-6 pb-6" style="rotate: {[-0.5, 0.4, -0.2][i]}deg">
+						<span class="magnet opacity-60"></span>
+						<div class="card-head space-y-2.5 pb-4">
+							<div class="writing-line w-3/4"></div>
+							<div class="writing-line w-1/3"></div>
+						</div>
+						<div class="space-y-3 pt-4">
+							<div class="writing-line"></div>
+							<div class="writing-line w-5/6"></div>
+							<div class="writing-line w-2/3"></div>
+						</div>
+					</div>
 				{/each}
 			</div>
-
-			<div class="flex items-center gap-4 pt-2">
-				<button
-					type="button"
-					onclick={fetchSuggestions}
-					disabled={isLoading || selectedItems.size === 0}
-					class="btn preset-filled-primary-500"
-				>
-					{#if isLoading}
-						<span class="mr-2 animate-spin">⟳</span> Finding recipes…
-					{:else}
-						✨ Suggest dinners ({selectedItems.size} items)
-					{/if}
-				</button>
-
-				<button type="button" onclick={toggleAll} class="btn preset-ghost-surface text-sm">
-					{allSelected ? 'Deselect all' : 'Select all'}
-				</button>
-			</div>
 		{/if}
-	</div>
 
-	<!-- Error -->
-	{#if error}
-		<div class="alert preset-tonal-error" in:fly={{ y: 10, duration: 200 }}>
-			{error}
-		</div>
-	{/if}
-
-	<!-- Loading shimmer -->
-	{#if isLoading}
-		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-			{#each { length: 3 } as _, i}
-				<div
-					class="card preset-outlined-surface-300-700 relative h-48 overflow-hidden"
-					in:fly={{ y: 10, delay: i * 80, duration: 250 }}
+		{#if suggestions.length > 0 && !isLoading}
+			<h2 class="mb-8 flex items-baseline gap-3">
+				<span class="marker ink-green text-2xl">{suggestions.length} ideas</span>
+				<span class="ink-soft text-sm font-semibold"
+					>Put one on the week, or read the recipe first.</span
 				>
-					<div class="animate-shimmer absolute inset-0"></div>
-				</div>
-			{/each}
-		</div>
-	{/if}
-
-	<!-- Suggestions -->
-	{#if suggestions.length > 0 && !isLoading}
-		<div in:fly={{ y: 20, duration: 300 }}>
-			<h2 class="h4 mb-4 font-semibold">
-				{suggestions.length} dinner ideas for you
 			</h2>
-			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" use:autoAnimate>
+			<div class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3" use:autoAnimate>
 				{#each suggestions as suggestion, i (suggestion.name)}
 					<SuggestionCard
 						{suggestion}
@@ -178,6 +193,12 @@
 					/>
 				{/each}
 			</div>
-		</div>
-	{/if}
-</div>
+		{/if}
+	</section>
+{/if}
+
+<style>
+	.results {
+		border-top: 1px solid var(--rule-strong);
+	}
+</style>

@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import { addPantryItemSchema } from '$lib/schemas/pantry';
+	import { magnetTilt } from '$lib/tilt';
 	import { autoAnimate } from '@formkit/auto-animate';
-	import { fly } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 
@@ -30,130 +31,131 @@
 </script>
 
 <svelte:head>
-	<title>Pantry — MealPlanner</title>
+	<title>Pantry — Meal Planner</title>
 </svelte:head>
 
-<div class="mx-auto max-w-2xl space-y-8 px-4 py-10">
-	<div in:fly={{ y: 20, duration: 300 }}>
-		<h1 class="h2 font-bold">My Pantry</h1>
-		<p class="text-surface-500 mt-1">Track what you have available for cooking</p>
-	</div>
+<div class="px-5 pt-8 pb-8 sm:px-10 sm:pt-12">
+	<h1 class="text-[2rem] leading-tight font-bold tracking-tight sm:text-[2.5rem]">Pantry</h1>
+	<p class="ink-soft mt-2 max-w-[56ch] text-lg leading-relaxed">
+		What's in the kitchen. Dinner ideas are built from these.
+	</p>
 
-	<!-- Add item form -->
-	<div
-		class="card preset-outlined-surface-300-700 space-y-4 p-6"
-		in:fly={{ y: 20, delay: 80, duration: 300 }}
-	>
-		<h2 class="h5 font-semibold">Add an ingredient</h2>
-		<form method="POST" action="?/add" use:sfEnhance class="space-y-3">
-			<AuthFormMessage message={$message} />
-			<label class="label">
-				<span class="label-text">Ingredient name *</span>
+	<form method="POST" action="?/add" use:sfEnhance class="add mt-8">
+		<AuthFormMessage message={$message} />
+		<div class="grid grid-cols-2 gap-3 sm:grid-cols-[minmax(0,1fr)_7rem_8rem_auto] sm:items-end">
+			<label class="label col-span-2 sm:col-span-1">
+				<span class="font-semibold">Ingredient</span>
 				<input
 					type="text"
 					name="name"
 					bind:value={$form.name}
-					class="input"
+					class="input text-lg"
 					class:input-error={$errors.name}
 					{...$constraints.name}
-					placeholder="e.g. Chicken breast"
+					placeholder="Chicken thighs"
 				/>
-				{#if $errors.name}
-					<span class="text-error-500 text-xs">{$errors.name}</span>
-				{/if}
 			</label>
-
-			<div class="grid grid-cols-2 gap-3">
-				<label class="label">
-					<span class="label-text">Quantity (optional)</span>
-					<input
-						type="number"
-						name="quantity"
-						bind:value={$form.quantity}
-						class="input"
-						min="0"
-						step="any"
-						placeholder="e.g. 2"
-					/>
-				</label>
-				<label class="label">
-					<span class="label-text">Unit (optional)</span>
-					<input
-						type="text"
-						name="unit"
-						bind:value={$form.unit}
-						class="input"
-						placeholder="e.g. cups"
-					/>
-				</label>
-			</div>
-
-			<button type="submit" disabled={$submitting} class="btn preset-filled-primary-500">
-				{$submitting ? 'Adding…' : 'Add to pantry'}
+			<label class="label">
+				<span class="font-semibold">Amount</span>
+				<input
+					type="number"
+					name="quantity"
+					bind:value={$form.quantity}
+					class="input tabular text-lg"
+					min="0"
+					step="any"
+					placeholder="2"
+				/>
+			</label>
+			<label class="label">
+				<span class="font-semibold">Unit</span>
+				<input
+					type="text"
+					name="unit"
+					bind:value={$form.unit}
+					class="input text-lg"
+					placeholder="lb"
+				/>
+			</label>
+			<button type="submit" disabled={$submitting} class="btn act col-span-2 py-3 sm:col-span-1">
+				<Icon name="plus" />
+				{$submitting ? 'Adding…' : 'Add'}
 			</button>
-		</form>
-	</div>
-
-	<!-- Items list -->
-	<div in:fly={{ y: 20, delay: 160, duration: 300 }}>
-		<h2 class="h5 mb-3 font-semibold">
-			Your items
-			<span class="badge preset-tonal-surface ml-2">{items.length}</span>
-		</h2>
-
-		{#if removeError}
-			<div class="alert preset-tonal-error mb-3 text-sm" role="alert">{removeError}</div>
-		{/if}
-
-		{#if items.length === 0}
-			<div class="card preset-outlined-surface-200-800 text-surface-400 p-8 text-center">
-				<p class="mb-3 text-4xl">🥫</p>
-				<p>Your pantry is empty. Add some ingredients above!</p>
-			</div>
-		{:else}
-			<div class="space-y-2" use:autoAnimate>
-				{#each items as item (item.id)}
-					<div
-						class="card preset-outlined-surface-200-800 flex items-center justify-between px-4 py-3"
-					>
-						<div>
-							<span class="font-medium">{item.name}</span>
-							{#if item.quantity}
-								<span class="text-surface-500 ml-2 text-sm">
-									{item.quantity}{item.unit ? ` ${item.unit}` : ''}
-								</span>
-							{/if}
-						</div>
-						<form
-							method="POST"
-							action="?/remove"
-							use:enhance={() =>
-								async ({ result, update }) => {
-									removeError =
-										result.type === 'success'
-											? null
-											: `Could not remove ${item.name}. Please try again.`;
-									await update();
-								}}
-						>
-							<input type="hidden" name="id" value={item.id} />
-							<button
-								type="submit"
-								class="btn preset-ghost-error px-2 py-1 text-sm"
-								aria-label="Remove {item.name}"
-							>
-								Remove
-							</button>
-						</form>
-					</div>
-				{/each}
-			</div>
-		{/if}
-	</div>
-
-	{#if items.length > 0}
-		<div in:fly={{ y: 10, delay: 200, duration: 250 }}>
-			<a href="/suggest" class="btn preset-filled-primary-500"> ✨ Get dinner suggestions </a>
 		</div>
-	{/if}
+		{#if $errors.name}
+			<p class="ink-red mt-2 text-sm">{$errors.name}</p>
+		{/if}
+	</form>
 </div>
+
+<section class="fridge px-5 pt-7 pb-10 sm:px-10" aria-labelledby="items-heading">
+	<h2 id="items-heading" class="mb-6 flex items-baseline gap-3">
+		<span class="text-xl font-bold tracking-tight">On the fridge</span>
+		<span class="marker ink-blue tabular text-lg">{items.length}</span>
+	</h2>
+
+	{#if removeError}
+		<div class="alert preset-tonal-error mb-5" role="alert">{removeError}</div>
+	{/if}
+
+	{#if items.length === 0}
+		<p class="marker ink-faint text-xl">The fridge is bare. Add the first ingredient above.</p>
+	{:else}
+		<ul class="flex flex-wrap gap-x-2.5 gap-y-3" use:autoAnimate>
+			{#each items as item (item.id)}
+				<li
+					class="tile flex items-center gap-2 py-1 pr-1 pl-3"
+					style="--tilt: {magnetTilt(item.name)}deg"
+				>
+					<span class="text-[1.05rem] font-semibold">{item.name}</span>
+					{#if item.quantity}
+						<span class="ink-soft tabular text-sm">
+							{item.quantity}{item.unit ? ` ${item.unit}` : ''}
+						</span>
+					{/if}
+					<form
+						method="POST"
+						action="?/remove"
+						use:enhance={() =>
+							async ({ result, update }) => {
+								removeError =
+									result.type === 'success'
+										? null
+										: `Could not remove ${item.name}. Please try again.`;
+								await update();
+							}}
+					>
+						<input type="hidden" name="id" value={item.id} />
+						<button type="submit" class="take-off" aria-label="Remove {item.name}">
+							<Icon name="x" size={16} />
+						</button>
+					</form>
+				</li>
+			{/each}
+		</ul>
+
+		<a href="/suggest" class="btn act mt-10 px-5 py-2.5">
+			<Icon name="sparkles" />
+			Get dinner ideas
+		</a>
+	{/if}
+</section>
+
+<style>
+	.fridge {
+		border-top: 1px solid var(--rule-strong);
+	}
+	.take-off {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 2px;
+		color: var(--ink-faint);
+	}
+	.take-off:hover {
+		color: var(--marker-red);
+		background: color-mix(in oklch, var(--marker-red) 10%, transparent);
+	}
+</style>

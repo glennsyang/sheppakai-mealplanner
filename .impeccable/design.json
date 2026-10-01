@@ -1,0 +1,660 @@
+{
+	"schemaVersion": 2,
+	"generatedAt": "2026-10-01T22:47:02.285206+00:00",
+	"title": "Design System: Meal Planner",
+	"extensions": {
+		"colorMeta": {
+			"marker-blue": {
+				"role": "primary",
+				"displayName": "Blue Marker",
+				"canonical": "oklch(50% 0.18 262deg)",
+				"tonalRamp": [
+					"oklch(21% 0.06 266deg)",
+					"oklch(33% 0.12 265deg)",
+					"oklch(45% 0.17 263deg)",
+					"oklch(50% 0.18 262deg)",
+					"oklch(64% 0.16 260deg)",
+					"oklch(76% 0.12 258deg)",
+					"oklch(84% 0.08 262deg)",
+					"oklch(96% 0.02 262deg)"
+				],
+				"mode": "light"
+			},
+			"marker-green": {
+				"role": "secondary",
+				"displayName": "Green Marker",
+				"canonical": "oklch(48% 0.12 150deg)",
+				"tonalRamp": [
+					"oklch(22% 0.04 154deg)",
+					"oklch(35% 0.08 152deg)",
+					"oklch(48% 0.12 150deg)",
+					"oklch(54% 0.14 150deg)",
+					"oklch(68% 0.15 150deg)",
+					"oklch(79% 0.14 150deg)",
+					"oklch(85% 0.1 150deg)",
+					"oklch(96% 0.03 150deg)"
+				],
+				"mode": "light"
+			},
+			"marker-red": {
+				"role": "tertiary",
+				"displayName": "Red Marker",
+				"canonical": "oklch(56% 0.21 27deg)",
+				"tonalRamp": [
+					"oklch(23% 0.07 27deg)",
+					"oklch(37% 0.13 27deg)",
+					"oklch(50% 0.19 27deg)",
+					"oklch(56% 0.21 27deg)",
+					"oklch(66% 0.19 24deg)",
+					"oklch(76% 0.14 22deg)",
+					"oklch(84% 0.09 24deg)",
+					"oklch(96% 0.02 25deg)"
+				],
+				"mode": "light"
+			},
+			"highlighter-yellow": {
+				"role": "neutral",
+				"displayName": "Highlighter Yellow",
+				"canonical": "oklch(92% 0.17 102deg)",
+				"tonalRamp": [
+					"oklch(27% 0.05 64deg)",
+					"oklch(47% 0.09 68deg)",
+					"oklch(68% 0.14 75deg)",
+					"oklch(78% 0.16 82deg)",
+					"oklch(84% 0.16 90deg)",
+					"oklch(88% 0.15 94deg)",
+					"oklch(92% 0.17 102deg)",
+					"oklch(97% 0.04 95deg)"
+				],
+				"mode": "light"
+			},
+			"door": {
+				"role": "neutral",
+				"displayName": "Fridge Door",
+				"canonical": "oklch(93.5% 0.004 250deg)",
+				"tonalRamp": [
+					"oklch(15% 0.008 252deg)",
+					"oklch(27% 0.008 252deg)",
+					"oklch(39% 0.008 252deg)",
+					"oklch(51% 0.008 252deg)",
+					"oklch(63% 0.008 252deg)",
+					"oklch(75% 0.008 252deg)",
+					"oklch(86% 0.008 252deg)",
+					"oklch(95% 0.008 252deg)"
+				],
+				"mode": "light"
+			},
+			"board": {
+				"role": "neutral",
+				"displayName": "Board Laminate",
+				"canonical": "oklch(98.6% 0.003 250deg)",
+				"tonalRamp": [
+					"oklch(17.5% 0.006 260deg)",
+					"oklch(28% 0.01 260deg)",
+					"oklch(45% 0.015 260deg)",
+					"oklch(55% 0.015 258deg)",
+					"oklch(68% 0.013 255deg)",
+					"oklch(83% 0.01 252deg)",
+					"oklch(90.5% 0.008 250deg)",
+					"oklch(98.6% 0.003 250deg)"
+				],
+				"mode": "light"
+			},
+			"card": {
+				"role": "neutral",
+				"displayName": "Card Stock",
+				"canonical": "oklch(100% 0 0deg)",
+				"tonalRamp": [
+					"oklch(15% 0.008 252deg)",
+					"oklch(27% 0.008 252deg)",
+					"oklch(39% 0.008 252deg)",
+					"oklch(51% 0.008 252deg)",
+					"oklch(63% 0.008 252deg)",
+					"oklch(75% 0.008 252deg)",
+					"oklch(86% 0.008 252deg)",
+					"oklch(95% 0.008 252deg)"
+				],
+				"mode": "light"
+			},
+			"frame": {
+				"role": "neutral",
+				"displayName": "Aluminium Frame",
+				"canonical": "oklch(82% 0.008 250deg)",
+				"tonalRamp": [
+					"oklch(15% 0.008 252deg)",
+					"oklch(27% 0.008 252deg)",
+					"oklch(39% 0.008 252deg)",
+					"oklch(51% 0.008 252deg)",
+					"oklch(63% 0.008 252deg)",
+					"oklch(75% 0.008 252deg)",
+					"oklch(86% 0.008 252deg)",
+					"oklch(95% 0.008 252deg)"
+				],
+				"mode": "light"
+			},
+			"frame-lo": {
+				"role": "neutral",
+				"displayName": "Frame Edge",
+				"canonical": "oklch(68% 0.01 252deg)",
+				"tonalRamp": [
+					"oklch(15% 0.008 252deg)",
+					"oklch(27% 0.008 252deg)",
+					"oklch(39% 0.008 252deg)",
+					"oklch(51% 0.008 252deg)",
+					"oklch(63% 0.008 252deg)",
+					"oklch(75% 0.008 252deg)",
+					"oklch(86% 0.008 252deg)",
+					"oklch(95% 0.008 252deg)"
+				],
+				"mode": "light"
+			},
+			"rule": {
+				"role": "neutral",
+				"displayName": "Printed Rule",
+				"canonical": "oklch(89% 0.012 250deg)",
+				"tonalRamp": [
+					"oklch(15% 0.008 252deg)",
+					"oklch(27% 0.008 252deg)",
+					"oklch(39% 0.008 252deg)",
+					"oklch(51% 0.008 252deg)",
+					"oklch(63% 0.008 252deg)",
+					"oklch(75% 0.008 252deg)",
+					"oklch(86% 0.008 252deg)",
+					"oklch(95% 0.008 252deg)"
+				],
+				"mode": "light"
+			},
+			"rule-strong": {
+				"role": "neutral",
+				"displayName": "Strong Printed Rule",
+				"canonical": "oklch(80% 0.014 252deg)",
+				"tonalRamp": [
+					"oklch(15% 0.008 252deg)",
+					"oklch(27% 0.008 252deg)",
+					"oklch(39% 0.008 252deg)",
+					"oklch(51% 0.008 252deg)",
+					"oklch(63% 0.008 252deg)",
+					"oklch(75% 0.008 252deg)",
+					"oklch(86% 0.008 252deg)",
+					"oklch(95% 0.008 252deg)"
+				],
+				"mode": "light"
+			},
+			"ink": {
+				"role": "neutral",
+				"displayName": "Black Ink",
+				"canonical": "oklch(17.5% 0.006 260deg)",
+				"tonalRamp": [
+					"oklch(17.5% 0.006 260deg)",
+					"oklch(28% 0.01 260deg)",
+					"oklch(45% 0.015 260deg)",
+					"oklch(55% 0.015 258deg)",
+					"oklch(68% 0.013 255deg)",
+					"oklch(83% 0.01 252deg)",
+					"oklch(90.5% 0.008 250deg)",
+					"oklch(98.6% 0.003 250deg)"
+				],
+				"mode": "light"
+			},
+			"ink-soft": {
+				"role": "neutral",
+				"displayName": "Soft Ink",
+				"canonical": "oklch(45% 0.015 260deg)",
+				"tonalRamp": [
+					"oklch(17.5% 0.006 260deg)",
+					"oklch(28% 0.01 260deg)",
+					"oklch(45% 0.015 260deg)",
+					"oklch(55% 0.015 258deg)",
+					"oklch(68% 0.013 255deg)",
+					"oklch(83% 0.01 252deg)",
+					"oklch(90.5% 0.008 250deg)",
+					"oklch(98.6% 0.003 250deg)"
+				],
+				"mode": "light"
+			},
+			"ink-faint": {
+				"role": "neutral",
+				"displayName": "Faint Ink",
+				"canonical": "oklch(68% 0.013 255deg)",
+				"tonalRamp": [
+					"oklch(17.5% 0.006 260deg)",
+					"oklch(28% 0.01 260deg)",
+					"oklch(45% 0.015 260deg)",
+					"oklch(55% 0.015 258deg)",
+					"oklch(68% 0.013 255deg)",
+					"oklch(83% 0.01 252deg)",
+					"oklch(90.5% 0.008 250deg)",
+					"oklch(98.6% 0.003 250deg)"
+				],
+				"mode": "light"
+			},
+			"on-marker": {
+				"role": "neutral",
+				"displayName": "On Marker",
+				"canonical": "oklch(99% 0 0deg)",
+				"tonalRamp": [
+					"oklch(15% 0.008 252deg)",
+					"oklch(27% 0.008 252deg)",
+					"oklch(39% 0.008 252deg)",
+					"oklch(51% 0.008 252deg)",
+					"oklch(63% 0.008 252deg)",
+					"oklch(75% 0.008 252deg)",
+					"oklch(86% 0.008 252deg)",
+					"oklch(95% 0.008 252deg)"
+				],
+				"mode": "light"
+			},
+			"door-dark": {
+				"role": "neutral",
+				"displayName": "Black Stainless Door",
+				"canonical": "oklch(13% 0.004 260deg)",
+				"tonalRamp": [
+					"oklch(15% 0.005 260deg)",
+					"oklch(27% 0.005 260deg)",
+					"oklch(39% 0.005 260deg)",
+					"oklch(51% 0.005 260deg)",
+					"oklch(63% 0.005 260deg)",
+					"oklch(75% 0.005 260deg)",
+					"oklch(86% 0.005 260deg)",
+					"oklch(95% 0.005 260deg)"
+				],
+				"mode": "dark"
+			},
+			"board-dark": {
+				"role": "neutral",
+				"displayName": "Black Glass Board",
+				"canonical": "oklch(17.5% 0.006 260deg)",
+				"tonalRamp": [
+					"oklch(17.5% 0.006 260deg)",
+					"oklch(28% 0.01 260deg)",
+					"oklch(45% 0.015 260deg)",
+					"oklch(55% 0.015 258deg)",
+					"oklch(68% 0.013 255deg)",
+					"oklch(83% 0.01 252deg)",
+					"oklch(90.5% 0.008 250deg)",
+					"oklch(98.6% 0.003 250deg)"
+				],
+				"mode": "dark"
+			},
+			"card-dark": {
+				"role": "neutral",
+				"displayName": "Dark Card Stock",
+				"canonical": "oklch(23% 0.007 260deg)",
+				"tonalRamp": [
+					"oklch(15% 0.007 260deg)",
+					"oklch(27% 0.007 260deg)",
+					"oklch(39% 0.007 260deg)",
+					"oklch(51% 0.007 260deg)",
+					"oklch(63% 0.007 260deg)",
+					"oklch(75% 0.007 260deg)",
+					"oklch(86% 0.007 260deg)",
+					"oklch(95% 0.007 260deg)"
+				],
+				"mode": "dark"
+			},
+			"frame-dark": {
+				"role": "neutral",
+				"displayName": "Dark Frame",
+				"canonical": "oklch(33% 0.008 260deg)",
+				"tonalRamp": [
+					"oklch(15% 0.008 260deg)",
+					"oklch(27% 0.008 260deg)",
+					"oklch(39% 0.008 260deg)",
+					"oklch(51% 0.008 260deg)",
+					"oklch(63% 0.008 260deg)",
+					"oklch(75% 0.008 260deg)",
+					"oklch(86% 0.008 260deg)",
+					"oklch(95% 0.008 260deg)"
+				],
+				"mode": "dark"
+			},
+			"ink-dark": {
+				"role": "neutral",
+				"displayName": "Chalk White",
+				"canonical": "oklch(96% 0.004 250deg)",
+				"tonalRamp": [
+					"oklch(15% 0.005 250deg)",
+					"oklch(27% 0.005 250deg)",
+					"oklch(39% 0.005 250deg)",
+					"oklch(51% 0.005 250deg)",
+					"oklch(63% 0.005 250deg)",
+					"oklch(75% 0.005 250deg)",
+					"oklch(86% 0.005 250deg)",
+					"oklch(95% 0.005 250deg)"
+				],
+				"mode": "dark"
+			},
+			"marker-blue-dark": {
+				"role": "primary",
+				"displayName": "Chalk Blue",
+				"canonical": "oklch(78% 0.12 245deg)",
+				"tonalRamp": [
+					"oklch(15% 0.12 245deg)",
+					"oklch(27% 0.12 245deg)",
+					"oklch(39% 0.12 245deg)",
+					"oklch(51% 0.12 245deg)",
+					"oklch(63% 0.12 245deg)",
+					"oklch(75% 0.12 245deg)",
+					"oklch(86% 0.12 245deg)",
+					"oklch(95% 0.12 245deg)"
+				],
+				"mode": "dark"
+			},
+			"marker-green-dark": {
+				"role": "secondary",
+				"displayName": "Chalk Green",
+				"canonical": "oklch(82% 0.16 152deg)",
+				"tonalRamp": [
+					"oklch(15% 0.14 152deg)",
+					"oklch(27% 0.14 152deg)",
+					"oklch(39% 0.14 152deg)",
+					"oklch(51% 0.14 152deg)",
+					"oklch(63% 0.14 152deg)",
+					"oklch(75% 0.14 152deg)",
+					"oklch(86% 0.14 152deg)",
+					"oklch(95% 0.14 152deg)"
+				],
+				"mode": "dark"
+			},
+			"marker-red-dark": {
+				"role": "tertiary",
+				"displayName": "Chalk Red",
+				"canonical": "oklch(74% 0.16 18deg)",
+				"tonalRamp": [
+					"oklch(15% 0.16 18deg)",
+					"oklch(27% 0.16 18deg)",
+					"oklch(39% 0.16 18deg)",
+					"oklch(51% 0.16 18deg)",
+					"oklch(63% 0.16 18deg)",
+					"oklch(75% 0.16 18deg)",
+					"oklch(86% 0.16 18deg)",
+					"oklch(95% 0.16 18deg)"
+				],
+				"mode": "dark"
+			},
+			"on-marker-dark": {
+				"role": "neutral",
+				"displayName": "Ink On Chalk",
+				"canonical": "oklch(16% 0.01 260deg)",
+				"tonalRamp": [
+					"oklch(15% 0.01 260deg)",
+					"oklch(27% 0.01 260deg)",
+					"oklch(39% 0.01 260deg)",
+					"oklch(51% 0.01 260deg)",
+					"oklch(63% 0.01 260deg)",
+					"oklch(75% 0.01 260deg)",
+					"oklch(86% 0.01 260deg)",
+					"oklch(95% 0.01 260deg)"
+				],
+				"mode": "dark"
+			}
+		},
+		"typographyMeta": {
+			"display": {
+				"displayName": "Display",
+				"purpose": "Tonight hero on Home only."
+			},
+			"headline": {
+				"displayName": "Headline",
+				"purpose": "Page titles."
+			},
+			"title": {
+				"displayName": "Title",
+				"purpose": "Index-card titles and board section headings."
+			},
+			"dish": {
+				"displayName": "Dish",
+				"purpose": "Dinner names on week rows; opens the recipe."
+			},
+			"body": {
+				"displayName": "Body",
+				"purpose": "Intro and description copy, 52-58ch."
+			},
+			"recipe-step": {
+				"displayName": "Recipe Step",
+				"purpose": "Recipe method steps, read at arm's length."
+			},
+			"label": {
+				"displayName": "Label",
+				"purpose": "Metadata, minutes, dates, table heads; tabular numerals."
+			},
+			"marker": {
+				"displayName": "Marker",
+				"purpose": "Things written on the board: day names, Tonight, counts, short notes, recipe section heads."
+			}
+		},
+		"shadows": [
+			{
+				"name": "frame-ring",
+				"value": "0 0 0 6px var(--frame), 0 18px 32px -18px hsl(var(--shadow-ink) / 0.45)",
+				"purpose": "The board's aluminium frame and its hang on the door (640px+)."
+			},
+			{
+				"name": "frame-top-rail",
+				"value": "0 -4px 0 0 var(--frame)",
+				"purpose": "Phones: the board fills the screen; only the frame's top rail shows."
+			},
+			{
+				"name": "magnet-button",
+				"value": "0 2px 4px -1px hsl(var(--shadow-ink) / 0.35)",
+				"purpose": "Filled action buttons at rest."
+			},
+			{
+				"name": "magnet-button-pressed",
+				"value": "0 1px 1px hsl(var(--shadow-ink) / 0.3)",
+				"purpose": "Filled action buttons while pressed (with a 1px push)."
+			},
+			{
+				"name": "magnet",
+				"value": "0 2px 3px -0.5px hsl(var(--shadow-ink) / 0.45)",
+				"purpose": "Round magnets on cards and the wordmark."
+			},
+			{
+				"name": "index-card",
+				"value": "0 0 0 1px color-mix(in oklch, var(--rule) 70%, transparent), 0 1px 1px hsl(var(--shadow-ink) / 0.16), 0 10px 18px -12px hsl(var(--shadow-ink) / 0.5)",
+				"purpose": "Suggestion cards and dialogs held to the board."
+			},
+			{
+				"name": "tile",
+				"value": "0 0 0 1px var(--rule), 0 1px 1px hsl(var(--shadow-ink) / 0.2), 0 3px 5px -2px hsl(var(--shadow-ink) / 0.35)",
+				"purpose": "Pantry word tiles."
+			},
+			{
+				"name": "side-sheet",
+				"value": "-24px 0 48px -24px hsl(var(--shadow-ink) / 0.55)",
+				"purpose": "Recipe and variations sheet sliding over the door."
+			},
+			{
+				"name": "lifted",
+				"value": "0 18px 22px -12px hsl(var(--shadow-ink) / 0.5)",
+				"purpose": "First frame of the stick animation only."
+			}
+		],
+		"motion": [
+			{
+				"name": "ease-expo",
+				"value": "cubic-bezier(0.16, 1, 0.3, 1)",
+				"purpose": "Default ease: presses, placement, ring draw, sheet slide."
+			},
+			{
+				"name": "ease-settle",
+				"value": "cubic-bezier(0.22, 1, 0.36, 1)",
+				"purpose": "Tile tilt and drop when toggled."
+			},
+			{
+				"name": "press",
+				"value": "120ms",
+				"purpose": "Hover and press feedback on buttons, links and icon buttons."
+			},
+			{
+				"name": "stick",
+				"value": "420ms ease-expo; translateY(-10px) scale(1.025) -> 1px -> rest",
+				"purpose": "A dinner or suggestion card sticking onto the board; cards stagger 110ms."
+			},
+			{
+				"name": "ring-draw",
+				"value": "760ms ease-expo, 260ms delay, clip-path left to right",
+				"purpose": "Red marker ring around today's row."
+			},
+			{
+				"name": "sheet-slide",
+				"value": "380ms in / 250ms out, expo-out, 420px from the right",
+				"purpose": "Recipe and variations side sheet."
+			},
+			{
+				"name": "writing-line",
+				"value": "1.6s linear infinite",
+				"purpose": "Loading lines while suggestions stream in."
+			},
+			{
+				"name": "reduced-motion",
+				"value": "none",
+				"purpose": "All of the above become instant under prefers-reduced-motion."
+			}
+		],
+		"breakpoints": [
+			{
+				"name": "sm",
+				"value": "640px",
+				"purpose": "Gutters, type sizes, framed board."
+			},
+			{
+				"name": "md",
+				"value": "768px",
+				"purpose": "Bottom tray becomes the desktop rail."
+			}
+		]
+	},
+	"components": [
+		{
+			"name": "Primary Magnet Button",
+			"kind": "button",
+			"refersTo": "button-primary",
+			"description": "The one main action on a screen: blue marker magnet that presses in.",
+			"html": "<button class=\"ds-act\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/><path d=\"M20 2v4\"/><path d=\"M22 4h-4\"/></svg> Suggest dinners</button>",
+			"css": ".ds-act { display:inline-flex; align-items:center; gap:8px; font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; font-size:1.125rem; font-weight:700; padding:12px 24px; border:none; border-radius:8px; background:var(--marker-blue, oklch(50% 0.18 262deg)); color:oklch(99% 0 0deg); box-shadow:0 2px 4px -1px hsl(225deg 12% 30% / 0.35); cursor:pointer; transition: transform 120ms cubic-bezier(0.16,1,0.3,1), box-shadow 120ms cubic-bezier(0.16,1,0.3,1), filter 120ms; } .ds-act:hover { filter:brightness(1.07); } .ds-act:active { transform:translateY(1px); box-shadow:0 1px 1px hsl(225deg 12% 30% / 0.3); } .ds-act:focus-visible { outline: 2.5px solid var(--marker-blue, oklch(50% 0.18 262deg)); outline-offset: 2px; } .ds-act:disabled { opacity:0.55; cursor:not-allowed; }"
+		},
+		{
+			"name": "Quiet Button",
+			"kind": "button",
+			"refersTo": "button-quiet",
+			"description": "Secondary action drawn on the board in outline.",
+			"html": "<button class=\"ds-act-quiet\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/></svg> Write one in</button>",
+			"css": ".ds-act-quiet { display:inline-flex; align-items:center; gap:8px; font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; font-size:1.125rem; font-weight:600; padding:12px 20px; border:none; border-radius:8px; background:transparent; color:var(--ink, oklch(17.5% 0.006 260deg)); box-shadow: inset 0 0 0 1.5px var(--rule-strong, oklch(80% 0.014 252deg)); cursor:pointer; transition: box-shadow 120ms, background-color 120ms; } .ds-act-quiet:hover { box-shadow: inset 0 0 0 1.5px var(--ink, oklch(17.5% 0.006 260deg)); } .ds-act-quiet:focus-visible { outline: 2.5px solid var(--marker-blue, oklch(50% 0.18 262deg)); outline-offset: 2px; }"
+		},
+		{
+			"name": "Text Action",
+			"kind": "button",
+			"refersTo": "button-text",
+			"description": "Inline link-action underlined like a marker stroke.",
+			"html": "<a href=\"#\" class=\"ds-act-text\">3 nights open <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></a>",
+			"css": ".ds-act-text { display:inline-flex; align-items:center; gap:6px; font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; font-weight:600; color:var(--marker-blue, oklch(50% 0.18 262deg)); text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:0.22em; text-decoration-color: color-mix(in oklch, currentColor 35%, transparent); transition: text-decoration-color 120ms; } .ds-act-text:hover { text-decoration-color: currentColor; } .ds-act-text:focus-visible { outline: 2.5px solid var(--marker-blue, oklch(50% 0.18 262deg)); outline-offset: 2px; border-radius:4px; }"
+		},
+		{
+			"name": "Field",
+			"kind": "input",
+			"refersTo": "input",
+			"description": "Labelled text field on board laminate.",
+			"html": "<label class=\"ds-field\"><span>Ingredient</span><input class=\"ds-input\" placeholder=\"Chicken thighs\"></label>",
+			"css": ".ds-field { display:flex; flex-direction:column; gap:6px; font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; color:var(--ink, oklch(17.5% 0.006 260deg)); } .ds-field span { font-weight:600; } .ds-input { font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; font-size:1.125rem; padding:8px 12px; border:1.5px solid var(--rule-strong, oklch(80% 0.014 252deg)); border-radius:6px; background:var(--board, oklch(98.6% 0.003 250deg)); color:var(--ink, oklch(17.5% 0.006 260deg)); caret-color:var(--marker-blue, oklch(50% 0.18 262deg)); } .ds-input::placeholder { color:var(--ink-faint, oklch(68% 0.013 255deg)); } .ds-input:focus-visible { outline: 2.5px solid var(--marker-blue, oklch(50% 0.18 262deg)); outline-offset: 2px; }"
+		},
+		{
+			"name": "Marker Tray Nav",
+			"kind": "nav",
+			"refersTo": "nav-tray",
+			"description": "Desktop nav rail on the frame's top edge; current section underlined with a blue marker stroke.",
+			"html": "<nav class=\"ds-rail\"><a href=\"#\" class=\"ds-tray-link\" aria-current=\"page\">Tonight</a><a href=\"#\" class=\"ds-tray-link\">Week</a><a href=\"#\" class=\"ds-tray-link\">Suggest</a><a href=\"#\" class=\"ds-tray-link\">Pantry</a></nav>",
+			"css": ".ds-rail { display:flex; gap:4px; padding:5px 12px 2px; background:var(--frame, oklch(82% 0.008 250deg)); border-radius:8px 8px 0 0; font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; } .ds-tray-link { position:relative; display:inline-flex; align-items:center; gap:6px; padding:7px 12px 9px; font-weight:600; text-decoration:none; color: color-mix(in oklch, var(--ink, oklch(17.5% 0.006 260deg)) 75%, transparent); border-radius:6px; transition: color 120ms; } .ds-tray-link:hover, .ds-tray-link[aria-current='page'] { color:var(--ink, oklch(17.5% 0.006 260deg)); } .ds-tray-link[aria-current='page']::after { content:''; position:absolute; left:9px; right:7px; bottom:1px; height:3px; border-radius:3px; background:var(--marker-blue, oklch(50% 0.18 262deg)); rotate:-1.2deg; } .ds-tray-link:focus-visible { outline: 2.5px solid var(--marker-blue, oklch(50% 0.18 262deg)); outline-offset: 2px; }"
+		},
+		{
+			"name": "Word Tile",
+			"kind": "chip",
+			"refersTo": "tile",
+			"description": "Pantry ingredient as a magnetic-poetry tile; struck through when left out.",
+			"html": "<span class=\"ds-tile\" style=\"--tilt:-0.8deg\">Chicken thighs <small>2 lb</small></span> <span class=\"ds-tile ds-tile-off\">Leeks</span>",
+			"css": ".ds-tile { display:inline-flex; align-items:baseline; gap:8px; padding:4px 12px; font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; font-size:1.05rem; font-weight:600; background:var(--card, oklch(100% 0 0deg)); color:var(--ink, oklch(17.5% 0.006 260deg)); border-radius:2px; rotate:var(--tilt,0deg); box-shadow:0 0 0 1px var(--rule, oklch(89% 0.012 250deg)), 0 1px 1px hsl(225deg 12% 30% / 0.2), 0 3px 5px -2px hsl(225deg 12% 30% / 0.35); transition: rotate 200ms cubic-bezier(0.22,1,0.36,1), opacity 160ms; } .ds-tile small { font-size:0.875rem; font-weight:400; color:var(--ink-soft, oklch(45% 0.015 260deg)); font-variant-numeric:tabular-nums; } .ds-tile-off { rotate:0deg; opacity:0.55; translate:0 2px; background:transparent; box-shadow:0 0 0 1.5px var(--rule-strong, oklch(80% 0.014 252deg)); text-decoration:line-through; text-decoration-thickness:1.5px; }"
+		},
+		{
+			"name": "Index Card",
+			"kind": "card",
+			"refersTo": "index-card",
+			"description": "Suggestion held to the board by a magnet, red head rule, slight tilt.",
+			"html": "<article class=\"ds-card\"><span class=\"ds-magnet\"></span><header class=\"ds-card-head\"><h3>Lemon chicken traybake</h3><p>35 min &middot; Serves 2</p></header><div class=\"ds-card-body\"><p><span class=\"ds-marker\">uses</span> chicken thighs, lemon, potatoes</p><button class=\"ds-act\">Put on the week</button></div></article>",
+			"css": ".ds-card { position:relative; max-width:320px; background:var(--card, oklch(100% 0 0deg)); color:var(--ink, oklch(17.5% 0.006 260deg)); border-radius:3px; rotate:-0.6deg; font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; box-shadow:0 0 0 1px color-mix(in oklch, var(--rule, oklch(89% 0.012 250deg)) 70%, transparent), 0 1px 1px hsl(225deg 12% 30% / 0.16), 0 10px 18px -12px hsl(225deg 12% 30% / 0.5); } .ds-magnet { position:absolute; top:-0.45rem; left:50%; translate:-50% 0; width:1.05rem; height:1.05rem; border-radius:999px; background:var(--marker-red, oklch(56% 0.21 27deg)); box-shadow:0 2px 3px -0.5px hsl(225deg 12% 30% / 0.45); } .ds-card-head { padding:24px 20px 12px; border-bottom:1.5px solid var(--marker-red, oklch(56% 0.21 27deg)); } .ds-card-head h3 { margin:0; font-size:1.3rem; line-height:1.375; font-weight:700; letter-spacing:-0.025em; } .ds-card-head p { margin:8px 0 0; font-size:0.875rem; font-weight:600; color:var(--ink-soft, oklch(45% 0.015 260deg)); font-variant-numeric:tabular-nums; } .ds-card-body { padding:12px 20px 20px; display:flex; flex-direction:column; gap:12px; font-size:0.875rem; } .ds-marker { font-family: 'Shantell Sans', 'Atkinson Hyperlegible Next', system-ui, sans-serif; font-weight:600; color:var(--marker-blue, oklch(50% 0.18 262deg)); } .ds-act { font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; font-weight:700; padding:8px 16px; border:none; border-radius:8px; background:var(--marker-blue, oklch(50% 0.18 262deg)); color:oklch(99% 0 0deg); box-shadow:0 2px 4px -1px hsl(225deg 12% 30% / 0.35); cursor:pointer; } .ds-act:active { transform:translateY(1px); }"
+		},
+		{
+			"name": "Week Row",
+			"kind": "custom",
+			"refersTo": "week-row",
+			"description": "A printed day row on the week board; today ringed in red marker, empty days show a ghost write-in.",
+			"html": "<ol class=\"ds-week\"><li class=\"ds-day\"><span class=\"ds-dayname\">Wednesday<small>Sep 30</small></span><button class=\"ds-dish\">Lemon chicken traybake</button><span class=\"ds-prep\">35 min</span></li><li class=\"ds-day ds-today\"><svg class=\"ds-ring\" viewBox=\"0 0 400 100\" preserveAspectRatio=\"none\" aria-hidden=\"true\"><path d=\"M22 9 C 120 1, 300 0, 388 8 C 399 14, 399 82, 388 91 C 300 99, 110 99, 12 92 C 1 84, 0 20, 16 10 C 60 3, 120 4, 170 5\"/></svg><span class=\"ds-dayname\">Thursday<small>Oct 1</small></span><span class=\"ds-ghost\">write one in</span><span></span></li></ol>",
+			"css": ".ds-week { list-style:none; margin:0; padding:0; background:var(--board, oklch(98.6% 0.003 250deg)); font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; color:var(--ink, oklch(17.5% 0.006 260deg)); } .ds-day { position:relative; display:grid; grid-template-columns:8.5rem minmax(0,1fr) 4.5rem; align-items:center; column-gap:20px; min-height:76px; padding:12px 8px; } .ds-day + .ds-day { border-top:1px solid var(--rule, oklch(89% 0.012 250deg)); } .ds-dayname { font-family: 'Shantell Sans', 'Atkinson Hyperlegible Next', system-ui, sans-serif; font-weight:600; font-size:1.25rem; line-height:1; border-right:1px solid var(--rule, oklch(89% 0.012 250deg)); align-self:stretch; display:flex; flex-direction:column; justify-content:center; } .ds-dayname small { font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; font-size:0.75rem; color:var(--ink-soft, oklch(45% 0.015 260deg)); margin-top:4px; } .ds-today .ds-dayname { color:var(--marker-red, oklch(56% 0.21 27deg)); } .ds-dish { all:unset; cursor:pointer; font-size:1.2rem; line-height:1.3; font-weight:700; text-decoration:underline; text-decoration-thickness:1.5px; text-underline-offset:0.2em; text-decoration-color:transparent; transition:text-decoration-color 120ms; } .ds-dish:hover { text-decoration-color:var(--marker-blue, oklch(50% 0.18 262deg)); } .ds-dish:focus-visible { outline: 2.5px solid var(--marker-blue, oklch(50% 0.18 262deg)); outline-offset: 2px; } .ds-prep { text-align:right; font-size:0.875rem; color:var(--ink-soft, oklch(45% 0.015 260deg)); font-variant-numeric:tabular-nums; } .ds-ghost { font-family: 'Shantell Sans', 'Atkinson Hyperlegible Next', system-ui, sans-serif; font-weight:500; color:var(--ink-faint, oklch(68% 0.013 255deg)); } .ds-ring { position:absolute; inset:-6px -12px; width:calc(100% + 24px); height:calc(100% + 12px); overflow:visible; pointer-events:none; } .ds-ring path { fill:none; stroke:var(--marker-red, oklch(56% 0.21 27deg)); stroke-width:2.4; stroke-linecap:round; vector-effect:non-scaling-stroke; }"
+		}
+	],
+	"narrative": {
+		"northStar": "The Fridge Week Board",
+		"overview": "**Creative North Star: \"The Fridge Week Board\"**\n\nThe plan lives where both people already look every evening: a white laminate dry-erase board hung on the fridge door, inside a thin aluminium frame. The page background is the door, every screen's content sits on one board, and everything on that board is either printed (the ruled lines, labels, recipe text) or written on it in marker (day names, \"Tonight\", counts, short notes). Objects that can be taken off again, ingredients and suggestions, are magnets: word tiles and index cards held by a round magnet. In dark mode the same fridge becomes a black stainless door with a black glass board and liquid-chalk brights.\n\nDensity is calm and operational. The week is one ruled board with seven printed rows, not seven cards; sections on a screen are divided by printed hairlines, not boxed. Type is large because the recipe is read at arm's length while cooking. The finish is flat: solid laminate, a solid frame band, solid marker colours; depth comes only from the small physical shadow of things stuck onto the board.",
+		"keyCharacteristics": [
+			"One framed board per screen on a pale door; sections separated by printed rules.",
+			"Four marker inks as the only colour: black ink, blue, red, green.",
+			"Printed type in Atkinson Hyperlegible Next; written annotations in Shantell Sans.",
+			"Removable things are magnets (word tiles, index cards, magnet buttons) with a small physical shadow and a slight hang-off-true tilt.",
+			"Motion is placement: things drop on and settle; today's row is circled by a red marker stroke that draws itself.",
+			"Flat materials: no gradients, bevels, or textures."
+		],
+		"rules": [
+			{
+				"name": "The Four Inks Rule",
+				"body": "Black, blue, red, green are the only hues in the interface. Blue acts, red marks today or removal, green means added or ready. Yellow is a highlighter for selection and warnings, never a fifth ink.",
+				"section": "colors"
+			},
+			{
+				"name": "The State By Form Rule",
+				"body": "A row's state is shown by how it is written, not by a fill colour: empty is a faint ghost line, planned is written in black ink, past days fade to 50% opacity, today is ringed in red.",
+				"section": "colors"
+			},
+			{
+				"name": "The Written vs Printed Rule",
+				"body": "Shantell Sans is only for things a person would write on the board: day names, Tonight, counts, short notes and section heads. Never for body copy, recipe text, buttons, form labels, or navigation.",
+				"section": "typography"
+			},
+			{
+				"name": "The Tabular Minutes Rule",
+				"body": "Every prep-minute value, date and count uses tabular numerals, and where meals are listed the minutes sit in their own right-aligned column.",
+				"section": "typography"
+			},
+			{
+				"name": "The One Board Rule",
+				"body": "A screen is one board. Divide it with printed rules; never split the week or a page into a grid of rounded cards.",
+				"section": "layout"
+			},
+			{
+				"name": "The Stuck-On Rule",
+				"body": "Only things that are physically on the board cast a shadow, and it is short and downward. Panels, sections and the week itself are flat.",
+				"section": "elevation"
+			},
+			{
+				"name": "The Flat Materials Rule",
+				"body": "Laminate, frame and card stock are solid colours. No gradients, bevels, radial highlights or brushed textures; the only gradient in the system is the loading \"writing line\".",
+				"section": "elevation"
+			}
+		],
+		"dos": [
+			"Do put every screen's content on one `.board` and divide it with 1px rule-strong section lines and 1px rule hairlines between rows.",
+			"Do use blue for anything that acts, red for today, erase and errors, green for added, ready and AI suggestions.",
+			"Do set day names, Tonight, counts and short notes in Shantell Sans at 600; set everything else in Atkinson Hyperlegible Next.",
+			"Do right-align prep minutes in their own tabular column wherever meals are listed.",
+			"Do make removable things magnets: tiles and index cards with the small downward shadow and at most a 0.7deg tilt.",
+			"Do animate placement as a drop and settle on the expo ease (`cubic-bezier(0.16, 1, 0.3, 1)`), and make every animation instant under reduced motion.",
+			"Do keep tap targets at 40px or more and recipe text at 1.1rem or larger."
+		],
+		"donts": [
+			"Don't split the week, or any board section, into a grid of rounded stat cards.",
+			"Don't add a fifth ink, decorative gradients, bevels, radial highlights or brushed-metal textures.",
+			"Don't set body copy, recipe steps, buttons, form labels or navigation in Shantell Sans.",
+			"Don't give flat surfaces (the board, sections, the nav rail) a drop shadow; only stuck-on objects and the side sheet cast one.",
+			"Don't fade things in from nowhere; enter by dropping on or sliding in from an edge.",
+			"Don't use faint ink for the only copy of text someone must read; it is for idle icons and secondary hints."
+		]
+	}
+}

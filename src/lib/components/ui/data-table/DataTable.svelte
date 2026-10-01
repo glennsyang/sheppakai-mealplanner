@@ -81,13 +81,13 @@
 		/>
 	{/if}
 
-	<div class="border-surface-200-800 overflow-x-auto rounded-xl border">
-		<table class="table">
+	<div class="overflow-x-auto">
+		<table class="board-table w-full">
 			<thead>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 					<tr>
 						{#each headerGroup.headers as header (header.id)}
-							<th colspan={header.colSpan} class="text-left">
+							<th colspan={header.colSpan}>
 								{#if !header.isPlaceholder}
 									<FlexRender {header} />
 								{/if}
@@ -107,7 +107,7 @@
 					</tr>
 				{:else}
 					<tr>
-						<td colspan={columns.length} class="text-surface-500 py-6 text-center">
+						<td colspan={columns.length} class="marker ink-faint py-6">
 							{emptyMessage}
 						</td>
 					</tr>
@@ -117,7 +117,7 @@
 	</div>
 
 	<div class="flex flex-wrap items-center justify-between gap-3 py-2">
-		<label class="text-surface-500 flex items-center gap-2 text-sm">
+		<label class="ink-soft flex items-center gap-2 text-sm font-semibold">
 			Rows per page
 			<select
 				class="select w-20"
@@ -130,14 +130,14 @@
 			</select>
 		</label>
 
-		<div class="text-surface-500 text-sm font-medium">
+		<div class="ink-soft tabular text-sm font-semibold">
 			Page {pagination.pageIndex + 1} of {Math.max(table.getPageCount(), 1)}
 		</div>
 
 		<div class="flex items-center gap-2">
 			<button
 				type="button"
-				class="btn-icon preset-outlined-surface-300-700"
+				class="pager"
 				aria-label="First page"
 				onclick={() => table.setPageIndex(0)}
 				disabled={!table.getCanPreviousPage()}
@@ -158,7 +158,7 @@
 			</button>
 			<button
 				type="button"
-				class="btn-icon preset-outlined-surface-300-700"
+				class="pager"
 				aria-label="Previous page"
 				onclick={() => table.previousPage()}
 				disabled={!table.getCanPreviousPage()}
@@ -179,7 +179,7 @@
 			</button>
 			<button
 				type="button"
-				class="btn-icon preset-outlined-surface-300-700"
+				class="pager"
 				aria-label="Next page"
 				onclick={() => table.nextPage()}
 				disabled={!table.getCanNextPage()}
@@ -200,7 +200,7 @@
 			</button>
 			<button
 				type="button"
-				class="btn-icon preset-outlined-surface-300-700"
+				class="pager"
 				aria-label="Last page"
 				onclick={() => table.setPageIndex(table.getPageCount() - 1)}
 				disabled={!table.getCanNextPage()}
@@ -222,3 +222,42 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	/* Ruled like the week board: printed header row, hairline rules, no shell */
+	.board-table {
+		border-collapse: collapse;
+	}
+	.board-table :global(th) {
+		padding: 0.6rem 0.75rem;
+		text-align: left;
+		font-size: 0.875rem;
+		font-weight: 700;
+		color: var(--ink-soft);
+		border-bottom: 1.5px solid var(--marker-red);
+		white-space: nowrap;
+	}
+	.board-table :global(td) {
+		padding: 0.85rem 0.75rem;
+		border-bottom: 1px solid var(--rule);
+		vertical-align: middle;
+	}
+	.pager {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 999px;
+		color: var(--ink-soft);
+		box-shadow: inset 0 0 0 1.5px var(--rule);
+	}
+	.pager:not(:disabled):hover {
+		color: var(--ink);
+		box-shadow: inset 0 0 0 1.5px var(--ink);
+	}
+	.pager:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+</style>

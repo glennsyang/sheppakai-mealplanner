@@ -54,10 +54,10 @@
 
 <div class="space-y-4">
 	<div class="flex items-center justify-between gap-4">
-		<h2 class="h4 font-semibold">Users</h2>
+		<h2 class="text-xl font-bold tracking-tight">Users</h2>
 		<button
 			type="button"
-			class="btn btn-sm {open ? 'preset-tonal-surface' : 'preset-filled-primary-500'}"
+			class="btn btn-sm {open ? 'preset-tonal-surface' : 'act'}"
 			onclick={() => (open = !open)}
 			aria-expanded={open}
 			aria-controls="create-user-form"
@@ -78,7 +78,7 @@
 					<code class="bg-surface-50-950 rounded px-2 py-1 text-xs break-all"
 						>{allowlistCommand}</code
 					>
-					<button type="button" class="btn btn-sm preset-tonal-surface" onclick={copyCommand}>
+					<button type="button" class="btn btn-sm act-quiet" onclick={copyCommand}>
 						{copied ? 'Copied' : 'Copy'}
 					</button>
 				</div>
@@ -133,11 +133,11 @@
 				</select>
 			</label>
 
-			<button type="submit" class="btn preset-filled-primary-500" disabled={$submitting}>
+			<button type="submit" class="btn act" disabled={$submitting}>
 				{$submitting ? 'Creating…' : 'Create user'}
 			</button>
 
-			<p class="text-surface-500 text-xs sm:col-span-4">
+			<p class="ink-soft text-sm sm:col-span-4">
 				No password is set here — the new user chooses their own via "Forgot password", as explained
 				in the welcome email.
 			</p>

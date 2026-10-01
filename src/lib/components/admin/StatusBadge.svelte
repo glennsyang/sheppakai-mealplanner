@@ -3,7 +3,7 @@
 </script>
 
 {#if banned}
-	<span class="badge preset-filled-error-500">Banned</span>
+	<span class="marker ink-red">banned</span>
 {:else}
-	<span class="badge preset-tonal-success">Active</span>
+	<span class="marker ink-green">active</span>
 {/if}

@@ -10,6 +10,6 @@
 </svelte:head>
 
 <!-- modeStorageKey keeps existing users' preference; defaultTheme stops ModeWatcher clearing data-theme. -->
-<ModeWatcher modeStorageKey="color-scheme" defaultTheme="pine" disableHeadScriptInjection />
+<ModeWatcher modeStorageKey="color-scheme" defaultTheme="fridge" disableHeadScriptInjection />
 
 {@render children()}

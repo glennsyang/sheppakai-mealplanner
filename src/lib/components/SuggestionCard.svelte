@@ -1,7 +1,6 @@
 <script lang="ts">
+	import Icon from '$lib/components/Icon.svelte';
 	import type { MealSuggestion } from '$lib/types';
-	import { expoOut } from 'svelte/easing';
-	import { fly, scale } from 'svelte/transition';
 
 	interface Props {
 		suggestion: MealSuggestion;
@@ -12,66 +11,59 @@
 
 	let { suggestion, index, onViewRecipe, onSaveToPlanner }: Props = $props();
 
-	const delay = $derived(index * 90);
+	const KEY_INGREDIENTS = 4;
+	const keyIngredients = $derived(suggestion.ingredients.slice(0, KEY_INGREDIENTS));
+	const moreCount = $derived(Math.max(0, suggestion.ingredients.length - KEY_INGREDIENTS));
+	// Cards are stuck on one after another, and each hangs a hair off true.
+	const tilt = $derived([-0.6, 0.45, -0.25, 0.7, -0.5][index % 5]);
 </script>
 
-<div
-	in:fly={{ y: 24, delay, duration: 500, easing: expoOut }}
-	out:scale={{ duration: 200 }}
-	class="card preset-outlined-surface-300-700 card-lift flex flex-col gap-4 overflow-hidden p-6"
-	style="animation-delay: {delay}ms"
+<article
+	class="index-card animate-stick flex flex-col"
+	style="animation-delay: {index * 110}ms; rotate: {tilt}deg"
 >
-	<!-- Header: name + metadata -->
-	<div class="flex items-start justify-between gap-4">
-		<h3 class="flex-1 font-serif text-xl leading-snug font-semibold tracking-tight">
-			{suggestion.name}
-		</h3>
-		<div class="flex shrink-0 flex-col items-end gap-1 pt-0.5">
-			<span class="text-surface-400 text-xs font-medium tabular-nums"
-				>{suggestion.prepTimeMinutes} min</span
-			>
-			<span class="text-surface-400 text-xs">{suggestion.servings} servings</span>
+	<span class="magnet" class:magnet-blue={index % 3 === 1} class:magnet-green={index % 3 === 2}
+	></span>
+
+	<header class="card-head px-5 pt-6 pb-3">
+		<h3 class="text-[1.3rem] leading-snug font-bold tracking-tight">{suggestion.name}</h3>
+		<div class="ink-soft mt-2 flex gap-4 text-sm font-semibold">
+			<span class="tabular inline-flex items-center gap-1.5">
+				<Icon name="clock" size={15} />{suggestion.prepTimeMinutes} min
+			</span>
+			<span class="tabular inline-flex items-center gap-1.5">
+				<Icon name="servings" size={15} />Serves {suggestion.servings}
+			</span>
 		</div>
-	</div>
+	</header>
 
-	<!-- Content -->
-	<div class="flex flex-1 flex-col gap-4">
-		<!-- Description -->
-		<p class="text-surface-500 text-sm leading-relaxed font-light">{suggestion.description}</p>
-
-		<!-- Key ingredients -->
-		<div>
-			<p class="text-surface-400 mb-2 text-xs font-medium tracking-widest uppercase">
-				Key ingredients
+	<div class="flex flex-1 flex-col gap-3 px-5 pt-3 pb-5">
+		<p class="ink-soft line-clamp-3 leading-relaxed">{suggestion.description}</p>
+		{#if keyIngredients.length > 0}
+			<p class="text-sm leading-relaxed">
+				<span class="marker ink-blue">uses</span>
+				{keyIngredients.map((ing) => ing.name).join(', ')}{#if moreCount > 0}<span class="ink-faint"
+						>, +{moreCount} more</span
+					>{/if}
 			</p>
-			<div class="flex flex-wrap gap-1.5">
-				{#each suggestion.ingredients.slice(0, 5) as ing}
-					<span class="chip preset-tonal-surface text-xs font-light">{ing.name}</span>
-				{/each}
-				{#if suggestion.ingredients.length > 5}
-					<span class="chip preset-outlined-surface-300-700 text-xs font-light"
-						>+{suggestion.ingredients.length - 5} more</span
-					>
-				{/if}
-			</div>
+		{/if}
+
+		<div class="mt-auto flex flex-wrap gap-2 pt-2">
+			<button
+				type="button"
+				onclick={() => onSaveToPlanner(suggestion)}
+				class="btn act flex-1 text-[0.95rem]"
+			>
+				Put on the week
+			</button>
+			<button
+				type="button"
+				onclick={() => onViewRecipe(suggestion)}
+				class="btn act-quiet text-[0.95rem]"
+			>
+				<Icon name="book" size={16} />
+				Recipe
+			</button>
 		</div>
 	</div>
-
-	<!-- Actions -->
-	<div class="grid grid-cols-2 gap-2 pt-1">
-		<button
-			type="button"
-			onclick={() => onViewRecipe(suggestion)}
-			class="btn preset-outlined-surface-500 min-w-0 text-sm"
-		>
-			View recipe
-		</button>
-		<button
-			type="button"
-			onclick={() => onSaveToPlanner(suggestion)}
-			class="btn preset-filled-primary-500 min-w-0 text-sm"
-		>
-			Add to planner
-		</button>
-	</div>
-</div>
+</article>

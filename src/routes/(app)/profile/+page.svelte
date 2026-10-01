@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { changePasswordSchema, updateNameSchema } from '$lib/schemas/auth';
-	import { expoOut } from 'svelte/easing';
-	import { fly } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 
@@ -58,28 +56,21 @@
 </script>
 
 <svelte:head>
-	<title>Profile — MealPlanner</title>
+	<title>Profile — Meal Planner</title>
 </svelte:head>
 
-<div class="mx-auto max-w-2xl space-y-8 px-6 py-10">
-	<div in:fly={{ y: 20, duration: 400, easing: expoOut }}>
-		<h1 class="h2 font-bold">Profile</h1>
-		<p class="text-surface-500 mt-1">Manage your account information and security settings.</p>
+<div class="max-w-3xl px-5 pt-8 pb-12 sm:px-10 sm:pt-12">
+	<div class="mb-8">
+		<h1 class="text-[2rem] leading-tight font-bold tracking-tight sm:text-[2.5rem]">Profile</h1>
+		<p class="ink-soft mt-2 text-lg">Your name, email and password.</p>
 	</div>
 
 	<!-- Profile Information -->
-	<section
-		class="card preset-outlined-surface-300-700 space-y-4 p-4 sm:p-6"
-		in:fly={{ y: 20, delay: 80, duration: 400, easing: expoOut }}
-	>
+	<section class="profile-section space-y-5 py-8">
 		<div class="flex items-center justify-between">
-			<h2 class="h4 font-semibold">Profile information</h2>
+			<h2 class="text-xl font-bold tracking-tight">Profile information</h2>
 			{#if !isEditingName}
-				<button
-					type="button"
-					class="btn btn-sm preset-outlined-surface-500"
-					onclick={() => (isEditingName = true)}
-				>
+				<button type="button" class="btn act-quiet" onclick={() => (isEditingName = true)}>
 					Edit
 				</button>
 			{/if}
@@ -87,7 +78,7 @@
 
 		{#if $nameMessage}
 			<div
-				class="alert text-sm {$nameMessage.type === 'success'
+				class="alert {$nameMessage.type === 'success'
 					? 'preset-tonal-success'
 					: 'preset-tonal-error'}"
 			>
@@ -97,7 +88,7 @@
 
 		<form method="POST" action="?/updateName" use:nameEnhance class="space-y-4">
 			<label class="label">
-				<span class="label-text text-sm font-medium">Name</span>
+				<span class="font-semibold">Name</span>
 				<input
 					type="text"
 					name="name"
@@ -111,12 +102,12 @@
 					autocomplete="name"
 				/>
 				{#if $nameErrors.name}
-					<span class="text-error-500 mt-1 block text-xs">{$nameErrors.name}</span>
+					<span class="ink-red mt-1 block text-sm">{$nameErrors.name}</span>
 				{/if}
 			</label>
 
 			<label class="label">
-				<span class="label-text text-sm font-medium">Email</span>
+				<span class="font-semibold">Email</span>
 				<input
 					type="email"
 					value={data.user.email}
@@ -124,21 +115,17 @@
 					disabled
 					aria-readonly="true"
 				/>
-				<span class="text-surface-500 mt-1 block text-xs">Email address cannot be changed.</span>
+				<span class="ink-soft mt-1 block text-sm">Email address cannot be changed.</span>
 			</label>
 
 			{#if isEditingName}
 				<div class="flex gap-2 pt-2">
-					<button
-						type="submit"
-						disabled={$nameSubmitting}
-						class="btn btn-sm preset-filled-primary-500"
-					>
+					<button type="submit" disabled={$nameSubmitting} class="btn act">
 						{$nameSubmitting ? 'Saving…' : 'Save changes'}
 					</button>
 					<button
 						type="button"
-						class="btn btn-sm preset-outlined-surface-500"
+						class="btn act-quiet"
 						disabled={$nameSubmitting}
 						onclick={cancelNameEdit}
 					>
@@ -150,18 +137,11 @@
 	</section>
 
 	<!-- Change Password -->
-	<section
-		class="card preset-outlined-surface-300-700 space-y-4 p-4 sm:p-6"
-		in:fly={{ y: 20, delay: 140, duration: 400, easing: expoOut }}
-	>
+	<section class="profile-section space-y-5 py-8">
 		<div class="flex items-center justify-between">
-			<h2 class="h4 font-semibold">Change password</h2>
+			<h2 class="text-xl font-bold tracking-tight">Change password</h2>
 			{#if !isEditingPassword}
-				<button
-					type="button"
-					class="btn btn-sm preset-outlined-surface-500"
-					onclick={() => (isEditingPassword = true)}
-				>
+				<button type="button" class="btn act-quiet" onclick={() => (isEditingPassword = true)}>
 					Change password
 				</button>
 			{/if}
@@ -169,7 +149,7 @@
 
 		{#if $passwordMessage}
 			<div
-				class="alert text-sm {$passwordMessage.type === 'success'
+				class="alert {$passwordMessage.type === 'success'
 					? 'preset-tonal-success'
 					: 'preset-tonal-error'}"
 			>
@@ -180,7 +160,7 @@
 		{#if isEditingPassword}
 			<form method="POST" action="?/changePassword" use:passwordEnhance class="space-y-4">
 				<label class="label">
-					<span class="label-text text-sm font-medium">Current password</span>
+					<span class="font-semibold">Current password</span>
 					<input
 						type="password"
 						name="currentPassword"
@@ -191,12 +171,12 @@
 						autocomplete="current-password"
 					/>
 					{#if $passwordErrors.currentPassword}
-						<span class="text-error-500 mt-1 block text-xs">{$passwordErrors.currentPassword}</span>
+						<span class="ink-red mt-1 block text-sm">{$passwordErrors.currentPassword}</span>
 					{/if}
 				</label>
 
 				<label class="label">
-					<span class="label-text text-sm font-medium">New password</span>
+					<span class="font-semibold">New password</span>
 					<input
 						type="password"
 						name="newPassword"
@@ -208,12 +188,12 @@
 						autocomplete="new-password"
 					/>
 					{#if $passwordErrors.newPassword}
-						<span class="text-error-500 mt-1 block text-xs">{$passwordErrors.newPassword}</span>
+						<span class="ink-red mt-1 block text-sm">{$passwordErrors.newPassword}</span>
 					{/if}
 				</label>
 
 				<label class="label">
-					<span class="label-text text-sm font-medium">Confirm new password</span>
+					<span class="font-semibold">Confirm new password</span>
 					<input
 						type="password"
 						name="confirmPassword"
@@ -224,21 +204,17 @@
 						autocomplete="new-password"
 					/>
 					{#if $passwordErrors.confirmPassword}
-						<span class="text-error-500 mt-1 block text-xs">{$passwordErrors.confirmPassword}</span>
+						<span class="ink-red mt-1 block text-sm">{$passwordErrors.confirmPassword}</span>
 					{/if}
 				</label>
 
 				<div class="flex gap-2 pt-2">
-					<button
-						type="submit"
-						disabled={$passwordSubmitting}
-						class="btn btn-sm preset-filled-primary-500"
-					>
+					<button type="submit" disabled={$passwordSubmitting} class="btn act">
 						{$passwordSubmitting ? 'Changing…' : 'Change password'}
 					</button>
 					<button
 						type="button"
-						class="btn btn-sm preset-outlined-surface-500"
+						class="btn act-quiet"
 						disabled={$passwordSubmitting}
 						onclick={cancelPasswordEdit}
 					>
@@ -249,3 +225,9 @@
 		{/if}
 	</section>
 </div>
+
+<style>
+	.profile-section {
+		border-top: 1px solid var(--rule-strong);
+	}
+</style>

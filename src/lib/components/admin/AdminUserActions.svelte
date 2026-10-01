@@ -27,7 +27,7 @@
 </script>
 
 {#if isSelf}
-	<span class="text-surface-500 text-xs">Current user</span>
+	<span class="ink-faint marker text-sm">you</span>
 {:else}
 	<div class="flex flex-wrap items-center gap-2">
 		<form method="POST" action="?/setRole" use:enhance={submit}>
@@ -49,7 +49,7 @@
 		{#if allowlisted && !user.emailVerified}
 			<form method="POST" action="?/sendWelcomeEmail" use:enhance={submit}>
 				<input type="hidden" name="userId" value={user.id} />
-				<button type="submit" class="btn btn-sm preset-tonal-primary" disabled={busy}>
+				<button type="submit" class="btn btn-sm act-quiet" disabled={busy}>
 					Send welcome email
 				</button>
 			</form>
@@ -57,7 +57,7 @@
 
 		<form method="POST" action={banned ? '?/unbanUser' : '?/banUser'} use:enhance={submit}>
 			<input type="hidden" name="userId" value={user.id} />
-			<button type="submit" class="btn btn-sm preset-tonal-surface" disabled={busy}>
+			<button type="submit" class="btn btn-sm act-quiet" disabled={busy}>
 				{banned ? 'Unban' : 'Ban'}
 			</button>
 		</form>
@@ -70,12 +70,10 @@
 				class="flex items-center gap-1"
 			>
 				<input type="hidden" name="userId" value={user.id} />
-				<button type="submit" class="btn btn-sm preset-filled-error-500" disabled={busy}>
-					Confirm
-				</button>
+				<button type="submit" class="btn btn-sm act act-red" disabled={busy}> Confirm </button>
 				<button
 					type="button"
-					class="btn btn-sm preset-tonal-surface"
+					class="btn btn-sm act-quiet"
 					disabled={busy}
 					onclick={() => (confirmingRemove = false)}
 				>

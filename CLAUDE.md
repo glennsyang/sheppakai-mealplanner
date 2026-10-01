@@ -79,7 +79,7 @@ Always use **Node.js 22.23.3** for all development, testing, and tooling. Do not
 src/
 ├── hooks.server.ts              # Session middleware, security headers, CSP, error handler
 ├── app.css                      # Tailwind v4 + Skeleton CSS imports
-├── app.html                     # data-theme="cerberus" on <html>
+├── app.html                     # data-theme="fridge" on <html>
 ├── lib/
 │   ├── types.ts                 # Shared TS interfaces (camelCase)
 │   ├── auth-client.ts           # Client-side better-auth (better-auth/svelte)
@@ -169,7 +169,7 @@ The `/api/suggest` endpoint (`GET ?items=...`) calls `suggestMeals` and returns 
 
 - CSS from `@skeletonlabs/skeleton` (utilities, tokens, presets).
 - Components from `@skeletonlabs/skeleton-svelte` (Dialog, AppBar, Toast, TagsInput, etc.).
-- Theme: `pine` — set via `data-theme="pine"` on `<html>` in `app.html`.
+- Theme: custom `fridge` theme in `src/lib/styles/fridge-theme.css` (imported from `app.css`) — set via `data-theme="fridge"` on `<html>` in `app.html`. World tokens (`--board`, `--ink`, `--marker-*`) and world classes (`.board`, `.act`, `.tile`, `.index-card`, `.magnet`, `.marker`) live in `app.css`; see `DESIGN.md`.
 - **Known issue**: `@skeletonlabs/skeleton/themes/cerberus.css` fails to resolve via `enhanced-resolve` (the `*` pattern in package exports isn't supported for CSS). Fixed via a Vite alias in `vite.config.ts` pointing to the direct file path.
 
 ### CSS class conventions
@@ -184,7 +184,7 @@ The `/api/suggest` endpoint (`GET ?items=...`) calls `suggestMeals` and returns 
 
 - No `tailwind.config.js` — configured entirely in CSS via `@import` and `@theme`.
 - Plugin: `@tailwindcss/vite` (add before `sveltekit()` in `vite.config.ts`).
-- Custom animations defined in `app.css`: `animate-card-enter`, `animate-shimmer`.
+- Custom animations defined in `app.css`: `animate-stick` (placement), `.writing-line` (loading), and the `.today-ring` draw.
 
 ---
 

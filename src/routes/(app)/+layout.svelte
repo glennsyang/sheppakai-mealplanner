@@ -2,10 +2,9 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { SIGN_OUT_ROUTE } from '$lib/auth-routes';
+	import Icon, { type IconName } from '$lib/components/Icon.svelte';
 	import { mode, toggleMode } from 'mode-watcher';
 	import type { Snippet } from 'svelte';
-	import { expoOut } from 'svelte/easing';
-	import { fly } from 'svelte/transition';
 
 	import type { LayoutData } from './$types';
 
@@ -13,28 +12,14 @@
 
 	const user = $derived(data.user);
 	const isDark = $derived(mode.current === 'dark');
+	const isAdmin = $derived(user?.role === 'admin');
 
-	let mobileMenuOpen = $state(false);
-	let previousPath = $state(page.url.pathname);
-
-	$effect(() => {
-		if (page.url.pathname !== previousPath) {
-			previousPath = page.url.pathname;
-			mobileMenuOpen = false;
-		}
-	});
-
-	const navLinks = [
-		{ href: '/', label: 'Dashboard', adminOnly: false },
-		{ href: '/pantry', label: 'Pantry', adminOnly: false },
-		{ href: '/suggest', label: 'Suggest', adminOnly: false },
-		{ href: '/planner', label: 'Planner', adminOnly: false },
-		{ href: '/admin', label: 'Admin', adminOnly: true }
+	const navLinks: { href: string; label: string; icon: IconName }[] = [
+		{ href: '/', label: 'Tonight', icon: 'home' },
+		{ href: '/planner', label: 'Week', icon: 'calendar' },
+		{ href: '/suggest', label: 'Suggest', icon: 'sparkles' },
+		{ href: '/pantry', label: 'Pantry', icon: 'basket' }
 	];
-
-	const visibleLinks = $derived(
-		navLinks.filter((link) => !link.adminOnly || user?.role === 'admin')
-	);
 
 	function isActive(href: string): boolean {
 		if (href === '/') return page.url.pathname === '/';
@@ -50,174 +35,219 @@
 	const userInitial = $derived(user?.name?.[0]?.toUpperCase() ?? '?');
 </script>
 
+<form method="POST" action={SIGN_OUT_ROUTE} use:enhance bind:this={logoutForm} hidden></form>
+
 <div class="flex min-h-dvh flex-col">
-	<!-- Header -->
+	<!-- Top of the fridge door: wordmark, the marker tray (desktop), owner controls -->
 	<header
-		class="border-surface-200-800 bg-surface-50-950/95 sticky top-0 z-30 border-b backdrop-blur-sm"
+		class="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-6"
 	>
-		<div class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-4 sm:gap-6 sm:px-6">
-			<!-- Wordmark -->
-			<a href="/" class="flex shrink-0 items-center gap-0" aria-label="Meal Planner home">
-				<span class="text-surface-950-50 font-serif text-xl font-semibold tracking-tight">Meal</span
-				>
-				<span class="text-primary-600 font-serif text-xl font-semibold tracking-tight italic"
-					>&nbsp;Planner</span
-				>
-			</a>
+		<a href="/" class="group flex shrink-0 items-center gap-2" aria-label="Meal Planner, tonight">
+			<span class="magnet" aria-hidden="true"></span>
+			<span class="marker text-[1.35rem] leading-none font-bold tracking-tight">Meal Planner</span>
+		</a>
 
-			<!-- Primary nav (desktop) -->
-			<nav class="ml-4 hidden items-center gap-6 md:flex" aria-label="Main navigation">
-				{#each visibleLinks as link}
-					<a
-						href={link.href}
-						class="relative py-0.5 text-sm transition-colors duration-150"
-						class:nav-active={isActive(link.href)}
-						class:text-surface-950-50={isActive(link.href)}
-						class:text-surface-500={!isActive(link.href)}
-						class:hover:text-surface-950-50={!isActive(link.href)}
-					>
-						{link.label}
-					</a>
-				{/each}
-			</nav>
-
-			<!-- Right side -->
-			<div class="ml-auto flex items-center gap-3">
-				<!-- Dark mode toggle -->
-				<button
-					type="button"
-					onclick={toggleMode}
-					aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-					class="text-surface-500 hover:bg-surface-100-900 hover:text-surface-950-50 flex size-8 items-center justify-center rounded-full transition-colors"
-				>
-					{#if isDark}
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="1.75"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							aria-hidden="true"
-						>
-							<circle cx="12" cy="12" r="4" />
-							<path
-								d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
-							/>
-						</svg>
-					{:else}
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="1.75"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							aria-hidden="true"
-						>
-							<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-						</svg>
-					{/if}
-				</button>
-
-				<!-- User avatar -->
+		<div class="ml-auto flex items-center gap-1.5">
+			{#if isAdmin}
 				<a
-					href="/profile"
-					class="bg-primary-500 flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white select-none"
-					title={user?.name ?? ''}
-					aria-label="Profile settings for {user?.name ?? 'User'}"
+					href="/admin"
+					class="door-btn door-admin"
+					aria-label="Admin"
+					aria-current={isActive('/admin') ? 'page' : undefined}
 				>
-					{userInitial}
+					<Icon name="shield" />
 				</a>
-
-				<!-- Sign out (desktop) -->
-				<form method="POST" action={SIGN_OUT_ROUTE} use:enhance bind:this={logoutForm}></form>
-				<button
-					type="button"
-					onclick={signOut}
-					class="text-surface-500 hover:text-surface-950-50 hidden text-sm transition-colors md:inline"
-				>
-					Sign out
-				</button>
-
-				<!-- Mobile menu toggle -->
-				<button
-					type="button"
-					onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
-					aria-label="Toggle menu"
-					aria-expanded={mobileMenuOpen}
-					class="text-surface-500 hover:bg-surface-100-900 hover:text-surface-950-50 flex size-8 items-center justify-center rounded-full transition-colors md:hidden"
-				>
-					{#if mobileMenuOpen}
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="1.75"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							aria-hidden="true"
-						>
-							<path d="M18 6 6 18M6 6l12 12" />
-						</svg>
-					{:else}
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="1.75"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							aria-hidden="true"
-						>
-							<path d="M3 6h18M3 12h18M3 18h18" />
-						</svg>
-					{/if}
-				</button>
-			</div>
+			{/if}
+			<button
+				type="button"
+				onclick={toggleMode}
+				aria-label={isDark ? 'Switch to the white board' : 'Switch to the black glass board'}
+				class="door-btn"
+			>
+				<Icon name={isDark ? 'sun' : 'moon'} />
+			</button>
+			<a
+				href="/profile"
+				class="avatar"
+				class:avatar-active={isActive('/profile')}
+				title={user?.name ?? ''}
+				aria-label="Profile settings for {user?.name ?? 'User'}"
+			>
+				{userInitial}
+			</a>
+			<button
+				type="button"
+				onclick={signOut}
+				class="door-btn"
+				aria-label="Sign out"
+				title="Sign out"
+			>
+				<Icon name="logout" />
+			</button>
 		</div>
-
-		<!-- Mobile menu panel -->
-		{#if mobileMenuOpen}
-			<div class="border-surface-200-800 bg-surface-50-950 border-t md:hidden">
-				<nav class="mx-auto flex max-w-6xl flex-col px-4 py-2" aria-label="Mobile navigation">
-					{#each visibleLinks as link}
-						<a
-							href={link.href}
-							class="border-surface-200-800 border-b py-3 text-sm transition-colors duration-150 last:border-b-0"
-							class:text-surface-950-50={isActive(link.href)}
-							class:font-semibold={isActive(link.href)}
-							class:text-surface-500={!isActive(link.href)}
-						>
-							{link.label}
-						</a>
-					{/each}
-					<button
-						type="button"
-						onclick={signOut}
-						class="text-surface-500 hover:text-surface-950-50 py-3 text-left text-sm transition-colors"
-					>
-						Sign out
-					</button>
-				</nav>
-			</div>
-		{/if}
 	</header>
 
-	<!-- Main content -->
-	<main class="flex-1" in:fly={{ y: 12, duration: 400, easing: expoOut }}>
-		{@render children()}
+	<main class="mx-auto w-full max-w-6xl flex-1 sm:px-6 sm:pb-12">
+		<!-- Marker tray on the frame's top rail (desktop) -->
+		<nav class="rail hidden items-center gap-1 md:flex" aria-label="Main navigation">
+			{#each navLinks as link (link.href)}
+				<a
+					href={link.href}
+					class="tray-link"
+					aria-current={isActive(link.href) ? 'page' : undefined}
+				>
+					<Icon name={link.icon} size={17} />
+					{link.label}
+				</a>
+			{/each}
+			{#if isAdmin}
+				<a href="/admin" class="tray-link" aria-current={isActive('/admin') ? 'page' : undefined}>
+					<Icon name="shield" size={17} />
+					Admin
+				</a>
+			{/if}
+		</nav>
+		<div class="board min-h-[calc(100dvh-6rem)] pb-28 sm:min-h-0 md:pb-0">
+			{@render children()}
+		</div>
 	</main>
+
+	<!-- Marker tray: the phone's navigation, along the bottom rail of the board -->
+	<nav class="tray-bar md:hidden" aria-label="Main navigation">
+		{#each navLinks as link (link.href)}
+			<a
+				href={link.href}
+				class="tray-bar-link"
+				aria-current={isActive(link.href) ? 'page' : undefined}
+			>
+				<Icon name={link.icon} size={22} />
+				<span>{link.label}</span>
+			</a>
+		{/each}
+	</nav>
 </div>
+
+<style>
+	.rail {
+		margin: 0 -6px 6px;
+		padding: 0.3rem 0.75rem 0.1rem;
+		background: var(--frame);
+		border-radius: 8px 8px 0 0;
+	}
+	.tray-link {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.45rem 0.75rem 0.55rem;
+		font-weight: 600;
+		color: color-mix(in oklch, var(--ink) 75%, transparent);
+		border-radius: 6px;
+		transition: color 120ms;
+	}
+	.tray-link:hover {
+		color: var(--ink);
+	}
+	.tray-link[aria-current='page'] {
+		color: var(--ink);
+	}
+	/* A short marker stroke under the current section */
+	.tray-link[aria-current='page']::after {
+		content: '';
+		position: absolute;
+		left: 0.55rem;
+		right: 0.45rem;
+		bottom: 0.05rem;
+		height: 3px;
+		border-radius: 3px;
+		background: var(--marker-blue);
+		rotate: -1.2deg;
+	}
+
+	.door-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 999px;
+		color: var(--ink-soft);
+		transition:
+			color 120ms,
+			background-color 120ms;
+	}
+	.door-btn:hover,
+	.door-btn[aria-current='page'] {
+		color: var(--ink);
+		background: color-mix(in oklch, var(--ink) 7%, transparent);
+	}
+
+	/* The owner's initial on a round blue magnet */
+	.avatar {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		margin-inline: 0.25rem;
+		border-radius: 999px;
+		font-family: var(--font-marker);
+		font-weight: 700;
+		color: oklch(99% 0 0deg);
+		background: var(--color-primary-500);
+		box-shadow: 0 2px 4px -1px hsl(var(--shadow-ink) / 0.4);
+		user-select: none;
+	}
+	.avatar-active {
+		outline: 2.5px solid var(--marker-blue);
+		outline-offset: 2px;
+	}
+
+	/* Pen tray along the frame, fixed to the bottom of the screen */
+	.tray-bar {
+		position: fixed;
+		inset-inline: 0;
+		bottom: 0;
+		z-index: 30;
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		padding: 0.35rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom));
+		background: var(--frame);
+		border-top: 1px solid var(--frame-lo);
+	}
+	@media (min-width: 768px) {
+		.tray-bar,
+		.door-admin {
+			display: none;
+		}
+	}
+	.tray-bar-link {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.15rem;
+		padding: 0.45rem 0 0.35rem;
+		border-radius: 8px;
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: color-mix(in oklch, var(--ink) 72%, transparent);
+		position: relative;
+	}
+	.tray-bar-link[aria-current='page'] {
+		color: var(--ink);
+	}
+	.tray-bar-link[aria-current='page']::after {
+		content: '';
+		position: absolute;
+		left: 30%;
+		right: 30%;
+		bottom: 0.05rem;
+		height: 3px;
+		border-radius: 3px;
+		background: var(--marker-blue);
+		rotate: -1.5deg;
+	}
+	.tray-bar-link[aria-current='page'] :global(svg) {
+		color: var(--marker-blue);
+	}
+</style>
