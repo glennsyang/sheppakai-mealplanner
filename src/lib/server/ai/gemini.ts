@@ -151,5 +151,3 @@ export async function suggestMeals(pantryItems: string[]): Promise<MealSuggestio
 	logger.info('Meal suggestions received', { count: suggestions.length });
 	return suggestions;
 }
-
-export { type MealSuggestion } from '$lib/types';

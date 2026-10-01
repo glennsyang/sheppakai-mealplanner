@@ -53,6 +53,11 @@ export interface MealPlanEntry {
 	updatedAt: Date;
 }
 
+export interface MealPlanEntryWithRecipe {
+	entry: MealPlanEntry;
+	recipe: Recipe;
+}
+
 export const DAY_LABELS = [
 	'Monday',
 	'Tuesday',

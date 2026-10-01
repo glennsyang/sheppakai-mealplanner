@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { getMondayOf } from '$lib/dates';
 import { logger } from '$lib/server/logger';
-import type { MealPlan, MealPlanEntry, Recipe } from '$lib/types';
+import type { MealPlan, MealPlanEntry, MealPlanEntryWithRecipe } from '$lib/types';
 import { eq } from 'drizzle-orm';
 
 import { getDb } from '../db';
@@ -47,11 +47,6 @@ function getOrCreateMealPlan(tx: Tx, userId: string, weekStartDate: string): Mea
 	const plan = tx.select().from(mealPlans).where(eq(mealPlans.weekStartDate, weekStartDate)).get();
 	if (!plan) throw new Error(`Meal plan for ${weekStartDate} missing after upsert`);
 	return rowToMealPlan(plan);
-}
-
-export interface MealPlanEntryWithRecipe {
-	entry: MealPlanEntry;
-	recipe: Recipe;
 }
 
 export async function getMealPlanWithEntries(

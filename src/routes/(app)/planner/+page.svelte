@@ -13,9 +13,8 @@
 		mealSuggestionListSchema,
 		mealSuggestionSchema
 	} from '$lib/schemas/mealPlan';
-	import type { MealPlanEntryWithRecipe } from '$lib/server/services/mealPlan';
 	import { DAY_LABELS } from '$lib/types';
-	import type { MealSuggestion } from '$lib/types';
+	import type { MealPlanEntryWithRecipe, MealSuggestion } from '$lib/types';
 	import type { ActionResult } from '@sveltejs/kit';
 	import { fly } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms';

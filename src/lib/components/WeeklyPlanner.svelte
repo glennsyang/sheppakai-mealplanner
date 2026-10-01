@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { actionFailureText } from '$lib/action-result';
-	import type { MealPlanEntryWithRecipe } from '$lib/server/services/mealPlan';
 	import { DAY_LABELS } from '$lib/types';
+	import type { MealPlanEntryWithRecipe } from '$lib/types';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { fly } from 'svelte/transition';
 
