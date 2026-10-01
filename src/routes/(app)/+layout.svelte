@@ -3,10 +3,13 @@
 	import { page } from '$app/state';
 	import { SIGN_OUT_ROUTE } from '$lib/auth-routes';
 	import { mode, toggleMode } from 'mode-watcher';
+	import type { Snippet } from 'svelte';
 	import { expoOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 
-	let { children, data } = $props();
+	import type { LayoutData } from './$types';
+
+	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
 	const user = $derived(data.user);
 	const isDark = $derived(mode.current === 'dark');
@@ -38,9 +41,10 @@
 		return page.url.pathname.startsWith(href);
 	}
 
+	let logoutForm = $state<HTMLFormElement>();
+
 	function signOut() {
-		const form = document.getElementById('logout-form') as HTMLFormElement;
-		form?.requestSubmit();
+		logoutForm?.requestSubmit();
 	}
 
 	const userInitial = $derived(user?.name?.[0]?.toUpperCase() ?? '?');
@@ -133,7 +137,7 @@
 				</a>
 
 				<!-- Sign out (desktop) -->
-				<form method="POST" action={SIGN_OUT_ROUTE} use:enhance id="logout-form"></form>
+				<form method="POST" action={SIGN_OUT_ROUTE} use:enhance bind:this={logoutForm}></form>
 				<button
 					type="button"
 					onclick={signOut}
