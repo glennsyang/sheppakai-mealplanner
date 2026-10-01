@@ -1,20 +1,9 @@
-import { suggestFromPantrySchema } from '$lib/schemas/pantry';
 import { listPantryItems } from '$lib/server/services/pantry';
-import { fail } from '@sveltejs/kit';
-import { superValidate } from 'sveltekit-superforms';
-import { zod4 } from 'sveltekit-superforms/adapters';
 
-import type { PageServerLoad, Actions } from './$types';
+import type { PageServerLoad } from './$types';
 
+// No form actions: the page calls POST /api/suggest directly.
 export const load: PageServerLoad = async () => {
 	const pantryItems = await listPantryItems();
 	return { pantryItems };
-};
-
-export const actions: Actions = {
-	default: async ({ request }) => {
-		const form = await superValidate(request, zod4(suggestFromPantrySchema));
-		if (!form.valid) return fail(400, { form });
-		return { form };
-	}
 };
