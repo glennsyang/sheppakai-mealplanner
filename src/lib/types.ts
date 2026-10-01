@@ -1,3 +1,6 @@
+import type { mealSuggestionSchema } from '$lib/schemas/mealPlan';
+import type { z } from 'zod';
+
 export interface PantryItem {
 	id: string;
 	userId: string;
@@ -14,14 +17,8 @@ export interface Ingredient {
 	unit: string;
 }
 
-export interface MealSuggestion {
-	name: string;
-	description: string;
-	ingredients: Ingredient[];
-	steps: string[];
-	prepTimeMinutes: number;
-	servings: number;
-}
+// Derived from the runtime schema so the type and the validation can't drift (#171).
+export type MealSuggestion = z.output<typeof mealSuggestionSchema>;
 
 export type RecipeSource = 'ai' | 'custom';
 

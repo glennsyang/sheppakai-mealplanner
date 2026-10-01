@@ -1,4 +1,5 @@
 import { GEMINI_API_KEY } from '$app/env/private';
+import { pickValidSuggestions } from '$lib/schemas/mealPlan';
 import { logger } from '$lib/server/logger';
 import type { MealSuggestion } from '$lib/types';
 import { GoogleGenAI, Type } from '@google/genai';
@@ -80,10 +81,6 @@ const responseSchema = {
 	}
 };
 
-interface SuggestMealsOutput {
-	suggestions: MealSuggestion[];
-}
-
 async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
 	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 		try {
@@ -132,19 +129,27 @@ export async function suggestMeals(pantryItems: string[]): Promise<MealSuggestio
 		throw new Error('No meal suggestions returned from AI');
 	}
 
-	const parsed = JSON.parse(text) as SuggestMealsOutput;
+	let parsed: { suggestions?: unknown } | null;
+	try {
+		parsed = JSON.parse(text) as { suggestions?: unknown } | null;
+	} catch (err) {
+		logger.error('Gemini returned non-JSON response', err);
+		throw new Error('Invalid response structure from AI');
+	}
 
-	if (!Array.isArray(parsed.suggestions)) {
-		logger.error('Gemini response missing suggestions array', undefined, {
+	const { suggestions, rejected } = pickValidSuggestions(parsed?.suggestions);
+	if (rejected > 0) {
+		logger.warn('Dropped malformed AI suggestions', { rejected, kept: suggestions.length });
+	}
+	if (suggestions.length === 0) {
+		logger.error('Gemini returned no valid suggestions', undefined, {
 			keys: Object.keys(parsed ?? {})
 		});
 		throw new Error('Invalid response structure from AI');
 	}
 
-	logger.info('Meal suggestions received', {
-		count: parsed.suggestions.length
-	});
-	return parsed.suggestions;
+	logger.info('Meal suggestions received', { count: suggestions.length });
+	return suggestions;
 }
 
 export { type MealSuggestion } from '$lib/types';

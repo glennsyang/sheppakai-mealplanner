@@ -1,4 +1,5 @@
 import { ANTHROPIC_API_KEY } from '$app/env/private';
+import { pickValidSuggestions } from '$lib/schemas/mealPlan';
 import { logger } from '$lib/server/logger';
 import type { MealSuggestion } from '$lib/types';
 import Anthropic from '@anthropic-ai/sdk';
@@ -75,10 +76,6 @@ const variationsTool: Anthropic.Tool = {
 	}
 };
 
-interface SuggestVariationsInput {
-	variations: MealSuggestion[];
-}
-
 export async function suggestVariations(mealName: string): Promise<MealSuggestion[]> {
 	const sanitizedMealName = sanitizePromptText(mealName, MAX_MEAL_NAME_LENGTH);
 
@@ -104,17 +101,20 @@ export async function suggestVariations(mealName: string): Promise<MealSuggestio
 		throw new Error('No variations returned from AI');
 	}
 
-	const input = toolUse.input as SuggestVariationsInput;
-
-	if (!Array.isArray(input.variations)) {
-		logger.error('Claude tool_use input missing variations array', undefined, {
+	const input = toolUse.input as { variations?: unknown } | null;
+	const { suggestions, rejected } = pickValidSuggestions(input?.variations);
+	if (rejected > 0) {
+		logger.warn('Dropped malformed AI variations', { rejected, kept: suggestions.length });
+	}
+	if (suggestions.length === 0) {
+		logger.error('Claude returned no valid variations', undefined, {
 			keys: Object.keys(input ?? {})
 		});
 		throw new Error('Invalid response structure from AI');
 	}
 
-	logger.info('Meal variations received', { count: input.variations.length });
-	return input.variations;
+	logger.info('Meal variations received', { count: suggestions.length });
+	return suggestions;
 }
 
 export { type MealSuggestion } from '$lib/types';

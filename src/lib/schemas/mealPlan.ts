@@ -72,6 +72,42 @@ export const addCustomMealSchema = z.object({
 	dayOfWeek: z.coerce.number().int().min(0).max(6)
 });
 
+// Shape of one AI meal suggestion. Model output and client-side JSON (API responses,
+// sessionStorage) are untrusted, so they're parsed against this rather than cast. Bounds
+// match what saveAndAdd accepts, so a suggestion that passes here can always be saved.
+// Models occasionally return fractional minutes/servings; round rather than discard.
+const wholePositive = z
+	.number()
+	.positive()
+	.transform((n) => Math.max(1, Math.round(n)));
+
+export const mealSuggestionSchema = z.object({
+	name: z.string().trim().min(1).max(200),
+	description: z.string().trim().min(1).max(2000),
+	ingredients: ingredientListSchema,
+	steps: instructionListSchema,
+	prepTimeMinutes: wholePositive,
+	servings: wholePositive
+});
+
+export const mealSuggestionListSchema = z.array(mealSuggestionSchema);
+
+/**
+ * Keep the valid suggestions from untrusted model output, so one malformed item doesn't
+ * sink the whole response. Callers decide what an empty result means.
+ */
+export function pickValidSuggestions(raw: unknown): {
+	suggestions: z.output<typeof mealSuggestionSchema>[];
+	rejected: number;
+} {
+	const items: unknown[] = Array.isArray(raw) ? raw : [];
+	const suggestions = items.flatMap((item) => {
+		const result = mealSuggestionSchema.safeParse(item);
+		return result.success ? [result.data] : [];
+	});
+	return { suggestions, rejected: items.length - suggestions.length };
+}
+
 export const suggestVariationsSchema = z.object({
 	meal: z.string().trim().min(1, 'Meal name is required').max(200, 'Meal name too long')
 });

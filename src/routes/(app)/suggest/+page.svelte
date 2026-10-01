@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import RecipeDrawer from '$lib/components/RecipeDrawer.svelte';
 	import SuggestionCard from '$lib/components/SuggestionCard.svelte';
+	import { mealSuggestionListSchema } from '$lib/schemas/mealPlan';
 	import type { MealSuggestion } from '$lib/types';
 	import { autoAnimate } from '@formkit/auto-animate';
 	import { fly } from 'svelte/transition';
@@ -45,8 +46,9 @@
 				throw new Error(body.message ?? 'Failed to get suggestions');
 			}
 
-			const data = (await res.json()) as MealSuggestion[];
-			suggestions = data;
+			const parsed = mealSuggestionListSchema.safeParse(await res.json());
+			if (!parsed.success) throw new Error('Got an unexpected response. Please try again.');
+			suggestions = parsed.data;
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Something went wrong';
 		} finally {
