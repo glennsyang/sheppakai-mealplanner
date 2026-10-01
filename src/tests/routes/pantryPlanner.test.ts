@@ -98,3 +98,96 @@ describe('pantry/planner actions: authenticated', () => {
 		);
 	});
 });
+
+describe('pantry/planner actions: consistent { form } results (#166)', () => {
+	const recipeFields = {
+		weekStartDate: '2026-09-28',
+		dayOfWeek: '2',
+		name: 'Curry',
+		description: 'Spicy',
+		ingredientsJson: JSON.stringify([{ name: 'rice', quantity: '1', unit: 'cup' }]),
+		instructionsJson: JSON.stringify(['Cook']),
+		prepTimeMinutes: '30',
+		servings: '2'
+	};
+
+	it('saveAndAdd validates recipe + day as one form and saves', async () => {
+		const result = await plannerActions.saveAndAdd(ctx({ user: USER } as Locals, recipeFields));
+
+		expect(result).toMatchObject({ form: { valid: true } });
+		expect(recipesMock.saveRecipe).toHaveBeenCalledWith(
+			'user_1',
+			expect.objectContaining({ name: 'Curry', ingredientsJson: [expect.any(Object)] })
+		);
+		expect(mealPlanMock.addMealPlanEntry).toHaveBeenCalledWith(
+			'user_1',
+			'2026-09-28',
+			2,
+			'recipe_1'
+		);
+	});
+
+	it('saveAndAdd returns fail(400, { form }) for an invalid day', async () => {
+		const result = await plannerActions.saveAndAdd(
+			ctx({ user: USER } as Locals, { ...recipeFields, dayOfWeek: '9' })
+		);
+
+		expect(result).toMatchObject({ status: 400, data: { form: { valid: false } } });
+		expect(recipesMock.saveRecipe).not.toHaveBeenCalled();
+	});
+
+	it.each([
+		[
+			'planner saveAndAdd',
+			() => recipesMock.saveRecipe.mockRejectedValueOnce(new Error('db down')),
+			() => plannerActions.saveAndAdd(ctx({ user: USER } as Locals, recipeFields))
+		],
+		[
+			'planner remove',
+			() => mealPlanMock.removeMealPlanEntry.mockRejectedValueOnce(new Error('db down')),
+			() => plannerActions.remove(ctx({ user: USER } as Locals, { entryId: 'entry_1' }))
+		],
+		[
+			'planner addCustom',
+			() => recipesMock.saveRecipe.mockRejectedValueOnce(new Error('db down')),
+			() =>
+				plannerActions.addCustom(
+					ctx({ user: USER } as Locals, {
+						name: 'Tacos',
+						weekStartDate: '2026-09-28',
+						dayOfWeek: '1'
+					})
+				)
+		],
+		[
+			'pantry add',
+			() => pantryMock.addPantryItem.mockRejectedValueOnce(new Error('db down')),
+			() => pantryActions.add(ctx({ user: USER } as Locals, { name: 'Rice' }))
+		],
+		[
+			'pantry remove',
+			() => pantryMock.removePantryItem.mockRejectedValueOnce(new Error('db down')),
+			() => pantryActions.remove(ctx({ user: USER } as Locals, { id: 'item_1' }))
+		]
+	])('%s returns fail(500, { form }) with an error message', async (_name, arrange, act) => {
+		arrange();
+		const result = await act();
+
+		expect(result).toMatchObject({
+			status: 500,
+			data: { form: { message: { type: 'error', text: expect.any(String) } } }
+		});
+		expect(loggerMock.error).toHaveBeenCalled();
+	});
+
+	it('re-throws SvelteKit redirects instead of swallowing them', async () => {
+		const { redirect } = await import('@sveltejs/kit');
+		mealPlanMock.removeMealPlanEntry.mockImplementationOnce(() => {
+			throw redirect(303, '/sign-in');
+		});
+
+		await expect(
+			plannerActions.remove(ctx({ user: USER } as Locals, { entryId: 'entry_1' }))
+		).rejects.toMatchObject({ status: 303, location: '/sign-in' });
+	});
+});

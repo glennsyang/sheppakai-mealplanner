@@ -65,6 +65,10 @@ export const saveRecipeSchema = z.object({
 	servings: z.coerce.number().int().positive()
 });
 
+// saveAndAdd posts one FormData carrying both the recipe and the target day, so it's
+// validated as a single form rather than twice against two schemas.
+export const saveAndAddSchema = saveRecipeSchema.extend(addMealPlanEntrySchema.shape);
+
 export const addCustomMealSchema = z.object({
 	name: z.string().min(1, 'Meal name is required').max(200),
 	notes: z.string().max(2000).optional().default(''),

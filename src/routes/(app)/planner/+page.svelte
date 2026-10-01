@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
+	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import RecipeDrawer from '$lib/components/RecipeDrawer.svelte';
 	import VariationsPanel from '$lib/components/VariationsPanel.svelte';
 	import WeeklyPlanner from '$lib/components/WeeklyPlanner.svelte';
@@ -8,6 +9,7 @@
 	import type { MealPlanEntryWithRecipe } from '$lib/server/services/mealPlan';
 	import { DAY_LABELS } from '$lib/types';
 	import type { MealSuggestion } from '$lib/types';
+	import type { ActionResult } from '@sveltejs/kit';
 	import { fly } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
@@ -33,6 +35,18 @@
 	let variationsLoading = $state(false);
 	let drawerSuggestion = $state<MealSuggestion | null>(null);
 
+	// Single page-level banner for failed planner actions (#166).
+	let actionError = $state<string | null>(null);
+
+	/** The server's `message(form, …)` text from a failed action, or a fallback. */
+	function failureText(result: ActionResult, fallback: string): string {
+		if (result.type === 'failure') {
+			const form = result.data?.form as { message?: App.Superforms.Message } | undefined;
+			if (form?.message?.text) return form.message.text;
+		}
+		return fallback;
+	}
+
 	$effect(() => {
 		entries = data.entries;
 	});
@@ -54,6 +68,7 @@
 	const {
 		form: customForm,
 		errors: customErrors,
+		message: customMessage,
 		enhance: customEnhance,
 		submitting: customSubmitting
 	} = superForm(data.addCustomForm, {
@@ -76,7 +91,10 @@
 		});
 
 		if (res.ok) {
+			actionError = null;
 			entries = entries.filter((e) => e.entry.id !== entryId);
+		} else {
+			actionError = 'Could not remove that meal. Please try again.';
 		}
 	}
 
@@ -102,7 +120,7 @@
 			if (!res.ok) throw new Error('Failed to get variations');
 			variationsList = (await res.json()) as MealSuggestion[];
 		} catch {
-			variationsLoading = false;
+			actionError = `Could not load variations for ${mealName}. Please try again.`;
 		} finally {
 			variationsLoading = false;
 		}
@@ -120,12 +138,15 @@
 		fd.set('servings', String(suggestion.servings));
 
 		const res = await fetch('?/saveAndAdd', { method: 'POST', body: fd });
-		if (res.ok) {
-			variationsList = null;
-			variationsDay = null;
-			drawerSuggestion = null;
-			await invalidateAll();
+		if (!res.ok) {
+			actionError = 'Could not add that meal to the planner. Please try again.';
+			return;
 		}
+		actionError = null;
+		variationsList = null;
+		variationsDay = null;
+		drawerSuggestion = null;
+		await invalidateAll();
 	}
 
 	function getWeekLabel(weekStartDate: string): string {
@@ -186,9 +207,15 @@
 					return async ({ result, update }) => {
 						isSubmitting = false;
 						if (result.type === 'success') {
+							actionError = null;
 							showDayPicker = false;
 							pendingSuggestion = null;
 							await update();
+						} else {
+							actionError = failureText(
+								result,
+								'Could not add that meal to the planner. Please try again.'
+							);
 						}
 					};
 				}}
@@ -275,6 +302,8 @@
 				<input type="hidden" name="weekStartDate" value={data.weekStartDate} />
 				<input type="hidden" name="dayOfWeek" value={customModalDay} />
 
+				<AuthFormMessage message={$customMessage} />
+
 				<label class="label space-y-1">
 					<span class="text-sm font-medium">Meal name <span class="text-error-500">*</span></span>
 					<input
@@ -357,6 +386,23 @@
 			<a href={navigateWeek(1)} class="btn preset-ghost-surface text-sm">Next →</a>
 		</div>
 	</div>
+
+	{#if actionError}
+		<div
+			class="alert preset-tonal-error flex items-center justify-between gap-4 text-sm"
+			role="alert"
+		>
+			<span>{actionError}</span>
+			<button
+				type="button"
+				class="btn preset-ghost-surface px-2 py-1 text-xs"
+				onclick={() => (actionError = null)}
+				aria-label="Dismiss error"
+			>
+				Dismiss
+			</button>
+		</div>
+	{/if}
 
 	<div in:fly={{ y: 20, delay: 100, duration: 300 }}>
 		<WeeklyPlanner
