@@ -171,3 +171,52 @@ describe('addMealPlanEntry (#164)', () => {
 		expect(sqlite.prepare(`SELECT COUNT(*) FROM meal_plan_entries`).pluck().get()).toBe(1);
 	});
 });
+
+describe('getMealPlanWithEntries (#170)', () => {
+	let sqlite: Database.Database;
+	let queries: string[];
+
+	beforeEach(() => {
+		sqlite = new Database(':memory:');
+		applyMigrations(sqlite, TAGS);
+		queries = [];
+		currentDb = drizzle(sqlite, {
+			schema,
+			logger: { logQuery: (query) => queries.push(query) }
+		});
+		seedUser(sqlite, 'u1');
+		seedRecipe(sqlite, 'r1', 'u1');
+		seedRecipe(sqlite, 'r2', 'u1');
+		sqlite
+			.prepare(`UPDATE recipes SET ingredients_json = ?, instructions_json = ? WHERE id = 'r2'`)
+			.run(
+				JSON.stringify([{ name: 'rice', quantity: '1', unit: 'cup' }]),
+				JSON.stringify(['Cook'])
+			);
+	});
+
+	it('returns the week’s entries with mapped recipes, ordered by day, in one query', async () => {
+		await addMealPlanEntry('u1', '2026-09-28', 4, 'r1');
+		await addMealPlanEntry('u1', '2026-09-28', 1, 'r2');
+		await addMealPlanEntry('u1', '2026-10-05', 0, 'r1'); // other week
+		queries = [];
+
+		const result = await getMealPlanWithEntries('2026-09-28');
+
+		expect(queries).toHaveLength(1);
+		expect(result.map((r) => [r.entry.dayOfWeek, r.recipe.id])).toEqual([
+			[1, 'r2'],
+			[4, 'r1']
+		]);
+		expect(result[0].recipe).toMatchObject({
+			ingredientsJson: [{ name: 'rice', quantity: '1', unit: 'cup' }],
+			instructionsJson: ['Cook'],
+			source: 'ai',
+			userId: 'u1'
+		});
+	});
+
+	it('returns [] for a week with no plan', async () => {
+		expect(await getMealPlanWithEntries('2030-01-07')).toEqual([]);
+	});
+});
