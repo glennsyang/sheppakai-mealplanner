@@ -5,6 +5,7 @@ import { auth } from '$lib/server/auth';
 import { sendPasswordChangedEmail } from '$lib/server/email';
 import { logger } from '$lib/server/logger';
 import { createUserRateLimiter, rateLimitedMessage } from '$lib/server/rate-limiter';
+import type { RequestEvent } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
@@ -14,15 +15,17 @@ import type { Actions, PageServerLoad } from './$types';
 // check is the thing worth rate limiting against brute-forcing.
 const changePasswordLimiter = createUserRateLimiter([5, 'm']);
 
-/** Same header priority as `advanced.ipAddress.ipAddressHeaders` in `$lib/server/auth`. */
-function getClientIp(request: Request): string | undefined {
-	return (
-		request.headers.get('fly-client-ip') ||
-		request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-		request.headers.get('x-real-ip') ||
-		request.headers.get('x-client-ip') ||
-		undefined
-	);
+/**
+ * Real client IP for the security-audit log. In prod adapter-node reads it from the
+ * unspoofable `fly-client-ip` header (`ADDRESS_HEADER` in the Dockerfile); it throws
+ * when that header is missing, and the audit log just records no IP.
+ */
+function getClientIp(event: RequestEvent): string | undefined {
+	try {
+		return event.getClientAddress();
+	} catch {
+		return undefined;
+	}
 }
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -74,7 +77,7 @@ export const actions: Actions = {
 		return handleAuthFormAction(
 			form,
 			async () => {
-				const ipAddress = getClientIp(request);
+				const ipAddress = getClientIp(event);
 				const userAgent = request.headers.get('user-agent') || undefined;
 
 				await auth.api.changePassword({

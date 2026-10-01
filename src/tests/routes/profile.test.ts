@@ -39,8 +39,15 @@ function req(fields: Record<string, string>) {
 }
 
 type Locals = Partial<App.Locals>;
-const ctx = (locals: Locals, fields: Record<string, string>) =>
-	({ request: req(fields), locals }) as never;
+const ctx = (locals: Locals, fields: Record<string, string>, clientAddress = '203.0.113.7') =>
+	({
+		request: req(fields),
+		locals,
+		getClientAddress: () => {
+			if (!clientAddress) throw new Error('Address header was specified but missing');
+			return clientAddress;
+		}
+	}) as never;
 
 // `load` is auto-wrapped by @sentry/sveltekit, which reads `event.request` / `event.route`.
 const loadCtx = (locals: Locals) =>
@@ -173,7 +180,41 @@ describe('changePassword action', () => {
 			})
 		);
 		expect(emailMock.sendPasswordChangedEmail).toHaveBeenCalledWith(
-			expect.objectContaining({ to: USER.email, source: 'Profile settings' })
+			expect.objectContaining({
+				to: USER.email,
+				source: 'Profile settings',
+				ipAddress: '203.0.113.7'
+			})
+		);
+		expect(result).toMatchObject({
+			form: { message: { type: 'success', text: 'Password changed successfully.' } }
+		});
+	});
+
+	it('records the IP from getClientAddress, not client-forgeable headers', async () => {
+		apiMock.changePassword.mockResolvedValueOnce({});
+		const event = ctx({ user: USER as App.Locals['user'] }, validFields) as {
+			request: Request;
+		};
+		event.request.headers.set('x-forwarded-for', '6.6.6.6');
+
+		await actions.changePassword(event as never);
+
+		expect(loggerMock.info).toHaveBeenCalledWith(
+			expect.any(String),
+			expect.objectContaining({ ipAddress: '203.0.113.7' })
+		);
+	});
+
+	it('still changes the password when the client address is unavailable', async () => {
+		apiMock.changePassword.mockResolvedValueOnce({});
+
+		const result = await actions.changePassword(
+			ctx({ user: USER as App.Locals['user'] }, validFields, '')
+		);
+
+		expect(emailMock.sendPasswordChangedEmail).toHaveBeenCalledWith(
+			expect.objectContaining({ ipAddress: undefined })
 		);
 		expect(result).toMatchObject({
 			form: { message: { type: 'success', text: 'Password changed successfully.' } }
