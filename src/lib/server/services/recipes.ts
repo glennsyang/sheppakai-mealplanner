@@ -11,7 +11,7 @@ import { recipes } from '../db/schema';
 
 // Rows saved before input validation may hold any JSON, so a malformed one degrades to an empty
 // list instead of throwing and breaking every page that lists recipes.
-export function parseStoredRecipeJson(row: typeof recipes.$inferSelect): {
+function parseStoredRecipeJson(row: typeof recipes.$inferSelect): {
 	ingredientsJson: Ingredient[];
 	instructionsJson: string[];
 } {
@@ -40,7 +40,8 @@ function parseStoredList<S extends z.ZodType<unknown[]>>(
 	return result.data;
 }
 
-function rowToRecipe(row: typeof recipes.$inferSelect): Recipe {
+/** The single DB-row → Recipe mapping; reuse it rather than re-spelling the fields. */
+export function rowToRecipe(row: typeof recipes.$inferSelect): Recipe {
 	return {
 		id: row.id,
 		userId: row.userId,
