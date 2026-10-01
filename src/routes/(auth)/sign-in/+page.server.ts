@@ -5,7 +5,7 @@ import { auth } from '$lib/server/auth';
 import { createAuthLoadForm, redirectIfAuthenticated } from '$lib/server/auth/form-helpers';
 import { createAuthRateLimiter, rateLimitedMessage } from '$lib/server/rate-limiter';
 import { redirect } from '@sveltejs/kit';
-import { APIError } from 'better-auth';
+import { APIError } from 'better-auth/api';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
