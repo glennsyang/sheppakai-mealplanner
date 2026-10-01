@@ -141,6 +141,8 @@ export const actions: Actions = {
 			return fail(400, { error: 'You cannot remove your own account' });
 		}
 
+		// Shared household rows (pantry, recipes, plans) keep existing: their creator
+		// `user_id` FK is ON DELETE SET NULL, so only auth data goes with the user (#164).
 		try {
 			await auth.api.removeUser({ body: { userId: parsed.data.userId }, headers: request.headers });
 			logger.info('Admin removed user', { actorId: actingUser.id, userId: parsed.data.userId });
