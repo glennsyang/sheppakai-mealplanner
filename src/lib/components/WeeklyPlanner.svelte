@@ -1,12 +1,18 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
+	import { actionFailureText } from '$lib/action-result';
 	import type { MealPlanEntryWithRecipe } from '$lib/server/services/mealPlan';
 	import { DAY_LABELS } from '$lib/types';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import { fly } from 'svelte/transition';
 
 	interface Props {
 		weekStartDate: string;
 		entries: MealPlanEntryWithRecipe[];
-		onRemoveEntry: (entryId: string) => Promise<void>;
+		/** Called after the `?/remove` action succeeds. */
+		onEntryRemoved: (entryId: string) => void;
+		/** Called with the server's message (or a fallback) when `?/remove` fails. */
+		onRemoveFailed: (text: string) => void;
 		onAddCustom: (dayOfWeek: number) => void;
 		onRequestVariations: (dayOfWeek: number, mealName: string) => void;
 		loadingVariationsDay: number | null;
@@ -15,7 +21,8 @@
 	let {
 		weekStartDate,
 		entries,
-		onRemoveEntry,
+		onEntryRemoved,
+		onRemoveFailed,
 		onAddCustom,
 		onRequestVariations,
 		loadingVariationsDay
@@ -34,14 +41,23 @@
 		return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 	}
 
-	async function handleRemove(entryId: string) {
-		if (removingIds.has(entryId)) return;
-		removingIds.add(entryId);
-		try {
-			await onRemoveEntry(entryId);
-		} finally {
-			removingIds.delete(entryId);
-		}
+	// Remove goes through a real form + use:enhance so SvelteKit sends it as an
+	// action request and hands back a typed ActionResult (#167).
+	function removeEnhance(entryId: string): SubmitFunction {
+		return ({ cancel }) => {
+			if (removingIds.has(entryId)) return cancel();
+			removingIds.add(entryId);
+			return async ({ result }) => {
+				removingIds.delete(entryId);
+				if (result.type === 'success') {
+					onEntryRemoved(entryId);
+				} else {
+					onRemoveFailed(
+						actionFailureText(result, 'Could not remove that meal. Please try again.')
+					);
+				}
+			};
+		};
 	}
 </script>
 
@@ -69,15 +85,17 @@
 						{:else}
 							<span></span>
 						{/if}
-						<button
-							type="button"
-							onclick={() => handleRemove(entry.entry.id)}
-							disabled={removingIds.has(entry.entry.id)}
-							class="text-error-500 hover:text-error-700 text-xs transition-colors"
-							aria-label="Remove {entry.recipe.name} from {day}"
-						>
-							Remove
-						</button>
+						<form method="POST" action="?/remove" use:enhance={removeEnhance(entry.entry.id)}>
+							<input type="hidden" name="entryId" value={entry.entry.id} />
+							<button
+								type="submit"
+								disabled={removingIds.has(entry.entry.id)}
+								class="text-error-500 hover:text-error-700 text-xs transition-colors"
+								aria-label="Remove {entry.recipe.name} from {day}"
+							>
+								Remove
+							</button>
+						</form>
 					</div>
 					{#if entry.recipe.source === 'custom'}
 						<button

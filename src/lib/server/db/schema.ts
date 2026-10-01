@@ -83,12 +83,15 @@ export const rateLimit = sqliteTable('rate_limit', {
 });
 
 // ─── App tables ──────────────────────────────────────────────────────────────
+//
+// These rows are shared household data (see CLAUDE.md, "Product Data-Sharing Model").
+// `user_id` only records who created the row, so it's nullable with ON DELETE SET NULL:
+// removing a member must never cascade-delete pantry items, recipes or plans the other
+// member still relies on.
 
 export const pantryItems = sqliteTable('pantry_items', {
 	id: text('id').primaryKey(),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
+	userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
 	name: text('name').notNull(),
 	quantity: real('quantity'),
 	unit: text('unit'),
@@ -98,9 +101,7 @@ export const pantryItems = sqliteTable('pantry_items', {
 
 export const recipes = sqliteTable('recipes', {
 	id: text('id').primaryKey(),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
+	userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
 	name: text('name').notNull(),
 	description: text('description').notNull(),
 	ingredientsJson: text('ingredients_json').notNull(),
@@ -112,34 +113,40 @@ export const recipes = sqliteTable('recipes', {
 	updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
 });
 
-export const mealPlans = sqliteTable('meal_plans', {
-	id: text('id').primaryKey(),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
-	weekStartDate: text('week_start_date').notNull(),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-	updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
-});
+// One shared plan per week, one entry per day — enforced by unique indexes so
+// concurrent writes can't create duplicates (see services/mealPlan.ts).
+export const mealPlans = sqliteTable(
+	'meal_plans',
+	{
+		id: text('id').primaryKey(),
+		userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+		weekStartDate: text('week_start_date').notNull(),
+		createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+		updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
+	},
+	(table) => [uniqueIndex('meal_plans_week_start_date_idx').on(table.weekStartDate)]
+);
 
-export const mealPlanEntries = sqliteTable('meal_plan_entries', {
-	id: text('id').primaryKey(),
-	mealPlanId: text('meal_plan_id')
-		.notNull()
-		.references(() => mealPlans.id, { onDelete: 'cascade' }),
-	dayOfWeek: integer('day_of_week').notNull(),
-	recipeId: text('recipe_id')
-		.notNull()
-		.references(() => recipes.id, { onDelete: 'cascade' }),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-	updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
-});
+export const mealPlanEntries = sqliteTable(
+	'meal_plan_entries',
+	{
+		id: text('id').primaryKey(),
+		mealPlanId: text('meal_plan_id')
+			.notNull()
+			.references(() => mealPlans.id, { onDelete: 'cascade' }),
+		dayOfWeek: integer('day_of_week').notNull(),
+		recipeId: text('recipe_id')
+			.notNull()
+			.references(() => recipes.id, { onDelete: 'cascade' }),
+		createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+		updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
+	},
+	(table) => [uniqueIndex('meal_plan_entries_plan_day_idx').on(table.mealPlanId, table.dayOfWeek)]
+);
 
 export const suggestions = sqliteTable('suggestions', {
 	id: text('id').primaryKey(),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
+	userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
 	pantrySnapshotJson: text('pantry_snapshot_json').notNull(),
 	resultsJson: text('results_json').notNull(),
 	createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),

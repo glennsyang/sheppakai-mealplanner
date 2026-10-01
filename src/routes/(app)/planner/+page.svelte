@@ -1,13 +1,18 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { deserialize, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
+	import { actionFailureText } from '$lib/action-result';
+	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
+	import Modal from '$lib/components/Modal.svelte';
 	import RecipeDrawer from '$lib/components/RecipeDrawer.svelte';
 	import VariationsPanel from '$lib/components/VariationsPanel.svelte';
 	import WeeklyPlanner from '$lib/components/WeeklyPlanner.svelte';
+	import { addWeeks } from '$lib/dates';
 	import { addCustomMealSchema } from '$lib/schemas/mealPlan';
 	import type { MealPlanEntryWithRecipe } from '$lib/server/services/mealPlan';
 	import { DAY_LABELS } from '$lib/types';
 	import type { MealSuggestion } from '$lib/types';
+	import type { ActionResult } from '@sveltejs/kit';
 	import { fly } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
@@ -33,6 +38,9 @@
 	let variationsLoading = $state(false);
 	let drawerSuggestion = $state<MealSuggestion | null>(null);
 
+	// Single page-level banner for failed planner actions (#166).
+	let actionError = $state<string | null>(null);
+
 	$effect(() => {
 		entries = data.entries;
 	});
@@ -54,6 +62,7 @@
 	const {
 		form: customForm,
 		errors: customErrors,
+		message: customMessage,
 		enhance: customEnhance,
 		submitting: customSubmitting
 	} = superForm(data.addCustomForm, {
@@ -66,18 +75,14 @@
 		}
 	});
 
-	async function handleRemoveEntry(entryId: string): Promise<void> {
-		const formData = new FormData();
-		formData.set('entryId', entryId);
+	function handleEntryRemoved(entryId: string): void {
+		actionError = null;
+		entries = entries.filter((e) => e.entry.id !== entryId);
+	}
 
-		const res = await fetch('?/remove', {
-			method: 'POST',
-			body: formData
-		});
-
-		if (res.ok) {
-			entries = entries.filter((e) => e.entry.id !== entryId);
-		}
+	function closeDayPicker(): void {
+		showDayPicker = false;
+		pendingSuggestion = null;
 	}
 
 	function handleAddCustom(dayOfWeek: number): void {
@@ -102,13 +107,17 @@
 			if (!res.ok) throw new Error('Failed to get variations');
 			variationsList = (await res.json()) as MealSuggestion[];
 		} catch {
-			variationsLoading = false;
+			actionError = `Could not load variations for ${mealName}. Please try again.`;
 		} finally {
 			variationsLoading = false;
 		}
 	}
 
 	async function handleVariationAddToPlanner(suggestion: MealSuggestion): Promise<void> {
+		if (variationsDay === null) {
+			actionError = 'Pick a day first: open variations from a meal in the planner.';
+			return;
+		}
 		const fd = new FormData();
 		fd.set('weekStartDate', data.weekStartDate);
 		fd.set('dayOfWeek', String(variationsDay));
@@ -119,13 +128,32 @@
 		fd.set('prepTimeMinutes', String(suggestion.prepTimeMinutes));
 		fd.set('servings', String(suggestion.servings));
 
-		const res = await fetch('?/saveAndAdd', { method: 'POST', body: fd });
-		if (res.ok) {
-			variationsList = null;
-			variationsDay = null;
-			drawerSuggestion = null;
-			await invalidateAll();
+		// Triggered from the variations panel / recipe drawer rather than a form, so call
+		// the action programmatically — with the `x-sveltekit-action` header SvelteKit
+		// answers with a serialized ActionResult instead of re-rendering the page (#167).
+		let result: ActionResult;
+		try {
+			const res = await fetch('?/saveAndAdd', {
+				method: 'POST',
+				headers: { 'x-sveltekit-action': 'true' },
+				body: fd
+			});
+			result = deserialize(await res.text());
+		} catch {
+			result = { type: 'error', error: undefined };
 		}
+		if (result.type !== 'success') {
+			actionError = actionFailureText(
+				result,
+				'Could not add that meal to the planner. Please try again.'
+			);
+			return;
+		}
+		actionError = null;
+		variationsList = null;
+		variationsDay = null;
+		drawerSuggestion = null;
+		await invalidateAll();
 	}
 
 	function getWeekLabel(weekStartDate: string): string {
@@ -137,9 +165,7 @@
 	}
 
 	function navigateWeek(offset: number): string {
-		const current = new Date(data.weekStartDate + 'T00:00:00');
-		current.setDate(current.getDate() + offset * 7);
-		return '?week=' + current.toISOString().split('T')[0];
+		return '?week=' + addWeeks(data.weekStartDate, offset);
 	}
 </script>
 
@@ -148,180 +174,131 @@
 </svelte:head>
 
 <!-- Day picker modal for pending suggestion -->
-{#if showDayPicker && pendingSuggestion}
-	<div
-		role="dialog"
-		aria-modal="true"
-		aria-label="Add to planner"
-		tabindex="-1"
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-		onclick={(e) => {
-			if (e.target === e.currentTarget) {
-				showDayPicker = false;
-				pendingSuggestion = null;
-			}
-		}}
-		onkeydown={(e) => {
-			if (e.key === 'Escape') {
-				showDayPicker = false;
-				pendingSuggestion = null;
-			}
-		}}
-		in:fly={{ duration: 200 }}
-	>
-		<div
-			class="card preset-filled-surface-50-950 w-full max-w-sm space-y-5 p-6 shadow-2xl"
-			in:fly={{ y: 20, duration: 250 }}
+<Modal
+	open={showDayPicker && pendingSuggestion !== null}
+	onClose={closeDayPicker}
+	ariaLabel="Add to planner"
+>
+	{#if pendingSuggestion}
+		<h2 class="h4 font-bold">Add to planner</h2>
+		<p class="text-surface-500 text-sm">
+			Adding <strong>{pendingSuggestion.name}</strong> — choose a day:
+		</p>
+
+		<form
+			method="POST"
+			action="?/saveAndAdd"
+			use:enhance={() => {
+				isSubmitting = true;
+				return async ({ result, update }) => {
+					isSubmitting = false;
+					if (result.type === 'success') {
+						actionError = null;
+						showDayPicker = false;
+						pendingSuggestion = null;
+						await update();
+					} else {
+						actionError = actionFailureText(
+							result,
+							'Could not add that meal to the planner. Please try again.'
+						);
+					}
+				};
+			}}
+			class="space-y-4"
 		>
-			<h2 class="h4 font-bold">Add to planner</h2>
-			<p class="text-surface-500 text-sm">
-				Adding <strong>{pendingSuggestion.name}</strong> — choose a day:
-			</p>
+			<input type="hidden" name="weekStartDate" value={data.weekStartDate} />
+			<input type="hidden" name="name" value={pendingSuggestion.name} />
+			<input type="hidden" name="description" value={pendingSuggestion.description} />
+			<input
+				type="hidden"
+				name="ingredientsJson"
+				value={JSON.stringify(pendingSuggestion.ingredients)}
+			/>
+			<input
+				type="hidden"
+				name="instructionsJson"
+				value={JSON.stringify(pendingSuggestion.steps)}
+			/>
+			<input type="hidden" name="prepTimeMinutes" value={pendingSuggestion.prepTimeMinutes} />
+			<input type="hidden" name="servings" value={pendingSuggestion.servings} />
 
-			<form
-				method="POST"
-				action="?/saveAndAdd"
-				use:enhance={() => {
-					isSubmitting = true;
-					return async ({ result, update }) => {
-						isSubmitting = false;
-						if (result.type === 'success') {
-							showDayPicker = false;
-							pendingSuggestion = null;
-							await update();
-						}
-					};
-				}}
-				class="space-y-4"
-			>
-				<input type="hidden" name="weekStartDate" value={data.weekStartDate} />
-				<input type="hidden" name="name" value={pendingSuggestion.name} />
-				<input type="hidden" name="description" value={pendingSuggestion.description} />
-				<input
-					type="hidden"
-					name="ingredientsJson"
-					value={JSON.stringify(pendingSuggestion.ingredients)}
-				/>
-				<input
-					type="hidden"
-					name="instructionsJson"
-					value={JSON.stringify(pendingSuggestion.steps)}
-				/>
-				<input type="hidden" name="prepTimeMinutes" value={pendingSuggestion.prepTimeMinutes} />
-				<input type="hidden" name="servings" value={pendingSuggestion.servings} />
+			<div class="grid grid-cols-2 gap-2">
+				{#each DAY_LABELS as day, i}
+					<label class="flex cursor-pointer items-center gap-2">
+						<input type="radio" name="dayOfWeek" value={i} bind:group={selectedDay} class="radio" />
+						<span class="text-sm">{day}</span>
+					</label>
+				{/each}
+			</div>
 
-				<div class="grid grid-cols-2 gap-2">
-					{#each DAY_LABELS as day, i}
-						<label class="flex cursor-pointer items-center gap-2">
-							<input
-								type="radio"
-								name="dayOfWeek"
-								value={i}
-								bind:group={selectedDay}
-								class="radio"
-							/>
-							<span class="text-sm">{day}</span>
-						</label>
-					{/each}
-				</div>
-
-				<div class="flex gap-2">
-					<button
-						type="submit"
-						disabled={isSubmitting}
-						class="btn preset-filled-primary-500 flex-1"
-					>
-						{isSubmitting ? 'Saving…' : 'Add to planner'}
-					</button>
-					<button
-						type="button"
-						onclick={() => {
-							showDayPicker = false;
-							pendingSuggestion = null;
-						}}
-						class="btn preset-ghost-surface"
-					>
-						Cancel
-					</button>
-				</div>
-			</form>
-		</div>
-	</div>
-{/if}
+			<div class="flex gap-2">
+				<button type="submit" disabled={isSubmitting} class="btn preset-filled-primary-500 flex-1">
+					{isSubmitting ? 'Saving…' : 'Add to planner'}
+				</button>
+				<button type="button" onclick={closeDayPicker} class="btn preset-ghost-surface">
+					Cancel
+				</button>
+			</div>
+		</form>
+	{/if}
+</Modal>
 
 <!-- Custom meal modal -->
-{#if showCustomModal}
-	<div
-		role="dialog"
-		aria-modal="true"
-		aria-label="Add custom meal"
-		tabindex="-1"
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-		onclick={(e) => {
-			if (e.target === e.currentTarget) showCustomModal = false;
-		}}
-		onkeydown={(e) => {
-			if (e.key === 'Escape') showCustomModal = false;
-		}}
-		in:fly={{ duration: 200 }}
-	>
-		<div
-			class="card preset-filled-surface-50-950 w-full max-w-sm space-y-5 p-6 shadow-2xl"
-			in:fly={{ y: 20, duration: 250 }}
-		>
-			<h2 class="h4 font-bold">Add meal for {DAY_LABELS[customModalDay]}</h2>
+<Modal open={showCustomModal} onClose={() => (showCustomModal = false)} ariaLabel="Add custom meal">
+	<h2 class="h4 font-bold">Add meal for {DAY_LABELS[customModalDay]}</h2>
 
-			<form method="POST" action="?/addCustom" use:customEnhance class="space-y-4">
-				<input type="hidden" name="weekStartDate" value={data.weekStartDate} />
-				<input type="hidden" name="dayOfWeek" value={customModalDay} />
+	<form method="POST" action="?/addCustom" use:customEnhance class="space-y-4">
+		<input type="hidden" name="weekStartDate" value={data.weekStartDate} />
+		<input type="hidden" name="dayOfWeek" value={customModalDay} />
 
-				<label class="label space-y-1">
-					<span class="text-sm font-medium">Meal name <span class="text-error-500">*</span></span>
-					<input
-						type="text"
-						name="name"
-						bind:value={$customForm.name}
-						class="input"
-						placeholder="e.g. Spaghetti Bolognese"
-						required
-					/>
-					{#if $customErrors.name}
-						<span class="text-error-500 text-xs">{$customErrors.name}</span>
-					{/if}
-				</label>
+		<AuthFormMessage message={$customMessage} />
 
-				<label class="label space-y-1">
-					<span class="text-sm font-medium"
-						>Notes <span class="text-surface-400 font-normal">(optional)</span></span
-					>
-					<textarea
-						name="notes"
-						bind:value={$customForm.notes}
-						class="textarea"
-						rows="3"
-						placeholder="Any notes or description…"></textarea>
-				</label>
+		<label class="label space-y-1">
+			<span class="text-sm font-medium">Meal name <span class="text-error-500">*</span></span>
+			<input
+				type="text"
+				name="name"
+				bind:value={$customForm.name}
+				class="input"
+				placeholder="e.g. Spaghetti Bolognese"
+				required
+			/>
+			{#if $customErrors.name}
+				<span class="text-error-500 text-xs">{$customErrors.name}</span>
+			{/if}
+		</label>
 
-				<div class="flex gap-2">
-					<button
-						type="submit"
-						disabled={$customSubmitting}
-						class="btn preset-filled-primary-500 flex-1"
-					>
-						{$customSubmitting ? 'Saving…' : 'Add meal'}
-					</button>
-					<button
-						type="button"
-						onclick={() => (showCustomModal = false)}
-						class="btn preset-ghost-surface"
-					>
-						Cancel
-					</button>
-				</div>
-			</form>
+		<label class="label space-y-1">
+			<span class="text-sm font-medium"
+				>Notes <span class="text-surface-400 font-normal">(optional)</span></span
+			>
+			<textarea
+				name="notes"
+				bind:value={$customForm.notes}
+				class="textarea"
+				rows="3"
+				placeholder="Any notes or description…"></textarea>
+		</label>
+
+		<div class="flex gap-2">
+			<button
+				type="submit"
+				disabled={$customSubmitting}
+				class="btn preset-filled-primary-500 flex-1"
+			>
+				{$customSubmitting ? 'Saving…' : 'Add meal'}
+			</button>
+			<button
+				type="button"
+				onclick={() => (showCustomModal = false)}
+				class="btn preset-ghost-surface"
+			>
+				Cancel
+			</button>
 		</div>
-	</div>
-{/if}
+	</form>
+</Modal>
 
 <!-- Variations panel -->
 <VariationsPanel
@@ -358,11 +335,29 @@
 		</div>
 	</div>
 
+	{#if actionError}
+		<div
+			class="alert preset-tonal-error flex items-center justify-between gap-4 text-sm"
+			role="alert"
+		>
+			<span>{actionError}</span>
+			<button
+				type="button"
+				class="btn preset-ghost-surface px-2 py-1 text-xs"
+				onclick={() => (actionError = null)}
+				aria-label="Dismiss error"
+			>
+				Dismiss
+			</button>
+		</div>
+	{/if}
+
 	<div in:fly={{ y: 20, delay: 100, duration: 300 }}>
 		<WeeklyPlanner
 			weekStartDate={data.weekStartDate}
 			{entries}
-			onRemoveEntry={handleRemoveEntry}
+			onEntryRemoved={handleEntryRemoved}
+			onRemoveFailed={(text) => (actionError = text)}
 			onAddCustom={handleAddCustom}
 			onRequestVariations={handleRequestVariations}
 			loadingVariationsDay={variationsLoading ? variationsDay : null}

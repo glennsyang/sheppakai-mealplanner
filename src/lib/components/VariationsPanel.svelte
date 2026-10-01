@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { MealSuggestion } from '$lib/types';
-	import { expoOut, linear } from 'svelte/easing';
-	import { fly } from 'svelte/transition';
 
+	import Modal from './Modal.svelte';
 	import SuggestionCard from './SuggestionCard.svelte';
 
 	interface Props {
@@ -14,38 +13,10 @@
 	}
 
 	let { variations, mealName, onClose, onViewRecipe, onAddToPlanner }: Props = $props();
-
-	const isOpen = $derived(variations !== null);
-
-	function handleBackdropClick(e: MouseEvent) {
-		if (e.target === e.currentTarget) onClose();
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') onClose();
-	}
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
-
-{#if isOpen && variations}
-	<!-- Backdrop -->
-	<div
-		role="button"
-		tabindex="-1"
-		class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-		onclick={handleBackdropClick}
-		onkeydown={() => {}}
-		in:fly={{ duration: 250, easing: linear }}
-		out:fly={{ duration: 200, easing: linear }}
-	></div>
-
-	<!-- Panel -->
-	<div
-		class="bg-surface-50-950 fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col shadow-2xl"
-		in:fly={{ x: 420, duration: 380, easing: expoOut }}
-		out:fly={{ x: 420, duration: 250, easing: expoOut }}
-	>
+<Modal open={variations !== null} {onClose} ariaLabel="Variations for {mealName}" variant="drawer">
+	{#if variations}
 		<!-- Header -->
 		<div class="border-surface-200-800 flex items-center justify-between gap-4 border-b px-6 py-5">
 			<div class="space-y-0.5">
@@ -84,5 +55,5 @@
 				/>
 			{/each}
 		</div>
-	</div>
-{/if}
+	{/if}
+</Modal>
