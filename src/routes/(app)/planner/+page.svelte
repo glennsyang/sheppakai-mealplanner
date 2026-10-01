@@ -25,7 +25,9 @@
 
 	let { data }: { data: PageData } = $props();
 
-	let entries = $state<MealPlanEntryWithRecipe[]>([]);
+	// Writable derived: tracks data.entries, but handleEntryRemoved can optimistically
+	// drop a row until the next load replaces it.
+	let entries = $derived<MealPlanEntryWithRecipe[]>(data.entries);
 	let pendingSuggestion = $state<MealSuggestion | null>(null);
 	let selectedDay = $state<number>(0);
 	let showDayPicker = $state(false);
@@ -44,10 +46,6 @@
 
 	// Single page-level banner for failed planner actions (#166).
 	let actionError = $state<string | null>(null);
-
-	$effect(() => {
-		entries = data.entries;
-	});
 
 	$effect(() => {
 		const stored = sessionStorage.getItem('pendingSuggestion');
