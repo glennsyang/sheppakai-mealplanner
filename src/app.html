@@ -6,6 +6,9 @@
 		<!-- Pre-paint dark-mode class, mirroring mode-watcher's setInitialMode. <ModeWatcher>'s own
 		     head script can't carry the CSP nonce, so it's disabled and this nonced copy runs instead. -->
 		<script nonce="%sveltekit.nonce%">
+			// The app has one theme, so any saved theme name is stale (e.g. "pine" from before the
+			// fridge redesign). Left in place, <ModeWatcher> would restore it over defaultTheme.
+			localStorage.removeItem('mode-watcher-theme');
 			const mode = localStorage.getItem('color-scheme') ?? 'system';
 			const dark =
 				mode === 'dark' ||
