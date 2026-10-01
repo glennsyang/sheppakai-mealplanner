@@ -43,6 +43,13 @@
 			"when": 1790814958718,
 			"tag": "0005_shared_rows_set_null_unique_plans",
 			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "6",
+			"when": 1790890092082,
+			"tag": "0006_drop_unused_suggestions",
+			"breakpoints": true
 		}
 	]
 }

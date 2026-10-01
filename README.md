@@ -148,7 +148,6 @@ src/
 | `recipes`           | Saved recipes (AI-generated or custom)    |
 | `meal_plans`        | Weekly meal plans (one per user per week) |
 | `meal_plan_entries` | Recipe-to-day assignments within a plan   |
-| `suggestions`       | Historical pantry snapshots + AI results  |
 
 All app tables use UUID text primary keys and `created_at` / `updated_at` audit columns.
 

@@ -143,12 +143,3 @@ export const mealPlanEntries = sqliteTable(
 	},
 	(table) => [uniqueIndex('meal_plan_entries_plan_day_idx').on(table.mealPlanId, table.dayOfWeek)]
 );
-
-export const suggestions = sqliteTable('suggestions', {
-	id: text('id').primaryKey(),
-	userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
-	pantrySnapshotJson: text('pantry_snapshot_json').notNull(),
-	resultsJson: text('results_json').notNull(),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-	updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
-});
