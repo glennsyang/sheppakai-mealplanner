@@ -5,13 +5,15 @@ import { z } from 'zod';
 // src/lib/server/auth/index.ts.
 const passwordSchema = z.string().min(12, 'Password must be at least 12 characters');
 
+export const emailField = z.email('Please enter a valid email address');
+
 export const loginSchema = z.object({
-	email: z.string().email('Please enter a valid email address'),
+	email: emailField,
 	password: z.string().min(1, 'Password is required')
 });
 
 export const resendVerificationSchema = z.object({
-	email: z.string().email('Please enter a valid email address')
+	email: emailField
 });
 
 // Also enforced server-side for direct /api/auth/* writes (src/lib/server/auth/name-guard.ts).
@@ -27,7 +29,7 @@ export const updateNameSchema = z.object({
 export const changePasswordSchema = z
 	.object({
 		currentPassword: z.string().min(1, 'Current password is required'),
-		newPassword: z.string().min(12, 'New password must be at least 12 characters'),
+		newPassword: passwordSchema,
 		confirmPassword: z.string().min(1, 'Please confirm your password')
 	})
 	.refine((data) => data.newPassword === data.confirmPassword, {
@@ -36,7 +38,7 @@ export const changePasswordSchema = z
 	});
 
 export const forgotPasswordSchema = z.object({
-	email: z.string().email('Please enter a valid email address')
+	email: emailField
 });
 
 export const resetPasswordSchema = z

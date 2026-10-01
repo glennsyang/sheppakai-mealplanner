@@ -7,9 +7,12 @@ export const weekStartDateSchema = z
 	.regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format')
 	.refine((value) => parseIsoDate(value)?.getDay() === 1, 'Week must start on a Monday');
 
+/** Day index within a meal plan week (0–6). */
+const dayOfWeekSchema = z.coerce.number().int().min(0).max(6);
+
 export const addMealPlanEntrySchema = z.object({
 	weekStartDate: weekStartDateSchema,
-	dayOfWeek: z.coerce.number().int().min(0).max(6)
+	dayOfWeek: dayOfWeekSchema
 });
 
 export const removeMealPlanEntrySchema = z.object({
@@ -79,8 +82,7 @@ export const saveAndAddSchema = saveRecipeSchema.extend(addMealPlanEntrySchema.s
 export const addCustomMealSchema = z.object({
 	name: z.string().min(1, 'Meal name is required').max(200),
 	notes: z.string().max(2000).optional().default(''),
-	weekStartDate: weekStartDateSchema,
-	dayOfWeek: z.coerce.number().int().min(0).max(6)
+	...addMealPlanEntrySchema.shape
 });
 
 // Shape of one AI meal suggestion. Model output and client-side JSON (API responses,
