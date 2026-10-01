@@ -7,7 +7,8 @@ import {
 	instructionsJsonSchema,
 	saveRecipeSchema,
 	storedIngredientListSchema,
-	suggestVariationsSchema
+	suggestVariationsSchema,
+	updateRecipeSchema
 } from '../../lib/schemas/mealPlan';
 
 describe('suggestVariationsSchema', () => {
@@ -116,5 +117,58 @@ describe('storedIngredientListSchema', () => {
 
 	it('rejects a non-array', () => {
 		expect(storedIngredientListSchema.safeParse({}).success).toBe(false);
+	});
+});
+
+describe('updateRecipeSchema', () => {
+	const valid = {
+		recipeId: 'recipe-1',
+		name: 'Tacos',
+		description: '',
+		ingredientsJson: '[]',
+		instructionsJson: '[]',
+		prepTimeMinutes: '0',
+		servings: '1'
+	};
+
+	it('accepts a written-in meal with no notes, prep time or recipe', () => {
+		expect(updateRecipeSchema.safeParse(valid).success).toBe(true);
+	});
+
+	it('accepts a full recipe', () => {
+		const result = updateRecipeSchema.safeParse({
+			...valid,
+			description: 'Friday tacos',
+			ingredientsJson: JSON.stringify([{ name: 'Tortillas', quantity: '8', unit: '' }]),
+			instructionsJson: JSON.stringify(['Warm the tortillas']),
+			prepTimeMinutes: '25',
+			servings: '4'
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it('rejects a missing recipe id', () => {
+		expect(updateRecipeSchema.safeParse({ ...valid, recipeId: '' }).success).toBe(false);
+	});
+
+	it('rejects a blank name', () => {
+		expect(updateRecipeSchema.safeParse({ ...valid, name: '   ' }).success).toBe(false);
+	});
+
+	it('rejects zero servings', () => {
+		expect(updateRecipeSchema.safeParse({ ...valid, servings: '0' }).success).toBe(false);
+	});
+
+	it('rejects malformed ingredients JSON', () => {
+		expect(updateRecipeSchema.safeParse({ ...valid, ingredientsJson: '[{' }).success).toBe(false);
+	});
+
+	it('rejects more than 50 ingredients', () => {
+		const many = Array.from({ length: 51 }, () => ({ name: 'x', quantity: '1', unit: '' }));
+		const result = updateRecipeSchema.safeParse({
+			...valid,
+			ingredientsJson: JSON.stringify(many)
+		});
+		expect(result.success).toBe(false);
 	});
 });

@@ -88,3 +88,35 @@ export async function saveRecipe(
 	const [row] = db.select().from(recipes).where(eq(recipes.id, id)).all();
 	return rowToRecipe(row);
 }
+
+/** Overwrite a saved recipe's content. Keeps its source, so a written-in meal stays custom. */
+export async function updateRecipe(
+	id: string,
+	data: {
+		name: string;
+		description: string;
+		ingredientsJson: Ingredient[];
+		instructionsJson: string[];
+		prepTimeMinutes: number;
+		servings: number;
+	}
+): Promise<Recipe> {
+	logger.debug('updateRecipe', { id });
+	const db = getDb();
+	const [row] = db
+		.update(recipes)
+		.set({
+			name: data.name,
+			description: data.description,
+			ingredientsJson: JSON.stringify(data.ingredientsJson),
+			instructionsJson: JSON.stringify(data.instructionsJson),
+			prepTimeMinutes: data.prepTimeMinutes,
+			servings: data.servings,
+			updatedAt: new Date()
+		})
+		.where(eq(recipes.id, id))
+		.returning()
+		.all();
+	if (!row) throw new Error(`Recipe not found: ${id}`);
+	return rowToRecipe(row);
+}

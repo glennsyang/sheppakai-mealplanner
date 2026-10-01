@@ -79,6 +79,22 @@ export const saveRecipeSchema = z.object({
 // validated as a single form rather than twice against two schemas.
 export const saveAndAddSchema = saveRecipeSchema.extend(addMealPlanEntrySchema.shape);
 
+// Editing a planned meal's recipe. Looser than saveRecipeSchema because written-in
+// meals start with no notes, no prep time and no ingredients or steps.
+export const updateRecipeSchema = z.object({
+	recipeId: z.string().min(1, 'Recipe ID is required'),
+	name: z.string().trim().min(1, 'Name is required').max(200),
+	description: z.string().max(2000).optional().default(''),
+	ingredientsJson: z
+		.string()
+		.refine((raw) => ingredientsJsonSchema.safeParse(raw).success, 'Invalid ingredients'),
+	instructionsJson: z
+		.string()
+		.refine((raw) => instructionsJsonSchema.safeParse(raw).success, 'Invalid instructions'),
+	prepTimeMinutes: z.coerce.number().int().min(0).max(1440),
+	servings: z.coerce.number().int().min(1).max(100)
+});
+
 export const addCustomMealSchema = z.object({
 	name: z.string().min(1, 'Meal name is required').max(200),
 	notes: z.string().max(2000).optional().default(''),

@@ -5,6 +5,7 @@ import {
 	addCustomMealSchema,
 	ingredientsJsonSchema,
 	instructionsJsonSchema,
+	updateRecipeSchema,
 	weekStartDateSchema
 } from '$lib/schemas/mealPlan';
 import { requireAuth } from '$lib/server/actions/auth-guard';
@@ -15,7 +16,7 @@ import {
 	removeMealPlanEntry,
 	getMondayOfCurrentWeek
 } from '$lib/server/services/mealPlan';
-import { saveRecipe } from '$lib/server/services/recipes';
+import { saveRecipe, updateRecipe } from '$lib/server/services/recipes';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -106,6 +107,29 @@ export const actions: Actions = {
 			{
 				loggerContext: 'Failed to add custom meal',
 				fallbackMessage: 'Could not add your meal. Please try again.',
+				logFields: { userId: user.id }
+			}
+		);
+	}),
+
+	updateRecipe: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(updateRecipeSchema));
+		if (!form.valid) return fail(400, { form });
+
+		return handleDomainAction(
+			form,
+			() =>
+				updateRecipe(form.data.recipeId, {
+					name: form.data.name,
+					description: form.data.description,
+					ingredientsJson: ingredientsJsonSchema.parse(form.data.ingredientsJson),
+					instructionsJson: instructionsJsonSchema.parse(form.data.instructionsJson),
+					prepTimeMinutes: form.data.prepTimeMinutes,
+					servings: form.data.servings
+				}),
+			{
+				loggerContext: 'Failed to update recipe',
+				fallbackMessage: 'Could not save that recipe. Please try again.',
 				logFields: { userId: user.id }
 			}
 		);

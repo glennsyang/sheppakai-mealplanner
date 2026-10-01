@@ -44,8 +44,11 @@
 	let variationsMealName = $state('');
 	let variationsLoading = $state(false);
 	let drawerSuggestion = $state<MealSuggestion | null>(null);
-	// A planned meal opened from the board is already on it, so its drawer has no save action.
-	let plannedRecipe = $state<MealSuggestion | null>(null);
+	// A planned meal opened from the board is already on it, so its drawer has no save action,
+	// but it can be edited. Tracked by id so the drawer picks up the saved recipe after a reload.
+	let plannedEntryId = $state<string | null>(null);
+	const plannedEntry = $derived(entries.find((e) => e.entry.id === plannedEntryId) ?? null);
+	const plannedRecipe = $derived(plannedEntry ? recipeAsSuggestion(plannedEntry.recipe) : null);
 	let stuckDay = $state<number | null>(null);
 
 	const today = trackToday(() => data.weekStartDate);
@@ -341,7 +344,12 @@
 />
 
 <!-- Recipe for a meal already on the board -->
-<RecipeDrawer suggestion={plannedRecipe} onClose={() => (plannedRecipe = null)} />
+<RecipeDrawer
+	suggestion={plannedRecipe}
+	onClose={() => (plannedEntryId = null)}
+	recipeId={plannedEntry?.recipe.id}
+	onSaved={invalidateAll}
+/>
 
 <div class="px-5 pt-8 pb-4 sm:px-10 sm:pt-12">
 	<div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
@@ -387,7 +395,7 @@
 		{entries}
 		todayIndex={today.index}
 		{stuckDay}
-		onOpenRecipe={(e) => (plannedRecipe = recipeAsSuggestion(e.recipe))}
+		onOpenRecipe={(e) => (plannedEntryId = e.entry.id)}
 		actions={{
 			onEntryRemoved: handleEntryRemoved,
 			onRemoveFailed: (text) => (actionError = text),

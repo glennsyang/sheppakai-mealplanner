@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
 	import Icon from '$lib/components/Icon.svelte';
 	import RecipeDrawer from '$lib/components/RecipeDrawer.svelte';
 	import WeeklyPlanner from '$lib/components/WeeklyPlanner.svelte';
 	import { recipeAsSuggestion } from '$lib/recipes';
 	import { trackToday } from '$lib/today.svelte';
 	import { DAY_LABELS } from '$lib/types';
-	import type { MealPlanEntryWithRecipe, MealSuggestion } from '$lib/types';
+	import type { MealPlanEntryWithRecipe } from '$lib/types';
 
 	import type { PageData } from './$types';
 
@@ -36,10 +37,13 @@
 		return `${fmt(monday)} – ${fmt(sunday)}`;
 	});
 
-	let drawerSuggestion = $state<MealSuggestion | null>(null);
+	// Tracked by id so the drawer picks up the saved recipe after an edit reloads the data.
+	let openEntryId = $state<string | null>(null);
+	const openEntry = $derived(data.entries.find((e) => e.entry.id === openEntryId) ?? null);
+	const drawerSuggestion = $derived(openEntry ? recipeAsSuggestion(openEntry.recipe) : null);
 
 	function openRecipe(entry: MealPlanEntryWithRecipe) {
-		drawerSuggestion = recipeAsSuggestion(entry.recipe);
+		openEntryId = entry.entry.id;
 	}
 </script>
 
@@ -47,7 +51,12 @@
 	<title>Tonight — Meal Planner</title>
 </svelte:head>
 
-<RecipeDrawer suggestion={drawerSuggestion} onClose={() => (drawerSuggestion = null)} />
+<RecipeDrawer
+	suggestion={drawerSuggestion}
+	onClose={() => (openEntryId = null)}
+	recipeId={openEntry?.recipe.id}
+	onSaved={invalidateAll}
+/>
 
 <!-- Tonight: the answer to "what's for dinner?" before anything else -->
 <section class="px-5 pt-8 pb-10 sm:px-10 sm:pt-12 sm:pb-14" aria-labelledby="tonight-heading">
