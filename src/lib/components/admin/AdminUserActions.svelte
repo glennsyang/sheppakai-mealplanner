@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { Button } from '$lib/components/ui/button';
+	import { NativeSelect } from '$lib/components/ui/native-select';
 	import { USER_ROLES } from '$lib/schemas/admin';
 
 	import type { AdminUser } from './types';
@@ -32,9 +34,10 @@
 	<div class="flex flex-wrap items-center gap-2">
 		<form method="POST" action="?/setRole" use:enhance={submit}>
 			<input type="hidden" name="userId" value={user.id} />
-			<select
+			<NativeSelect
 				name="role"
-				class="select select-sm w-24"
+				class="w-24"
+				size="sm"
 				value={user.role ?? 'user'}
 				disabled={busy}
 				onchange={(e) => e.currentTarget.form?.requestSubmit()}
@@ -43,23 +46,23 @@
 				{#each USER_ROLES as role (role)}
 					<option value={role}>{role}</option>
 				{/each}
-			</select>
+			</NativeSelect>
 		</form>
 
 		{#if allowlisted && !user.emailVerified}
 			<form method="POST" action="?/sendWelcomeEmail" use:enhance={submit}>
 				<input type="hidden" name="userId" value={user.id} />
-				<button type="submit" class="btn btn-sm act-quiet" disabled={busy}>
+				<Button type="submit" variant="outline" size="sm" disabled={busy}>
 					Send welcome email
-				</button>
+				</Button>
 			</form>
 		{/if}
 
 		<form method="POST" action={banned ? '?/unbanUser' : '?/banUser'} use:enhance={submit}>
 			<input type="hidden" name="userId" value={user.id} />
-			<button type="submit" class="btn btn-sm act-quiet" disabled={busy}>
+			<Button type="submit" variant="outline" size="sm" disabled={busy}>
 				{banned ? 'Unban' : 'Ban'}
-			</button>
+			</Button>
 		</form>
 
 		{#if confirmingRemove}
@@ -70,25 +73,27 @@
 				class="flex items-center gap-1"
 			>
 				<input type="hidden" name="userId" value={user.id} />
-				<button type="submit" class="btn btn-sm act act-red" disabled={busy}> Confirm </button>
-				<button
+				<Button type="submit" variant="destructive" size="sm" disabled={busy}>Confirm</Button>
+				<Button
 					type="button"
-					class="btn btn-sm act-quiet"
+					variant="outline"
+					size="sm"
 					disabled={busy}
 					onclick={() => (confirmingRemove = false)}
 				>
 					Cancel
-				</button>
+				</Button>
 			</form>
 		{:else}
-			<button
+			<Button
 				type="button"
-				class="btn btn-sm preset-tonal-error"
+				variant="tonal-destructive"
+				size="sm"
 				disabled={busy}
 				onclick={() => (confirmingRemove = true)}
 			>
 				Remove
-			</button>
+			</Button>
 		{/if}
 	</div>
 {/if}

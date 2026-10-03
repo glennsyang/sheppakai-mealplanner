@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { POST_LOGIN_ROUTE } from '$lib/auth-routes';
 	import AuthShell from '$lib/components/AuthShell.svelte';
+	import { Button } from '$lib/components/ui/button';
 </script>
 
 <svelte:head>
@@ -15,7 +16,7 @@
 	</div>
 
 	<form method="POST" use:enhance>
-		<button type="submit" class="btn act w-full py-3 text-lg">Sign out</button>
+		<Button type="submit" class="w-full py-3 text-lg">Sign out</Button>
 	</form>
 
 	<p><a href={POST_LOGIN_ROUTE} class="act-text ink-blue">Cancel</a></p>

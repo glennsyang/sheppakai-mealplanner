@@ -2,6 +2,7 @@
 	import { SIGN_IN_ROUTE } from '$lib/auth-routes';
 	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import AuthShell from '$lib/components/AuthShell.svelte';
+	import { Button } from '$lib/components/ui/button';
 	import { resendVerificationSchema } from '$lib/schemas/auth';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
@@ -51,13 +52,13 @@
 	<div class="space-y-3">
 		<form method="POST" action="?/resend" use:enhance class="space-y-2">
 			<input type="hidden" name="email" bind:value={$form.email} />
-			<button type="submit" disabled={$submitting} class="btn act w-full py-3">
+			<Button type="submit" disabled={$submitting} class="w-full py-3">
 				{$submitting ? 'Sending verification email…' : 'Resend verification email'}
-			</button>
+			</Button>
 			{#if $errors.email}
 				<p class="ink-red text-sm">{$errors.email}</p>
 			{/if}
 		</form>
-		<a href={SIGN_IN_ROUTE} class="btn act-quiet w-full py-3">Back to sign in</a>
+		<Button href={SIGN_IN_ROUTE} variant="outline" class="w-full py-3">Back to sign in</Button>
 	</div>
 </AuthShell>

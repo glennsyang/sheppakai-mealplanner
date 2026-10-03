@@ -1,9 +1,14 @@
 @import 'tailwindcss';
-@import '@skeletonlabs/skeleton';
+@import 'tw-animate-css';
 @import './lib/styles/fridge-theme.css';
 
 /* Use .dark class for dark mode instead of prefers-color-scheme media query */
 @variant dark (&:where(.dark, .dark *));
+
+/* shadcn-svelte's components style bits-ui open/closed states with data-open / data-closed;
+   bits-ui marks them with data-state, so map the variants onto it. */
+@custom-variant data-open (&:where([data-state='open'], [data-open]:not([data-open='false'])));
+@custom-variant data-closed (&:where([data-state='closed'], [data-closed]:not([data-closed='false'])));
 
 /* ── Type: printed board parts vs. things written in marker ──────────────── */
 @theme {
@@ -33,6 +38,8 @@
 	--card: oklch(100% 0 0deg);
 	--tile: oklch(100% 0 0deg);
 	--shadow-ink: 225deg 12% 30%;
+	/* Behind an open dialog or recipe sheet: the door, dimmed */
+	--scrim: color-mix(in oklch, var(--door) 35%, oklch(10% 0.01 260deg / 0.55));
 
 	--ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
 	--ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
@@ -58,6 +65,35 @@
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
+@layer base {
+	:root {
+		color-scheme: light;
+		scrollbar-width: thin;
+		-webkit-tap-highlight-color: color-mix(in oklab, var(--color-surface-50-950) 30%, transparent);
+	}
+	.dark {
+		color-scheme: dark;
+	}
+
+	html {
+		background-color: var(--color-surface-50-950);
+	}
+
+	/* Disabled controls fade back and stop taking clicks */
+	*:disabled {
+		box-shadow: none;
+		cursor: not-allowed;
+		opacity: 0.5;
+		& > * {
+			pointer-events: none;
+		}
+	}
+
+	::placeholder {
+		color: var(--color-surface-700-300);
+	}
+}
+
 html {
 	font-family: var(--font-sans);
 	-webkit-font-smoothing: antialiased;

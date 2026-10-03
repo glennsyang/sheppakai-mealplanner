@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
+	import { Button } from '$lib/components/ui/button';
 	import type { MealSuggestion } from '$lib/types';
 
 	interface Props {
@@ -49,21 +50,22 @@
 		{/if}
 
 		<div class="mt-auto flex flex-wrap gap-2 pt-2">
-			<button
+			<Button
 				type="button"
 				onclick={() => onSaveToPlanner(suggestion)}
-				class="btn act flex-1 text-[0.95rem]"
+				class="flex-1 text-[0.95rem]"
 			>
 				Put on the week
-			</button>
-			<button
+			</Button>
+			<Button
 				type="button"
 				onclick={() => onViewRecipe(suggestion)}
-				class="btn act-quiet text-[0.95rem]"
+				variant="outline"
+				class="text-[0.95rem]"
 			>
 				<Icon name="book" size={16} />
 				Recipe
-			</button>
+			</Button>
 		</div>
 	</div>
 </article>

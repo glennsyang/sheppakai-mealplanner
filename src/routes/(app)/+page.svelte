@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import Icon from '$lib/components/Icon.svelte';
 	import RecipeDrawer from '$lib/components/RecipeDrawer.svelte';
+	import { Button } from '$lib/components/ui/button';
 	import WeeklyPlanner from '$lib/components/WeeklyPlanner.svelte';
 	import { recipeAsSuggestion } from '$lib/recipes';
 	import { trackToday } from '$lib/today.svelte';
@@ -74,10 +75,10 @@
 			</p>
 		{/if}
 		<div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
-			<button type="button" class="btn act px-6 py-3 text-lg" onclick={() => openRecipe(tonight)}>
+			<Button type="button" class="px-6 py-3 text-lg" onclick={() => openRecipe(tonight)}>
 				<Icon name="book" size={20} />
 				Open recipe
-			</button>
+			</Button>
 			{#if tonight.recipe.prepTimeMinutes > 0}
 				<span class="ink-soft tabular inline-flex items-center gap-2 font-semibold">
 					<Icon name="clock" />{tonight.recipe.prepTimeMinutes} min
@@ -104,20 +105,20 @@
 		</p>
 		<div class="mt-7 flex flex-wrap items-center gap-3">
 			{#if data.pantryCount > 0}
-				<a href="/suggest" class="btn act px-6 py-3 text-lg">
+				<Button href="/suggest" class="px-6 py-3 text-lg">
 					<Icon name="sparkles" size={20} />
 					Suggest dinners
-				</a>
+				</Button>
 			{:else}
-				<a href="/pantry" class="btn act px-6 py-3 text-lg">
+				<Button href="/pantry" class="px-6 py-3 text-lg">
 					<Icon name="basket" size={20} />
 					Fill the pantry
-				</a>
+				</Button>
 			{/if}
-			<a href="/planner" class="btn act-quiet px-5 py-3 text-lg">
+			<Button href="/planner" variant="outline" class="px-5 py-3 text-lg">
 				<Icon name="pencil" size={18} />
 				Write one in
-			</a>
+			</Button>
 		</div>
 	{/if}
 </section>

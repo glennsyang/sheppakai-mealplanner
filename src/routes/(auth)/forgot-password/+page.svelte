@@ -2,6 +2,9 @@
 	import { SIGN_IN_ROUTE } from '$lib/auth-routes';
 	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import AuthShell from '$lib/components/AuthShell.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import { forgotPasswordSchema } from '$lib/schemas/auth';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
@@ -29,14 +32,14 @@
 	<AuthFormMessage message={$message} />
 
 	<form method="POST" use:enhance class="space-y-5">
-		<label class="label">
+		<Label>
 			<span class="font-semibold">Email</span>
-			<input
+			<Input
 				type="email"
 				name="email"
 				bind:value={$form.email}
-				class="input mt-1 text-lg"
-				class:input-error={$errors.email}
+				class="mt-1 text-lg"
+				aria-invalid={$errors.email ? 'true' : undefined}
 				required={$constraints.email?.required}
 				placeholder="you@example.com"
 				autocomplete="email"
@@ -44,11 +47,11 @@
 			{#if $errors.email}
 				<span class="ink-red mt-1 block text-sm">{$errors.email}</span>
 			{/if}
-		</label>
+		</Label>
 
-		<button type="submit" disabled={$submitting} class="btn act w-full py-3 text-lg">
+		<Button type="submit" disabled={$submitting} class="w-full py-3 text-lg">
 			{$submitting ? 'Sending reset link…' : 'Send reset link'}
-		</button>
+		</Button>
 	</form>
 
 	<p class="ink-soft">

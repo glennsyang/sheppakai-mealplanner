@@ -3,6 +3,8 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import RecipeDrawer from '$lib/components/RecipeDrawer.svelte';
 	import SuggestionCard from '$lib/components/SuggestionCard.svelte';
+	import { Alert } from '$lib/components/ui/alert';
+	import { Button } from '$lib/components/ui/button';
 	import { mealSuggestionListSchema } from '$lib/schemas/mealPlan';
 	import { magnetTilt } from '$lib/tilt';
 	import type { MealSuggestion } from '$lib/types';
@@ -94,10 +96,10 @@
 		<p class="ink-soft mt-3 max-w-[52ch] text-lg leading-relaxed">
 			Ideas come from what's in the kitchen, and the pantry is empty.
 		</p>
-		<a href="/pantry" class="btn act mt-6 px-5 py-2.5">
+		<Button href="/pantry" class="mt-6 px-5 py-2.5">
 			<Icon name="basket" />
 			Fill the pantry
-		</a>
+		</Button>
 	{:else}
 		<p class="ink-soft mt-2 max-w-[56ch] text-lg leading-relaxed">
 			Every ingredient on the fridge is in. Tap a magnet to leave it out.
@@ -126,11 +128,11 @@
 		</ul>
 
 		<div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-			<button
+			<Button
 				type="button"
 				onclick={fetchSuggestions}
 				disabled={isLoading || selectedItems.size === 0}
-				class="btn act px-6 py-3 text-lg"
+				class="px-6 py-3 text-lg"
 			>
 				{#if isLoading}
 					<Icon name="loader" size={20} class="animate-spin" />
@@ -139,7 +141,7 @@
 					<Icon name="sparkles" size={20} />
 					Suggest dinners
 				{/if}
-			</button>
+			</Button>
 			<span class="ink-soft tabular text-sm font-semibold">
 				using {selectedItems.size} of {data.pantryItems.length}
 			</span>
@@ -153,7 +155,7 @@
 {#if error || isLoading || suggestions.length > 0}
 	<section class="results px-5 pt-8 pb-12 sm:px-10" aria-live="polite" aria-busy={isLoading}>
 		{#if error}
-			<div class="alert preset-tonal-error" role="alert">{error}</div>
+			<Alert variant="destructive" role="alert">{error}</Alert>
 		{/if}
 
 		{#if isLoading}

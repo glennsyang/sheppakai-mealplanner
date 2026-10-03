@@ -1,14 +1,7 @@
-<script lang="ts" module>
-	// Open modals, oldest first. Escape closes only the topmost one, so a recipe drawer
-	// opened from the variations panel doesn't take the panel down with it.
-	const openStack: symbol[] = [];
-</script>
-
 <script lang="ts">
+	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Sheet from '$lib/components/ui/sheet';
 	import type { Snippet } from 'svelte';
-	import type { Attachment } from 'svelte/attachments';
-	import { expoOut, linear } from 'svelte/easing';
-	import { fly } from 'svelte/transition';
 
 	interface Props {
 		open: boolean;
@@ -21,82 +14,48 @@
 
 	let { open, onClose, ariaLabel, variant = 'dialog', children }: Props = $props();
 
-	const id = Symbol('modal');
+	// bits-ui owns focus trapping, focus restore, scroll lock and Escape. Escape only closes
+	// the topmost layer, so a recipe drawer opened from the variations panel doesn't take
+	// the panel down with it. Callers render their own close button.
+	function handleOpenChange(next: boolean) {
+		if (!next) onClose();
+	}
 
-	// Registers on the stack and moves focus into the panel while mounted (i.e. while
-	// open); restores focus to whatever had it before on close.
-	const trapFocus: Attachment<HTMLElement> = (panel) => {
-		const previouslyFocused = document.activeElement as HTMLElement | null;
-		openStack.push(id);
-		panel.focus();
-		return () => {
-			openStack.splice(openStack.indexOf(id), 1);
-			previouslyFocused?.focus?.();
-		};
-	};
+	// Focus the panel itself on open (not its first field), so screen readers announce the
+	// dialog by its label and no focus ring lands on an input the user hasn't reached yet.
+	let panel = $state<HTMLElement | null>(null);
 
-	function handleKeydown(e: KeyboardEvent) {
-		if (open && e.key === 'Escape' && openStack.at(-1) === id) {
-			e.preventDefault();
-			onClose();
-		}
+	function focusPanel(e: Event) {
+		e.preventDefault();
+		panel?.focus();
 	}
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
-
-{#if open}
-	{#if variant === 'drawer'}
-		<!-- Backdrop: a mouse convenience only; keyboard users close with Escape or the
-		     panel's close button, so it's hidden from assistive tech. -->
-		<div
-			aria-hidden="true"
-			class="scrim fixed inset-0 z-40"
-			onclick={onClose}
-			in:fly={{ duration: 250, easing: linear }}
-			out:fly={{ duration: 200, easing: linear }}
-		></div>
-
-		<div
-			{@attach trapFocus}
-			role="dialog"
-			aria-modal="true"
+{#if variant === 'drawer'}
+	<Sheet.Root {open} onOpenChange={handleOpenChange}>
+		<!-- A recipe card pulled off the board, held open at the edge of the screen -->
+		<Sheet.Content
+			side="right"
+			bind:ref={panel}
+			showCloseButton={false}
 			aria-label={ariaLabel}
-			tabindex="-1"
-			class="sheet fixed inset-y-0 right-0 z-50 flex w-full max-w-xl flex-col outline-none"
-			in:fly={{ x: 420, duration: 380, easing: expoOut }}
-			out:fly={{ x: 420, duration: 250, easing: expoOut }}
+			onOpenAutoFocus={focusPanel}
+			class="bg-card text-foreground data-[side=right]:data-closed:slide-out-to-right data-[side=right]:data-open:slide-in-from-right w-full max-w-xl gap-0 border-0 text-[1rem] shadow-[-1px_0_0_var(--rule),-24px_0_48px_-24px_hsl(var(--shadow-ink)/0.55)] ease-(--ease-expo) outline-none data-closed:duration-250 data-open:duration-380 data-[side=right]:w-full data-[side=right]:sm:max-w-xl"
 		>
 			{@render children()}
-		</div>
-	{:else}
-		<div class="fixed inset-0 z-50 flex items-center justify-center p-4" in:fly={{ duration: 200 }}>
-			<div aria-hidden="true" class="scrim absolute inset-0" onclick={onClose}></div>
-			<div
-				{@attach trapFocus}
-				role="dialog"
-				aria-modal="true"
-				aria-label={ariaLabel}
-				tabindex="-1"
-				class="index-card relative w-full max-w-md space-y-5 px-6 pt-5 pb-6 outline-none"
-				in:fly={{ y: -14, duration: 320, easing: expoOut }}
-			>
-				<span class="magnet" aria-hidden="true"></span>
-				{@render children()}
-			</div>
-		</div>
-	{/if}
+		</Sheet.Content>
+	</Sheet.Root>
+{:else}
+	<Dialog.Root {open} onOpenChange={handleOpenChange}>
+		<Dialog.Content
+			bind:ref={panel}
+			showCloseButton={false}
+			aria-label={ariaLabel}
+			onOpenAutoFocus={focusPanel}
+			class="index-card data-closed:zoom-out-100 data-open:slide-in-from-top-3.5 data-open:zoom-in-100 fixed! block w-full max-w-[calc(100%-2rem)] space-y-5 px-6 pt-5 pb-6 text-[1rem] duration-320 ease-(--ease-expo) sm:max-w-md"
+		>
+			<span class="magnet" aria-hidden="true"></span>
+			{@render children()}
+		</Dialog.Content>
+	</Dialog.Root>
 {/if}
-
-<style>
-	.scrim {
-		background: color-mix(in oklch, var(--door) 35%, oklch(10% 0.01 260deg / 0.55));
-	}
-	/* A recipe card pulled off the board, held open at the edge of the screen */
-	.sheet {
-		background: var(--card);
-		box-shadow:
-			-1px 0 0 var(--rule),
-			-24px 0 48px -24px hsl(var(--shadow-ink) / 0.55);
-	}
-</style>

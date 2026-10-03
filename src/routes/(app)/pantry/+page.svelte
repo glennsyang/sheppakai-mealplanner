@@ -2,6 +2,10 @@
 	import { enhance } from '$app/forms';
 	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import { Alert } from '$lib/components/ui/alert';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import { addPantryItemSchema } from '$lib/schemas/pantry';
 	import { magnetTilt } from '$lib/tilt';
 	import { autoAnimate } from '@formkit/auto-animate';
@@ -43,44 +47,38 @@
 	<form method="POST" action="?/add" use:sfEnhance class="add mt-8">
 		<AuthFormMessage message={$message} />
 		<div class="grid grid-cols-2 gap-3 sm:grid-cols-[minmax(0,1fr)_7rem_8rem_auto] sm:items-end">
-			<label class="label col-span-2 sm:col-span-1">
+			<Label class="col-span-2 sm:col-span-1">
 				<span class="font-semibold">Ingredient</span>
-				<input
+				<Input
 					type="text"
 					name="name"
 					bind:value={$form.name}
-					class="input text-lg"
-					class:input-error={$errors.name}
+					class="text-lg"
+					aria-invalid={$errors.name ? 'true' : undefined}
 					{...$constraints.name}
 					placeholder="Chicken thighs"
 				/>
-			</label>
-			<label class="label">
+			</Label>
+			<Label>
 				<span class="font-semibold">Amount</span>
-				<input
+				<Input
 					type="number"
 					name="quantity"
 					bind:value={$form.quantity}
-					class="input tabular text-lg"
-					min="0"
+					class="tabular text-lg"
+					min={0}
 					step="any"
 					placeholder="2"
 				/>
-			</label>
-			<label class="label">
+			</Label>
+			<Label>
 				<span class="font-semibold">Unit</span>
-				<input
-					type="text"
-					name="unit"
-					bind:value={$form.unit}
-					class="input text-lg"
-					placeholder="lb"
-				/>
-			</label>
-			<button type="submit" disabled={$submitting} class="btn act col-span-2 py-3 sm:col-span-1">
+				<Input type="text" name="unit" bind:value={$form.unit} class="text-lg" placeholder="lb" />
+			</Label>
+			<Button type="submit" disabled={$submitting} class="col-span-2 py-3 sm:col-span-1">
 				<Icon name="plus" />
 				{$submitting ? 'Adding…' : 'Add'}
-			</button>
+			</Button>
 		</div>
 		{#if $errors.name}
 			<p class="ink-red mt-2 text-sm">{$errors.name}</p>
@@ -95,7 +93,7 @@
 	</h2>
 
 	{#if removeError}
-		<div class="alert preset-tonal-error mb-5" role="alert">{removeError}</div>
+		<Alert variant="destructive" class="mb-5" role="alert">{removeError}</Alert>
 	{/if}
 
 	{#if items.length === 0}
@@ -134,10 +132,10 @@
 			{/each}
 		</ul>
 
-		<a href="/suggest" class="btn act mt-10 px-5 py-2.5">
+		<Button href="/suggest" class="mt-10 px-5 py-2.5">
 			<Icon name="sparkles" />
 			Get dinner ideas
-		</a>
+		</Button>
 	{/if}
 </section>
 

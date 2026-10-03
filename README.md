@@ -26,7 +26,7 @@ A dinner-focused meal planning app. Add your pantry ingredients, get AI-generate
 | Auth            | better-auth `^1.6.11` (email + password)                     |
 | AI — Meals      | `@google/genai ^2.4.0` — `gemini-2.5-flash-preview`          |
 | AI — Variations | `@anthropic-ai/sdk ^0.96.0` — `claude-sonnet-4-6`            |
-| UI Styling      | Skeleton UI `^4.12.1` + Tailwind CSS `^4.2.1`                |
+| UI Styling      | shadcn-svelte (bits-ui) + Tailwind CSS `^4.2.1`              |
 | Animations      | Svelte 5 transitions + `@formkit/auto-animate ^0.9.0`        |
 | Forms           | sveltekit-superforms `^2.30.1` + Zod `^4.4.3`                |
 | Error Tracking  | Sentry `^10.53.1`                                            |
@@ -98,8 +98,8 @@ npm run db:studio      # Drizzle visual browser
 ```
 src/
 ├── hooks.server.ts              # Session middleware, security headers, CSP
-├── app.css                      # Tailwind v4 + Skeleton CSS imports
-├── app.html                     # data-theme="pine" on <html>
+├── app.css                      # Tailwind v4, tw-animate-css, fridge theme, world classes
+├── app.html                     # Pre-paint dark-mode script, fonts
 ├── lib/
 │   ├── logger.ts                # App-wide logger (never use console.log)
 │   ├── types.ts                 # Shared TypeScript interfaces
@@ -181,12 +181,10 @@ automatically on boot — `start.sh` applies any committed, unapplied migrations
 
 ## Known Quirks
 
-1. **Skeleton theme CSS** — `@skeletonlabs/skeleton/themes/*.css` uses a `*` export pattern that `enhanced-resolve` can't handle. Fixed with a Vite alias in `vite.config.ts` pointing to the direct file path.
+1. **Superforms + Zod v4 email inputs** — Never spread `{...$constraints}` on `type="email"` inputs. Zod v4's email regex is incompatible with the browser's HTML `pattern` attribute `v` flag.
 
-2. **Superforms + Zod v4 email inputs** — Never spread `{...$constraints}` on `type="email"` inputs. Zod v4's email regex is incompatible with the browser's HTML `pattern` attribute `v` flag.
+2. **`getMondayOfCurrentWeek()`** — Uses local date components instead of `.toISOString()` to avoid UTC offset shifting the date across midnight.
 
-3. **`getMondayOfCurrentWeek()`** — Uses local date components instead of `.toISOString()` to avoid UTC offset shifting the date across midnight.
+3. **Auth redirects** — `auth.api.signInEmail` / `signUpEmail` may internally throw SvelteKit redirects. Always `if (isRedirect(err)) throw err` inside auth catch blocks.
 
-4. **Auth redirects** — `auth.api.signInEmail` / `signUpEmail` may internally throw SvelteKit redirects. Always `if (isRedirect(err)) throw err` inside auth catch blocks.
-
-5. **Secure cookies** — `useSecureCookies: true` is set. Cookies require HTTPS in production. better-auth auto-allows non-secure cookies on `localhost` in dev.
+4. **Secure cookies** — `useSecureCookies: true` is set. Cookies require HTTPS in production. better-auth auto-allows non-secure cookies on `localhost` in dev.

@@ -173,11 +173,11 @@ Four marker inks on white laminate and grey aluminium; colour carries meaning, n
 
 ### Secondary
 
-- **Green Marker** (marker-green): added, ready, AI-generated. The "N ideas" count on Suggest, the variations button on a planned row, success alerts (Skeleton success maps to the green scale), active status in Admin.
+- **Green Marker** (marker-green): added, ready, AI-generated. The "N ideas" count on Suggest, the variations button on a planned row, success alerts (the `success` Alert uses the green scale), active status in Admin.
 
 ### Tertiary
 
-- **Red Marker** (marker-red): today, removal, errors, and the head rule of a card. The ring around today's row and today's day name, "Tonight," in the hero, erase and take-off hovers, error alerts (Skeleton error maps to the red scale), the 1.5px rule under an index card's header, under a recipe sheet's header and under table column heads, and the Ingredients / Method headings. The brand magnet in the header is red.
+- **Red Marker** (marker-red): today, removal, errors, and the head rule of a card. The ring around today's row and today's day name, "Tonight," in the hero, erase and take-off hovers, error alerts (the `destructive` Alert uses the red scale), the 1.5px rule under an index card's header, under a recipe sheet's header and under table column heads, and the Ingredients / Method headings. The brand magnet in the header is red.
 
 ### Neutral
 
@@ -189,7 +189,7 @@ Four marker inks on white laminate and grey aluminium; colour carries meaning, n
 - **Black Ink** (ink / ink-dark): all primary text.
 - **Soft Ink** (ink-soft): descriptions, metadata, minute counts, dates.
 - **Faint Ink** (ink-faint): idle erase icons, the ghost "write one in" line, "+N more", empty-state notes.
-- **Highlighter Yellow** (highlighter-yellow): text selection only; the Skeleton warning scale is the same highlighter hue for the rare warning alert.
+- **Highlighter Yellow** (highlighter-yellow): text selection only; the `warning` Alert uses the same highlighter hue for the rare warning.
 
 ### Named Rules
 
@@ -257,7 +257,7 @@ Hybrid but restrained: the board is flat laminate inside a solid frame ring; the
 
 ## Shapes
 
-Small, near-square corners that match real objects: word tiles 2px, index cards 3px, the board and fields 6px, buttons 8px, and round magnets, avatar and icon buttons at 999px. Borders are drawn as rules: 1px hairlines, 1.5px for outlines and red head rules (Skeleton default border width is 1.5px). Removable objects hang slightly off true: index cards rotate between -0.6deg and 0.7deg, pantry tiles by a per-word tilt, and the current-section nav stroke is a 3px marker line rotated about -1.2deg. Today's ring is a loose hand-drawn SVG path with a 2.4 round-capped stroke.
+Small, near-square corners that match real objects: word tiles 2px, index cards 3px, the board and fields 6px, buttons 8px, and round magnets, avatar and icon buttons at 999px. Borders are drawn as rules: 1px hairlines, 1.5px for outlines and red head rules (the theme sets `--default-border-width` to 1.5px). Removable objects hang slightly off true: index cards rotate between -0.6deg and 0.7deg, pantry tiles by a per-word tilt, and the current-section nav stroke is a 3px marker line rotated about -1.2deg. Today's ring is a loose hand-drawn SVG path with a 2.4 round-capped stroke.
 
 ## Components
 
@@ -288,7 +288,7 @@ Magnets you press: solid marker colour, a small physical shadow, a 1px push when
 
 ### Inputs / Fields
 
-- **Style:** Skeleton `input`/`select` on the fridge theme: board background, 1.5px border, 6px radius, labels in 600 weight above; pantry fields are 1.125rem.
+- **Style:** shadcn `Input`/`NativeSelect` restyled for the fridge theme: board background, 1.5px border, 6px radius, labels in 600 weight above; pantry fields are 1.125rem.
 - **Focus:** the global 2.5px blue marker outline at 2px offset.
 - **Error / Disabled:** errors are red ink below the field; disabled fields stay at full opacity with soft ink on a 4% ink wash so read-only values remain legible.
 

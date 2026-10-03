@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Alert } from '$lib/components/ui/alert';
+
 	// Renders a sveltekit-superforms banner from the shared `{ type, text }` payload
 	// (App.Superforms.Message). Styling is driven by `type`, never by sniffing the
 	// wording of `text`. Non-error messages on the auth pages are deliberately
@@ -15,10 +17,11 @@
 </script>
 
 {#if message}
-	<div
-		class="alert text-sm {isError ? 'preset-tonal-error' : 'preset-tonal-surface'}"
+	<Alert
+		variant={isError ? 'destructive' : 'default'}
+		class="text-sm"
 		role={isError ? undefined : 'status'}
 	>
 		{message.text}
-	</div>
+	</Alert>
 {/if}

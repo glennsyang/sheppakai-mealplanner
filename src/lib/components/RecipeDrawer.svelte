@@ -2,6 +2,11 @@
 	import { enhance } from '$app/forms';
 	import { actionFailureText } from '$lib/action-result';
 	import Icon from '$lib/components/Icon.svelte';
+	import { Alert } from '$lib/components/ui/alert';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import { Textarea } from '$lib/components/ui/textarea';
 	import type { Ingredient, MealSuggestion } from '$lib/types';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { SvelteSet } from 'svelte/reactivity';
@@ -134,59 +139,52 @@
 
 				<div class="flex-1 space-y-8 overflow-y-auto px-6 py-7 sm:px-8">
 					{#if saveError}
-						<p class="alert preset-tonal-error" role="alert">{saveError}</p>
+						<Alert variant="destructive" role="alert">{saveError}</Alert>
 					{/if}
 
 					<div class="space-y-4">
-						<label class="label space-y-1.5">
+						<Label class="space-y-1.5">
 							<span class="font-semibold">Name</span>
-							<input
-								type="text"
-								name="name"
-								bind:value={draft.name}
-								class="input"
-								maxlength="200"
-								required
-							/>
-						</label>
+							<Input type="text" name="name" bind:value={draft.name} maxlength={200} required />
+						</Label>
 
-						<label class="label space-y-1.5">
+						<Label class="space-y-1.5">
 							<span class="font-semibold"
 								>Notes <span class="ink-faint font-normal">(optional)</span></span
 							>
-							<textarea
+							<Textarea
 								name="description"
 								bind:value={draft.description}
-								class="textarea"
-								rows="3"
-								maxlength="2000"></textarea>
-						</label>
+								rows={3}
+								maxlength={2000}
+							/>
+						</Label>
 
 						<div class="grid grid-cols-2 gap-4">
-							<label class="label space-y-1.5">
+							<Label class="space-y-1.5">
 								<span class="font-semibold">Prep (min)</span>
-								<input
+								<Input
 									type="number"
 									name="prepTimeMinutes"
 									bind:value={draft.prepTimeMinutes}
-									class="input tabular"
-									min="0"
-									max="1440"
+									class="tabular"
+									min={0}
+									max={1440}
 									required
 								/>
-							</label>
-							<label class="label space-y-1.5">
+							</Label>
+							<Label class="space-y-1.5">
 								<span class="font-semibold">Serves</span>
-								<input
+								<Input
 									type="number"
 									name="servings"
 									bind:value={draft.servings}
-									class="input tabular"
-									min="1"
-									max="100"
+									class="tabular"
+									min={1}
+									max={100}
 									required
 								/>
-							</label>
+							</Label>
 						</div>
 					</div>
 
@@ -194,28 +192,25 @@
 						<legend class="marker ink-red mb-3 text-xl">Ingredients</legend>
 						{#each draftIngredients as ing, i (i)}
 							<div class="ing-row">
-								<input
+								<Input
 									type="text"
 									bind:value={ing.quantity}
-									class="input"
 									placeholder="2"
-									maxlength="50"
+									maxlength={50}
 									aria-label="Ingredient {i + 1} quantity"
 								/>
-								<input
+								<Input
 									type="text"
 									bind:value={ing.unit}
-									class="input"
 									placeholder="cups"
-									maxlength="50"
+									maxlength={50}
 									aria-label="Ingredient {i + 1} unit"
 								/>
-								<input
+								<Input
 									type="text"
 									bind:value={ing.name}
-									class="input"
 									placeholder="rice"
-									maxlength="200"
+									maxlength={200}
 									aria-label="Ingredient {i + 1} name"
 								/>
 								<button
@@ -246,12 +241,12 @@
 								<span class="marker ink-blue tabular pt-2 text-xl leading-none" aria-hidden="true"
 									>{i + 1}</span
 								>
-								<textarea
+								<Textarea
 									bind:value={draftSteps[i]}
-									class="textarea"
-									rows="2"
-									maxlength="2000"
-									aria-label="Step {i + 1}"></textarea>
+									rows={2}
+									maxlength={2000}
+									aria-label="Step {i + 1}"
+								/>
 								<button
 									type="button"
 									class="row-remove"
@@ -275,17 +270,18 @@
 				</div>
 
 				<div class="foot flex gap-2 px-6 py-4 sm:px-8">
-					<button type="submit" disabled={saving} class="btn act flex-1 py-3">
+					<Button type="submit" disabled={saving} class="flex-1 py-3">
 						{saving ? 'Saving…' : 'Save recipe'}
-					</button>
-					<button
+					</Button>
+					<Button
 						type="button"
 						disabled={saving}
 						onclick={() => (editing = false)}
-						class="btn act-quiet py-3"
+						variant="outline"
+						class="py-3"
 					>
 						Cancel
-					</button>
+					</Button>
 				</div>
 			</form>
 		{:else}
@@ -300,10 +296,10 @@
 					<div class="space-y-3">
 						<p class="marker ink-faint text-lg">Written in by hand. There's no recipe on file.</p>
 						{#if recipeId}
-							<button type="button" onclick={startEditing} class="btn act-quiet px-4 py-2">
+							<Button type="button" onclick={startEditing} variant="outline" class="px-4 py-2">
 								<Icon name="pencil" size={16} />
 								Add the recipe
-							</button>
+							</Button>
 						{/if}
 					</div>
 				{/if}
@@ -356,14 +352,10 @@
 
 			{#if onSaveToPlanner}
 				<div class="foot px-6 py-4 sm:px-8">
-					<button
-						type="button"
-						onclick={() => onSaveToPlanner(suggestion)}
-						class="btn act w-full py-3"
-					>
+					<Button type="button" onclick={() => onSaveToPlanner(suggestion)} class="w-full py-3">
 						<Icon name="calendar" />
 						Put it on the week
-					</button>
+					</Button>
 				</div>
 			{/if}
 		{/if}

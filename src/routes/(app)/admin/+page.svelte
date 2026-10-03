@@ -2,6 +2,7 @@
 	import AdminUsersTable from '$lib/components/admin/AdminUsersTable.svelte';
 	import CreateUserForm from '$lib/components/admin/CreateUserForm.svelte';
 	import type { AdminUser } from '$lib/components/admin/types';
+	import { Alert } from '$lib/components/ui/alert';
 
 	import type { PageData } from './$types';
 
@@ -22,13 +23,13 @@
 	</div>
 
 	{#if form?.error}
-		<div class="alert preset-tonal-error" role="alert">
+		<Alert variant="destructive" role="alert">
 			{form.error}
-		</div>
+		</Alert>
 	{:else if form?.success}
-		<div class="alert preset-tonal-success" role="status">
+		<Alert variant="success" role="status">
 			{form.success}
-		</div>
+		</Alert>
 	{/if}
 
 	<div class="space-y-10">

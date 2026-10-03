@@ -9,7 +9,7 @@
 	<title>MealPlanner</title>
 </svelte:head>
 
-<!-- modeStorageKey keeps existing users' preference; defaultTheme stops ModeWatcher clearing data-theme. -->
-<ModeWatcher modeStorageKey="color-scheme" defaultTheme="fridge" disableHeadScriptInjection />
+<!-- modeStorageKey keeps existing users' preference. -->
+<ModeWatcher modeStorageKey="color-scheme" disableHeadScriptInjection />
 
 {@render children()}

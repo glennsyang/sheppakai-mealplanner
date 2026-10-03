@@ -18,7 +18,7 @@ Always use **Node.js 22.23.3** for all development, testing, and tooling. Do not
 | Database   | SQLite via Drizzle ORM (better-sqlite3)        |
 | Auth       | better-auth v1 (email + password)              |
 | AI         | `@anthropic-ai/sdk` — `claude-sonnet-4-6`      |
-| UI         | Skeleton UI v4 + Tailwind CSS v4               |
+| UI         | shadcn-svelte (bits-ui) + Tailwind CSS v4      |
 | Animations | Svelte 5 transitions + `@formkit/auto-animate` |
 | Forms      | sveltekit-superforms v2 + Zod v4               |
 | Testing    | Vitest v4                                      |
@@ -78,8 +78,8 @@ Always use **Node.js 22.23.3** for all development, testing, and tooling. Do not
 ```
 src/
 ├── hooks.server.ts              # Session middleware, security headers, CSP, error handler
-├── app.css                      # Tailwind v4 + Skeleton CSS imports
-├── app.html                     # data-theme="fridge" on <html>
+├── app.css                      # Tailwind v4, tw-animate-css, fridge theme, world classes
+├── app.html                     # Pre-paint dark-mode script, fonts
 ├── lib/
 │   ├── types.ts                 # Shared TS interfaces (camelCase)
 │   ├── auth-client.ts           # Client-side better-auth (better-auth/svelte)
@@ -165,18 +165,20 @@ The `/api/suggest` endpoint (`GET ?items=...`) calls `suggestMeals` and returns 
 
 ---
 
-## Skeleton UI v4
+## shadcn-svelte (bits-ui)
 
-- CSS from `@skeletonlabs/skeleton` (utilities, tokens, presets).
-- Components from `@skeletonlabs/skeleton-svelte` (Dialog, AppBar, Toast, TagsInput, etc.).
-- Theme: custom `fridge` theme in `src/lib/styles/fridge-theme.css` (imported from `app.css`) — set via `data-theme="fridge"` on `<html>` in `app.html`. World tokens (`--board`, `--ink`, `--marker-*`) and world classes (`.board`, `.act`, `.tile`, `.index-card`, `.magnet`, `.marker`) live in `app.css`; see `DESIGN.md`.
-- **Known issue**: `@skeletonlabs/skeleton/themes/cerberus.css` fails to resolve via `enhanced-resolve` (the `*` pattern in package exports isn't supported for CSS). Fixed via a Vite alias in `vite.config.ts` pointing to the direct file path.
+- Components live in `src/lib/components/ui/` (added with `npx shadcn-svelte@latest add <name>`, config in `components.json`) and are owned code — restyle them freely. Currently: `alert`, `button`, `dialog`, `input`, `label`, `native-select`, `sheet`, `table`, `textarea`, plus the hand-written `data-table`.
+- `cn()` and the prop helper types live in `src/lib/utils.ts`. Icons use the local `Icon.svelte`, not lucide.
+- Theme: the `fridge` palette and shadcn semantic tokens (`--background`, `--primary`, `--destructive`, `--input`, …) are in `src/lib/styles/fridge-theme.css` (imported from `app.css`), mapped onto the world tokens (`--board`, `--ink`, `--marker-*`). World classes (`.board`, `.act`, `.tile`, `.index-card`, `.magnet`, `.marker`) live in `app.css`; see `DESIGN.md`.
+- The type scale runs 6.7% above Tailwind's default (`--text-*` in `fridge-theme.css`), and `--default-border-width` is 1.5px.
+- `app.css` defines `data-open` / `data-closed` custom variants mapped to bits-ui's `data-state`, which the shadcn templates rely on for enter/exit animations.
 
-### CSS class conventions
+### Component conventions
 
-- Presets: `preset-filled-primary-500`, `preset-outlined-surface-500`, `preset-tonal-surface`, `preset-ghost-surface`
-- Surface colors: `bg-surface-50-950`, `text-surface-950-50`, `border-surface-200-800`
-- Use `btn`, `input`, `label`, `card`, `chip`, `badge`, `alert` utility classes from Skeleton
+- Buttons: `<Button>` — `default` (blue magnet, `.act`), `outline` (`.act-quiet`), `destructive` (red magnet), `secondary` (green), `tonal`, `tonal-destructive`, `link` (`.act-text`); sizes `default` / `sm` / `icon`. Pass `href` for a link button.
+- Fields: `<Label>` wrapping `<Input>` / `<Textarea>` / `<NativeSelect>`; mark invalid fields with `aria-invalid`.
+- Messages: `<Alert variant="destructive" | "success" | "warning">`; set `role` explicitly where it shouldn't be `alert`.
+- Dialogs/drawers: use `Modal.svelte` (`variant="dialog" | "drawer"`) — it wraps `Dialog` / `Sheet` with the fridge look and focuses the panel on open.
 
 ---
 
@@ -262,7 +264,7 @@ leaves `handleError` unwrapped (the structured logger already forwards to Sentry
 
 This repo shares skills/agents/commands with `sheppakai-budget` and `synapse` via the `sveltekit-toolkit` Claude Code plugin (see `../claude-sveltekit-toolkit`), enabled in `.claude/settings.json`. It provides `svelte-code-writer`, `svelte5-best-practices`, `better-auth-best-practices`, `shadcn-svelte-components`, `frontend-design`, `tailwind-patterns`, `web-design-reviewer`, `brevo-email-log` (checks Brevo's transactional email event log to verify whether a specific email actually sent/delivered/bounced — all three repos send through the same Brevo account), a `/propagate` command for replicating a shared-dependency fix across the sibling repos, and a `/scaffold-form` command for scaffolding a new form/CRUD feature — this repo's flavor is the full-page form pattern (schema + `+page.server.ts` with superValidate + `+page.svelte` with superForm).
 
-Note: this repo uses Skeleton UI v4, not shadcn-svelte/bits-ui — the `shadcn-svelte-components` skill won't be relevant here.
+Like its siblings, this repo uses shadcn-svelte + bits-ui, so the `shadcn-svelte-components` skill applies.
 
 The `code-structure-reviewer` and `security-reviewer` agents (also from the shared plugin) are available on demand — invoke them when you want a structural or security pass on a change, not automatically on every PR.
 
@@ -301,12 +303,10 @@ npm run db:studio    # Drizzle visual browser
 
 ## Known Quirks
 
-1. **Skeleton theme CSS import** — `@skeletonlabs/skeleton/themes/*.css` uses a `*` pattern export that `enhanced-resolve` can't handle for CSS. Vite alias in `vite.config.ts` works around this.
+1. **Superforms + Zod v4 email pattern** — Never spread `{...$constraints}` on `type="email"` inputs. Zod v4's email regex uses character classes incompatible with the browser's HTML `pattern` attribute `v` flag.
 
-2. **Superforms + Zod v4 email pattern** — Never spread `{...$constraints}` on `type="email"` inputs. Zod v4's email regex uses character classes incompatible with the browser's HTML `pattern` attribute `v` flag.
+2. **`getMondayOfCurrentWeek()`** — Uses local date components (`.getFullYear()`, `.getMonth()`, `.getDate()`) instead of `.toISOString()` to avoid UTC offset shifting the date across midnight.
 
-3. **`getMondayOfCurrentWeek()`** — Uses local date components (`.getFullYear()`, `.getMonth()`, `.getDate()`) instead of `.toISOString()` to avoid UTC offset shifting the date across midnight.
+3. **Auth redirects** — `auth.api.signInEmail` / `signUpEmail` may internally throw SvelteKit redirects. Always `if (isRedirect(err)) throw err` inside auth catch blocks.
 
-4. **Auth redirects** — `auth.api.signInEmail` / `signUpEmail` may internally throw SvelteKit redirects. Always `if (isRedirect(err)) throw err` inside auth catch blocks.
-
-5. **`useSecureCookies: true`** — Auth cookies require HTTPS. On fly.io this is fine. In local dev, better-auth should auto-detect `localhost` and allow non-secure cookies.
+4. **`useSecureCookies: true`** — Auth cookies require HTTPS. On fly.io this is fine. In local dev, better-auth should auto-detect `localhost` and allow non-secure cookies.

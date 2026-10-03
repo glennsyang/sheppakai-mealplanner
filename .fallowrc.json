@@ -3,6 +3,8 @@
 	"entry": ["src/index.{ts,tsx,js,jsx}", "src/main.{ts,tsx,js,jsx}"],
 	"ignorePatterns": [
 		"**/*.generated.ts",
+		"src/lib/components/ui/**",
+		"src/lib/utils.ts",
 		"**/*.config.ts",
 		"src/env.ts",
 		"src/app.css",
@@ -11,14 +13,21 @@
 	],
 	"ignoreDependencies": [
 		"@flydotio/dockerfile",
-		"@skeletonlabs/skeleton",
-		"@skeletonlabs/skeleton-svelte",
 		"@sveltejs/kit",
 		"@tailwindcss/vite",
+		"@tanstack/svelte-table",
+		"bits-ui",
+		"clsx",
 		"svelte",
 		"sveltekit-superforms",
+		"tailwind-merge",
+		"tailwind-variants",
+		"tw-animate-css",
 		"zod"
 	],
+	"duplicates": {
+		"ignore": ["src/lib/components/ui/**/*.{ts,tsx}"]
+	},
 	"rules": {
 		"unresolved-imports": "error",
 		"unlisted-dependencies": "error",

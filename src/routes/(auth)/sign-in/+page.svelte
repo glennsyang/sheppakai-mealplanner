@@ -2,6 +2,10 @@
 	import { FORGOT_PASSWORD_ROUTE } from '$lib/auth-routes';
 	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import AuthShell from '$lib/components/AuthShell.svelte';
+	import { Alert } from '$lib/components/ui/alert';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import { loginSchema } from '$lib/schemas/auth';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
@@ -27,28 +31,26 @@
 	</div>
 
 	{#if data.resetComplete}
-		<div class="alert preset-tonal-success" role="status">
-			Your password has been reset. Please sign in.
-		</div>
+		<Alert variant="success" role="status">Your password has been reset. Please sign in.</Alert>
 	{/if}
 
 	{#if data.invalidVerificationLink}
-		<div class="alert preset-tonal-error" role="alert">
+		<Alert variant="destructive" role="alert">
 			That verification link is invalid or has expired. Please sign in or request a new one.
-		</div>
+		</Alert>
 	{/if}
 
 	<AuthFormMessage message={$message} />
 
 	<form method="POST" use:enhance class="space-y-5">
-		<label class="label">
+		<Label>
 			<span class="font-semibold">Email</span>
-			<input
+			<Input
 				type="email"
 				name="email"
 				bind:value={$form.email}
-				class="input mt-1 text-lg"
-				class:input-error={$errors.email}
+				class="mt-1 text-lg"
+				aria-invalid={$errors.email ? 'true' : undefined}
 				required={$constraints.email?.required}
 				placeholder="you@example.com"
 				autocomplete="email"
@@ -56,19 +58,19 @@
 			{#if $errors.email}
 				<span class="ink-red mt-1 block text-sm">{$errors.email}</span>
 			{/if}
-		</label>
+		</Label>
 
-		<label class="label">
+		<Label>
 			<span class="flex items-baseline justify-between">
 				<span class="font-semibold">Password</span>
 				<a href={FORGOT_PASSWORD_ROUTE} class="act-text ink-blue text-sm">Forgot it?</a>
 			</span>
-			<input
+			<Input
 				type="password"
 				name="password"
 				bind:value={$form.password}
-				class="input mt-1 text-lg"
-				class:input-error={$errors.password}
+				class="mt-1 text-lg"
+				aria-invalid={$errors.password ? 'true' : undefined}
 				required={$constraints.password?.required}
 				placeholder="••••••••••••"
 				autocomplete="current-password"
@@ -76,10 +78,10 @@
 			{#if $errors.password}
 				<span class="ink-red mt-1 block text-sm">{$errors.password}</span>
 			{/if}
-		</label>
+		</Label>
 
-		<button type="submit" disabled={$submitting} class="btn act mt-2 w-full py-3 text-lg">
+		<Button type="submit" disabled={$submitting} class="mt-2 w-full py-3 text-lg">
 			{$submitting ? 'Signing in…' : 'Sign in'}
-		</button>
+		</Button>
 	</form>
 </AuthShell>

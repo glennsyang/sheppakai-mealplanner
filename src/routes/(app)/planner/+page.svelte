@@ -6,6 +6,11 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import RecipeDrawer from '$lib/components/RecipeDrawer.svelte';
+	import { Alert } from '$lib/components/ui/alert';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import { Textarea } from '$lib/components/ui/textarea';
 	import VariationsPanel from '$lib/components/VariationsPanel.svelte';
 	import WeeklyPlanner from '$lib/components/WeeklyPlanner.svelte';
 	import { addWeeks, getMondayOf } from '$lib/dates';
@@ -264,10 +269,12 @@
 			</fieldset>
 
 			<div class="flex gap-2">
-				<button type="submit" disabled={isSubmitting} class="btn act flex-1 py-2.5">
+				<Button type="submit" disabled={isSubmitting} class="flex-1 py-2.5">
 					{isSubmitting ? 'Sticking it on…' : `Put on ${DAY_LABELS[selectedDay]}`}
-				</button>
-				<button type="button" onclick={closeDayPicker} class="btn act-quiet py-2.5">Cancel</button>
+				</Button>
+				<Button type="button" onclick={closeDayPicker} variant="outline" class="py-2.5"
+					>Cancel</Button
+				>
 			</div>
 		</form>
 	{/if}
@@ -287,38 +294,42 @@
 
 		<AuthFormMessage message={$customMessage} />
 
-		<label class="label space-y-1.5">
+		<Label class="space-y-1.5">
 			<span class="font-semibold">What's for dinner?</span>
-			<input
+			<Input
 				type="text"
 				name="name"
 				bind:value={$customForm.name}
-				class="input"
 				placeholder="Spaghetti bolognese"
 				required
 			/>
 			{#if $customErrors.name}
 				<span class="ink-red text-sm">{$customErrors.name}</span>
 			{/if}
-		</label>
+		</Label>
 
-		<label class="label space-y-1.5">
+		<Label class="space-y-1.5">
 			<span class="font-semibold">Notes <span class="ink-faint font-normal">(optional)</span></span>
-			<textarea
+			<Textarea
 				name="notes"
 				bind:value={$customForm.notes}
-				class="textarea"
-				rows="3"
-				placeholder="Double batch, freeze half"></textarea>
-		</label>
+				rows={3}
+				placeholder="Double batch, freeze half"
+			/>
+		</Label>
 
 		<div class="flex gap-2">
-			<button type="submit" disabled={$customSubmitting} class="btn act flex-1 py-2.5">
+			<Button type="submit" disabled={$customSubmitting} class="flex-1 py-2.5">
 				{$customSubmitting ? 'Writing it in…' : 'Write it in'}
-			</button>
-			<button type="button" onclick={() => (showCustomModal = false)} class="btn act-quiet py-2.5">
+			</Button>
+			<Button
+				type="button"
+				onclick={() => (showCustomModal = false)}
+				variant="outline"
+				class="py-2.5"
+			>
 				Cancel
-			</button>
+			</Button>
 		</div>
 	</form>
 </Modal>
@@ -375,7 +386,7 @@
 	{/if}
 
 	{#if actionError}
-		<div class="alert preset-tonal-error mt-6 flex items-center justify-between gap-4" role="alert">
+		<Alert variant="destructive" class="mt-6 flex items-center justify-between gap-4" role="alert">
 			<span>{actionError}</span>
 			<button
 				type="button"
@@ -385,7 +396,7 @@
 			>
 				Dismiss
 			</button>
-		</div>
+		</Alert>
 	{/if}
 </div>
 
@@ -407,10 +418,10 @@
 </div>
 
 <div class="foot flex flex-wrap items-center gap-x-6 gap-y-3 px-5 py-6 sm:px-10">
-	<a href="/suggest" class="btn act px-5 py-2.5">
+	<Button href="/suggest" class="px-5 py-2.5">
 		<Icon name="sparkles" />
 		Get dinner ideas
-	</a>
+	</Button>
 	<p class="ink-soft text-sm">
 		Ideas come from what's in the pantry. Tap a dinner to read its recipe.
 	</p>

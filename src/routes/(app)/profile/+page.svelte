@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { Alert } from '$lib/components/ui/alert';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import { changePasswordSchema, updateNameSchema } from '$lib/schemas/auth';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
@@ -70,31 +74,28 @@
 		<div class="flex items-center justify-between">
 			<h2 class="text-xl font-bold tracking-tight">Profile information</h2>
 			{#if !isEditingName}
-				<button type="button" class="btn act-quiet" onclick={() => (isEditingName = true)}>
-					Edit
-				</button>
+				<Button type="button" variant="outline" onclick={() => (isEditingName = true)}>Edit</Button>
 			{/if}
 		</div>
 
 		{#if $nameMessage}
-			<div
-				class="alert {$nameMessage.type === 'success'
-					? 'preset-tonal-success'
-					: 'preset-tonal-error'}"
+			<Alert
+				variant={$nameMessage.type === 'success' ? 'success' : 'destructive'}
+				role={$nameMessage.type === 'success' ? 'status' : 'alert'}
 			>
 				{$nameMessage.text}
-			</div>
+			</Alert>
 		{/if}
 
 		<form method="POST" action="?/updateName" use:nameEnhance class="space-y-4">
-			<label class="label">
+			<Label>
 				<span class="font-semibold">Name</span>
-				<input
+				<Input
 					type="text"
 					name="name"
 					bind:value={$nameForm.name}
-					class="input mt-1"
-					class:input-error={$nameErrors.name}
+					class="mt-1"
+					aria-invalid={$nameErrors.name ? 'true' : undefined}
 					disabled={!isEditingName}
 					minlength={$nameConstraints.name?.minlength}
 					maxlength={$nameConstraints.name?.maxlength}
@@ -104,33 +105,27 @@
 				{#if $nameErrors.name}
 					<span class="ink-red mt-1 block text-sm">{$nameErrors.name}</span>
 				{/if}
-			</label>
+			</Label>
 
-			<label class="label">
+			<Label>
 				<span class="font-semibold">Email</span>
-				<input
-					type="email"
-					value={data.user.email}
-					class="input mt-1"
-					disabled
-					aria-readonly="true"
-				/>
+				<Input type="email" value={data.user.email} class="mt-1" disabled aria-readonly="true" />
 				<span class="ink-soft mt-1 block text-sm">Email address cannot be changed.</span>
-			</label>
+			</Label>
 
 			{#if isEditingName}
 				<div class="flex gap-2 pt-2">
-					<button type="submit" disabled={$nameSubmitting} class="btn act">
+					<Button type="submit" disabled={$nameSubmitting}>
 						{$nameSubmitting ? 'Saving…' : 'Save changes'}
-					</button>
-					<button
+					</Button>
+					<Button
 						type="button"
-						class="btn act-quiet"
+						variant="outline"
 						disabled={$nameSubmitting}
 						onclick={cancelNameEdit}
 					>
 						Cancel
-					</button>
+					</Button>
 				</div>
 			{/if}
 		</form>
@@ -141,48 +136,47 @@
 		<div class="flex items-center justify-between">
 			<h2 class="text-xl font-bold tracking-tight">Change password</h2>
 			{#if !isEditingPassword}
-				<button type="button" class="btn act-quiet" onclick={() => (isEditingPassword = true)}>
+				<Button type="button" variant="outline" onclick={() => (isEditingPassword = true)}>
 					Change password
-				</button>
+				</Button>
 			{/if}
 		</div>
 
 		{#if $passwordMessage}
-			<div
-				class="alert {$passwordMessage.type === 'success'
-					? 'preset-tonal-success'
-					: 'preset-tonal-error'}"
+			<Alert
+				variant={$passwordMessage.type === 'success' ? 'success' : 'destructive'}
+				role={$passwordMessage.type === 'success' ? 'status' : 'alert'}
 			>
 				{$passwordMessage.text}
-			</div>
+			</Alert>
 		{/if}
 
 		{#if isEditingPassword}
 			<form method="POST" action="?/changePassword" use:passwordEnhance class="space-y-4">
-				<label class="label">
+				<Label>
 					<span class="font-semibold">Current password</span>
-					<input
+					<Input
 						type="password"
 						name="currentPassword"
 						bind:value={$passwordForm.currentPassword}
-						class="input mt-1"
-						class:input-error={$passwordErrors.currentPassword}
+						class="mt-1"
+						aria-invalid={$passwordErrors.currentPassword ? 'true' : undefined}
 						required
 						autocomplete="current-password"
 					/>
 					{#if $passwordErrors.currentPassword}
 						<span class="ink-red mt-1 block text-sm">{$passwordErrors.currentPassword}</span>
 					{/if}
-				</label>
+				</Label>
 
-				<label class="label">
+				<Label>
 					<span class="font-semibold">New password</span>
-					<input
+					<Input
 						type="password"
 						name="newPassword"
 						bind:value={$passwordForm.newPassword}
-						class="input mt-1"
-						class:input-error={$passwordErrors.newPassword}
+						class="mt-1"
+						aria-invalid={$passwordErrors.newPassword ? 'true' : undefined}
 						placeholder="12+ characters"
 						required
 						autocomplete="new-password"
@@ -190,36 +184,36 @@
 					{#if $passwordErrors.newPassword}
 						<span class="ink-red mt-1 block text-sm">{$passwordErrors.newPassword}</span>
 					{/if}
-				</label>
+				</Label>
 
-				<label class="label">
+				<Label>
 					<span class="font-semibold">Confirm new password</span>
-					<input
+					<Input
 						type="password"
 						name="confirmPassword"
 						bind:value={$passwordForm.confirmPassword}
-						class="input mt-1"
-						class:input-error={$passwordErrors.confirmPassword}
+						class="mt-1"
+						aria-invalid={$passwordErrors.confirmPassword ? 'true' : undefined}
 						required
 						autocomplete="new-password"
 					/>
 					{#if $passwordErrors.confirmPassword}
 						<span class="ink-red mt-1 block text-sm">{$passwordErrors.confirmPassword}</span>
 					{/if}
-				</label>
+				</Label>
 
 				<div class="flex gap-2 pt-2">
-					<button type="submit" disabled={$passwordSubmitting} class="btn act">
+					<Button type="submit" disabled={$passwordSubmitting}>
 						{$passwordSubmitting ? 'Changing…' : 'Change password'}
-					</button>
-					<button
+					</Button>
+					<Button
 						type="button"
-						class="btn act-quiet"
+						variant="outline"
 						disabled={$passwordSubmitting}
 						onclick={cancelPasswordEdit}
 					>
 						Cancel
-					</button>
+					</Button>
 				</div>
 			</form>
 		{/if}

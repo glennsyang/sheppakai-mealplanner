@@ -2,6 +2,9 @@
 	import { FORGOT_PASSWORD_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
 	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import AuthShell from '$lib/components/AuthShell.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import { resetPasswordSchema } from '$lib/schemas/auth';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
@@ -32,8 +35,8 @@
 			</p>
 		</div>
 		<div class="space-y-3">
-			<a href={FORGOT_PASSWORD_ROUTE} class="btn act w-full py-3 text-lg">Request a new link</a>
-			<a href={SIGN_IN_ROUTE} class="btn act-quiet w-full py-3">Back to sign in</a>
+			<Button href={FORGOT_PASSWORD_ROUTE} class="w-full py-3 text-lg">Request a new link</Button>
+			<Button href={SIGN_IN_ROUTE} variant="outline" class="w-full py-3">Back to sign in</Button>
 		</div>
 	{:else}
 		<div>
@@ -46,14 +49,14 @@
 		<form method="POST" use:enhance class="space-y-5">
 			<input type="hidden" name="token" bind:value={data.token} />
 
-			<label class="label">
+			<Label>
 				<span class="font-semibold">New password</span>
-				<input
+				<Input
 					type="password"
 					name="password"
 					bind:value={$form.password}
-					class="input mt-1 text-lg"
-					class:input-error={$errors.password}
+					class="mt-1 text-lg"
+					aria-invalid={$errors.password ? 'true' : undefined}
 					minlength={$constraints.password?.minlength}
 					required={$constraints.password?.required}
 					placeholder="12+ characters, incl. upper/lower/number/symbol"
@@ -62,16 +65,16 @@
 				{#if $errors.password}
 					<span class="ink-red mt-1 block text-sm">{$errors.password}</span>
 				{/if}
-			</label>
+			</Label>
 
-			<label class="label">
+			<Label>
 				<span class="font-semibold">Confirm new password</span>
-				<input
+				<Input
 					type="password"
 					name="confirmPassword"
 					bind:value={$form.confirmPassword}
-					class="input mt-1 text-lg"
-					class:input-error={$errors.confirmPassword}
+					class="mt-1 text-lg"
+					aria-invalid={$errors.confirmPassword ? 'true' : undefined}
 					required={$constraints.confirmPassword?.required}
 					placeholder="Repeat your new password"
 					autocomplete="new-password"
@@ -79,11 +82,11 @@
 				{#if $errors.confirmPassword}
 					<span class="ink-red mt-1 block text-sm">{$errors.confirmPassword}</span>
 				{/if}
-			</label>
+			</Label>
 
-			<button type="submit" disabled={$submitting} class="btn act w-full py-3 text-lg">
+			<Button type="submit" disabled={$submitting} class="w-full py-3 text-lg">
 				{$submitting ? 'Updating password…' : 'Update password'}
-			</button>
+			</Button>
 		</form>
 
 		<p><a href={SIGN_IN_ROUTE} class="act-text ink-blue">Back to sign in</a></p>

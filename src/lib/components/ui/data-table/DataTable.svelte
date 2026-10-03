@@ -1,5 +1,8 @@
 <script lang="ts" generics="TData extends RowData, TValue">
 	import { features, FlexRender, type Features } from '$lib/components/ui/data-table';
+	import { Input } from '$lib/components/ui/input';
+	import { NativeSelect } from '$lib/components/ui/native-select';
+	import * as Table from '$lib/components/ui/table';
 	import {
 		createTable,
 		type ColumnDef,
@@ -72,62 +75,60 @@
 
 <div class="space-y-4">
 	{#if searchPlaceholder}
-		<input
+		<Input
 			type="search"
-			class="input max-w-sm"
+			class="max-w-sm"
 			placeholder={searchPlaceholder}
 			value={globalFilter}
 			oninput={(e) => table.setGlobalFilter(e.currentTarget.value)}
 		/>
 	{/if}
 
-	<div class="overflow-x-auto">
-		<table class="board-table w-full">
-			<thead>
-				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-					<tr>
-						{#each headerGroup.headers as header (header.id)}
-							<th colspan={header.colSpan}>
-								{#if !header.isPlaceholder}
-									<FlexRender {header} />
-								{/if}
-							</th>
-						{/each}
-					</tr>
-				{/each}
-			</thead>
-			<tbody>
-				{#each table.getRowModel().rows as row (row.id)}
-					<tr>
-						{#each row.getVisibleCells() as cell (cell.id)}
-							<td>
-								<FlexRender {cell} />
-							</td>
-						{/each}
-					</tr>
-				{:else}
-					<tr>
-						<td colspan={columns.length} class="marker ink-faint py-6">
-							{emptyMessage}
-						</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	</div>
+	<Table.Root>
+		<Table.Header>
+			{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+				<Table.Row>
+					{#each headerGroup.headers as header (header.id)}
+						<Table.Head colspan={header.colSpan}>
+							{#if !header.isPlaceholder}
+								<FlexRender {header} />
+							{/if}
+						</Table.Head>
+					{/each}
+				</Table.Row>
+			{/each}
+		</Table.Header>
+		<Table.Body>
+			{#each table.getRowModel().rows as row (row.id)}
+				<Table.Row>
+					{#each row.getVisibleCells() as cell (cell.id)}
+						<Table.Cell>
+							<FlexRender {cell} />
+						</Table.Cell>
+					{/each}
+				</Table.Row>
+			{:else}
+				<Table.Row>
+					<Table.Cell colspan={columns.length} class="marker ink-faint py-6">
+						{emptyMessage}
+					</Table.Cell>
+				</Table.Row>
+			{/each}
+		</Table.Body>
+	</Table.Root>
 
 	<div class="flex flex-wrap items-center justify-between gap-3 py-2">
 		<label class="ink-soft flex items-center gap-2 text-sm font-semibold">
 			Rows per page
-			<select
-				class="select w-20"
+			<NativeSelect
+				class="w-20"
 				value={`${pagination.pageSize}`}
 				onchange={(e) => table.setPageSize(Number(e.currentTarget.value))}
 			>
 				{#each [10, 20, 30, 40, 50] as size (size)}
 					<option value={`${size}`}>{size}</option>
 				{/each}
-			</select>
+			</NativeSelect>
 		</label>
 
 		<div class="ink-soft tabular text-sm font-semibold">
@@ -224,24 +225,6 @@
 </div>
 
 <style>
-	/* Ruled like the week board: printed header row, hairline rules, no shell */
-	.board-table {
-		border-collapse: collapse;
-	}
-	.board-table :global(th) {
-		padding: 0.6rem 0.75rem;
-		text-align: left;
-		font-size: 0.875rem;
-		font-weight: 700;
-		color: var(--ink-soft);
-		border-bottom: 1.5px solid var(--marker-red);
-		white-space: nowrap;
-	}
-	.board-table :global(td) {
-		padding: 0.85rem 0.75rem;
-		border-bottom: 1px solid var(--rule);
-		vertical-align: middle;
-	}
 	.pager {
 		display: inline-flex;
 		align-items: center;
