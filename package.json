@@ -57,7 +57,7 @@
 		"@vitest/coverage-v8": "^5.0.2",
 		"drizzle-kit": "^0.31.11",
 		"fallow": "^3.30.0",
-		"lefthook": "^2.1.14",
+		"lefthook": "^2.1.16",
 		"lint-staged": "^17.6.0",
 		"oxfmt": "^0.71.0",
 		"oxlint": "^1.86.0",
