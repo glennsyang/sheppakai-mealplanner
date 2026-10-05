@@ -53,7 +53,7 @@
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
 		"@tailwindcss/vite": "^4.2.1",
 		"@types/better-sqlite3": "^7.6.13",
-		"@types/node": "^26.6.3",
+		"@types/node": "^26.6.4",
 		"@vitest/coverage-v8": "^5.0.2",
 		"drizzle-kit": "^0.31.11",
 		"fallow": "^3.30.0",
